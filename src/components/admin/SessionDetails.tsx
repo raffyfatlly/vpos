@@ -7,7 +7,7 @@ import { SalesHistory } from "./SalesHistory";
 
 interface SessionDetailsProps {
   session: Session;
-  onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
+  onUpdateStock: (productId: number, newInitialStock: number) => void;
 }
 
 export function SessionDetails({ 
@@ -24,20 +24,19 @@ export function SessionDetails({
     }
   }, [initialSession]);
 
-  const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
-    console.log('Updating stock in SessionDetails:', { productId, newInitialStock, newCurrentStock });
+  const handleUpdateStock = (productId: number, newInitialStock: number) => {
+    console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
     
     setSession(prevSession => {
       const updatedProducts = prevSession.products.map(product => {
         if (product.id === productId) {
           console.log('Updating product:', {
             before: product,
-            after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
+            after: { ...product, initial_stock: newInitialStock }
           });
           return {
             ...product,
-            initial_stock: newInitialStock,
-            current_stock: newCurrentStock
+            initial_stock: newInitialStock
           };
         }
         return product;
@@ -49,7 +48,7 @@ export function SessionDetails({
       };
     });
 
-    onUpdateStock(productId, newInitialStock, newCurrentStock);
+    onUpdateStock(productId, newInitialStock);
   };
 
   return (
