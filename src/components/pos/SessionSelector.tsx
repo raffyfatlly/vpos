@@ -14,7 +14,12 @@ export function SessionSelector() {
 
   // Filter sessions to only show today's sessions
   const today = new Date().toISOString().split('T')[0];
-  const todaySessions = MOCK_SESSIONS.filter(session => session.date === today);
+  console.log('Today:', today); // Debug log
+  console.log('Available sessions:', MOCK_SESSIONS); // Debug log
+  const todaySessions = MOCK_SESSIONS.filter(session => {
+    console.log('Comparing session date:', session.date, 'with today:', today); // Debug log
+    return session.date === today;
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -27,7 +32,7 @@ export function SessionSelector() {
       
       {todaySessions.length === 0 ? (
         <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-          <p className="text-muted-foreground">No sessions available for today.</p>
+          <p className="text-muted-foreground">No sessions available for today ({today}).</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
