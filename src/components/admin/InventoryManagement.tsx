@@ -40,47 +40,51 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
       try {
         console.log('Starting stock update for product:', productId, 'new initial stock:', newInitialStock);
 
-        // Calculate new current stock
-        const { data: newCurrentStock, error: rpcError } = await supabase
-          .rpc('calculate_new_current_stock', {
-            product_id: productId,
-            new_initial_stock: newInitialStock
-          });
-
-        if (rpcError) throw rpcError;
-
-        console.log('Calculated new current stock:', newCurrentStock);
-
-        // Update both initial and current stock in the products table
+        // First, update the products table
         const { error: updateError } = await supabase
           .from('products')
           .update({
             initial_stock: newInitialStock,
-            current_stock: newCurrentStock
+            current_stock: newInitialStock // Set current_stock equal to initial_stock on update
           })
           .eq('id', productId);
 
         if (updateError) throw updateError;
 
-        // Update the session's products array
-        const sessionId = products[0]?.id;
-        const { error: sessionError } = await supabase
+        // Find the current session ID from the products array
+        const sessionId = products[0]?.session_id;
+        if (!sessionId) {
+          throw new Error('Session ID not found');
+        }
+
+        // Get the current session data
+        const { data: sessionData, error: sessionError } = await supabase
           .from('sessions')
-          .update({
-            products: products.map(p => 
-              p.id === productId 
-                ? { ...p, initial_stock: newInitialStock, current_stock: newCurrentStock }
-                : p
-            )
-          })
-          .eq('id', sessionId);
+          .select('products')
+          .eq('id', sessionId)
+          .single();
 
         if (sessionError) throw sessionError;
+
+        // Update the products array in the session
+        const updatedProducts = sessionData.products.map((p: SessionProduct) =>
+          p.id === productId
+            ? { ...p, initial_stock: newInitialStock, current_stock: newInitialStock }
+            : p
+        );
+
+        // Update the session with the new products array
+        const { error: sessionUpdateError } = await supabase
+          .from('sessions')
+          .update({ products: updatedProducts })
+          .eq('id', sessionId);
+
+        if (sessionUpdateError) throw sessionUpdateError;
 
         console.log('Database updates successful');
 
         // Call onUpdateStock with both initial and current stock values
-        onUpdateStock(productId, newInitialStock, newCurrentStock);
+        onUpdateStock(productId, newInitialStock, newInitialStock);
 
         toast({
           title: "Stock Updated",
