@@ -1,6 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,7 @@ interface LayoutProps {
 
 const Layout = ({ children, requireRole }: LayoutProps) => {
   const { user } = useAuth();
+  const { isOpen } = useSidebar();
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -25,10 +28,16 @@ const Layout = ({ children, requireRole }: LayoutProps) => {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen bg-background">
       <AppSidebar />
-      <main className="flex-1 overflow-y-auto bg-background">
-        {children}
+      <main className={cn(
+        "flex-1 transition-all duration-300",
+        isOpen ? "md:ml-60" : "md:ml-[70px]",
+        "ml-0" // No margin on mobile when sidebar is hidden
+      )}>
+        <div className="container p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

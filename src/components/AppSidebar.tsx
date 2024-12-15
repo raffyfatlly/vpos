@@ -42,7 +42,7 @@ export function AppSidebar() {
       </Button>
       <div
         className={cn(
-          "fixed top-0 left-0 h-full bg-background border-r z-40 transition-all duration-300 md:translate-x-0",
+          "fixed top-0 left-0 h-full bg-background border-r z-40 transition-all duration-300",
           "flex flex-col",
           isOpen ? "translate-x-0 w-60" : "-translate-x-full md:translate-x-0 md:w-[70px]"
         )}
