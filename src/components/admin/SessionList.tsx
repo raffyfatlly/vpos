@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
 import { useAuth } from "@/hooks/useAuth";
+import { format } from "date-fns";
 
 export function SessionList({ 
   sessions, 
@@ -59,34 +60,37 @@ export function SessionList({
       {localSessions.map((session) => (
         <div
           key={session.id}
-          className={`flex items-center justify-between p-6 bg-white rounded-lg shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md ${
+          className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md ${
             selectedSession?.id === session.id ? 'ring-2 ring-primary' : ''
           }`}
           onClick={() => onSelect(session)}
         >
           <div className="flex-1">
-            <h3 className="text-heading font-semibold mb-2">{session.name}</h3>
-            <div className="space-y-1">
-              <p className="text-body text-muted-foreground">{session.date}</p>
-              <p className="text-body text-muted-foreground">{session.location}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg font-semibold">{session.location}</h3>
+              <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                {session.id}
+              </span>
             </div>
+            <p className="text-sm text-muted-foreground">{session.date}</p>
           </div>
           
-          <div className="flex items-center gap-6">
-            <span className={`text-sm font-medium ${
-              session.status === "active" ? "text-green-600" : "text-gray-600"
+          <div className="flex items-center gap-4">
+            <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+              session.status === "active" 
+                ? "bg-green-100 text-green-700" 
+                : "bg-gray-100 text-gray-700"
             }`}>
               {session.status}
             </span>
             
-            {/* Only show toggle button for admin users */}
             {(user?.role === "admin" || user?.role === "both") && (
               <Toggle
                 pressed={session.status === "completed"}
                 onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
                 className="data-[state=on]:bg-green-500"
               >
-                {session.status === "active" ? "Mark Complete" : "Reactivate"}
+                {session.status === "active" ? "Complete" : "Reactivate"}
               </Toggle>
             )}
           </div>

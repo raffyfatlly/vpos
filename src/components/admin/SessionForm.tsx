@@ -18,18 +18,21 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sessionId = session?.id || `SESSION-${Date.now()}`;
+    
+    // Generate a shorter, more readable session ID
+    const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
     
     // Fetch all products from the products table
     const { data: products } = await supabase
       .from('products')
       .select('*');
 
-    // Reset stock values for new sessions
+    // Ensure all products start with zero stock for new sessions
     const sessionProducts: SessionProduct[] = (products || []).map(product => ({
       ...product,
-      initial_stock: 0,  // Reset initial stock to 0
-      current_stock: 0,  // Reset current stock to 0
+      initial_stock: 0,
+      current_stock: 0,
     }));
 
     onSubmit({
