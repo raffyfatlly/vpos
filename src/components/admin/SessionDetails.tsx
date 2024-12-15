@@ -14,11 +14,17 @@ export function SessionDetails({
   session: initialSession, 
   onUpdateStock,
 }: SessionDetailsProps) {
-  const [session, setSession] = useState(initialSession);
+  const [session, setSession] = useState<Session>({
+    ...initialSession,
+    sales: initialSession.sales || [] // Ensure sales is initialized as an array
+  });
 
   // Reset session state when initialSession changes (different session selected)
   useEffect(() => {
-    setSession(initialSession);
+    setSession({
+      ...initialSession,
+      sales: initialSession.sales || [] // Ensure sales is initialized as an array
+    });
   }, [initialSession]);
 
   const handleUpdateStock = (productId: number, newStock: number) => {
