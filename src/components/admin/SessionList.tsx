@@ -1,14 +1,23 @@
 import { Session } from "@/types/pos";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SessionListProps {
   sessions: Session[];
   onEdit: (session: Session) => void;
   onDelete: (sessionId: string) => void;
+  onSelect: (session: Session) => void;
+  selectedSession: Session | null;
 }
 
-export function SessionList({ sessions, onEdit, onDelete }: SessionListProps) {
+export function SessionList({
+  sessions,
+  onEdit,
+  onDelete,
+  onSelect,
+  selectedSession,
+}: SessionListProps) {
   return (
     <div className="border rounded-lg">
       {sessions.length === 0 ? (
@@ -20,7 +29,11 @@ export function SessionList({ sessions, onEdit, onDelete }: SessionListProps) {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="p-4 flex items-center justify-between hover:bg-muted/50"
+              className={cn(
+                "p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer",
+                selectedSession?.id === session.id && "bg-muted"
+              )}
+              onClick={() => onSelect(session)}
             >
               <div className="space-y-1">
                 <div className="font-medium">{session.location}</div>
@@ -35,14 +48,20 @@ export function SessionList({ sessions, onEdit, onDelete }: SessionListProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onEdit(session)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(session);
+                  }}
                 >
                   <Edit2 className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onDelete(session.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(session.id);
+                  }}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

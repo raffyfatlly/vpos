@@ -4,14 +4,18 @@ import { Plus } from "lucide-react";
 import { Session } from "@/types/pos";
 import { SessionForm } from "@/components/admin/SessionForm";
 import { SessionList } from "@/components/admin/SessionList";
+import { SessionDetails } from "@/components/admin/SessionDetails";
 import { useSessions } from "@/hooks/useSessions";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Sessions = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
   const {
     sessions,
     isLoading,
@@ -20,7 +24,6 @@ const Sessions = () => {
     deleteSession,
   } = useSessions();
 
-  // Redirect if not logged in or not admin
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -49,6 +52,30 @@ const Sessions = () => {
 
   const handleDeleteSession = async (sessionId: string) => {
     await deleteSession.mutateAsync(sessionId);
+    setSelectedSession(null);
+  };
+
+  const handleUpdateStock = async (productId: number, newStock: number) => {
+    if (!selectedSession) return;
+
+    const updatedProducts = selectedSession.products.map(product =>
+      product.id === productId
+        ? { ...product, currentStock: newStock }
+        : product
+    );
+
+    const updatedSession = {
+      ...selectedSession,
+      products: updatedProducts,
+    };
+
+    await updateSession.mutateAsync(updatedSession);
+    setSelectedSession(updatedSession);
+    
+    toast({
+      title: "Stock Updated",
+      description: "Product stock has been successfully updated.",
+    });
   };
 
   return (
@@ -61,11 +88,30 @@ const Sessions = () => {
         </Button>
       </div>
 
-      <SessionList
-        sessions={sessions}
-        onEdit={setEditingSession}
-        onDelete={handleDeleteSession}
-      />
+      <div className="grid gap-6 md:grid-cols-2">
+        <div>
+          <SessionList
+            sessions={sessions}
+            onEdit={setEditingSession}
+            onDelete={handleDeleteSession}
+            onSelect={setSelectedSession}
+            selectedSession={selectedSession}
+          />
+        </div>
+        
+        {selectedSession && (
+          <div className="border rounded-lg p-4">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold">{selectedSession.location}</h2>
+              <p className="text-muted-foreground">{selectedSession.date}</p>
+            </div>
+            <SessionDetails
+              session={selectedSession}
+              onUpdateStock={handleUpdateStock}
+            />
+          </div>
+        )}
+      </div>
 
       {isCreating && (
         <SessionForm
