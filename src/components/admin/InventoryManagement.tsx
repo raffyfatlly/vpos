@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface InventoryManagementProps {
   session: Session;
-  onUpdateStock: (productId: number, newStock: number) => void;
+  onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
 }
 
 export function InventoryManagement({ session, onUpdateStock }: InventoryManagementProps) {
@@ -68,8 +68,8 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
 
         if (sessionError) throw sessionError;
 
-        // Call onUpdateStock to trigger parent component refresh
-        onUpdateStock(productId, newCurrentStock);
+        // Call onUpdateStock with both initial and current stock values
+        onUpdateStock(productId, newInitialStock, newCurrentStock);
 
         toast({
           title: "Stock Updated",
