@@ -71,6 +71,23 @@ const Members = () => {
       return;
     }
 
+    // First check if the user already exists in profiles
+    const { data: existingProfiles } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('username', newUserEmail)
+      .single();
+
+    if (existingProfiles) {
+      toast({
+        title: "User exists",
+        description: "This email is already registered in the system.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // If user doesn't exist, proceed with signup
     const { error: signUpError } = await supabase.auth.signUp({
       email: newUserEmail,
       password: Math.random().toString(36).slice(-8), // Generate a random password
@@ -82,11 +99,20 @@ const Members = () => {
     });
 
     if (signUpError) {
-      toast({
-        title: "Error creating user",
-        description: signUpError.message,
-        variant: "destructive",
-      });
+      // Handle specific error cases
+      if (signUpError.message.includes("User already registered")) {
+        toast({
+          title: "User exists",
+          description: "This email is already registered. Please use a different email.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error creating user",
+          description: signUpError.message,
+          variant: "destructive",
+        });
+      }
       return;
     }
 
