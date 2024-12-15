@@ -32,7 +32,24 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
         .order('name');
       
       if (error) throw error;
-      return data;
+
+      // If product has null current_stock, set it to initial_stock
+      const updatedData = data.map(product => ({
+        ...product,
+        current_stock: product.current_stock === null ? product.initial_stock : product.current_stock
+      }));
+
+      // Update products with null current_stock in database
+      updatedData.forEach(async (product) => {
+        if (data.find(p => p.id === product.id).current_stock === null) {
+          await supabase
+            .from('products')
+            .update({ current_stock: product.initial_stock })
+            .eq('id', product.id);
+        }
+      });
+
+      return updatedData;
     }
   });
 
