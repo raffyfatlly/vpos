@@ -69,42 +69,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signInError) {
-        console.error('Sign in error:', signInError);
-        toast({
-          title: "Authentication failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-        throw signInError;
+      if (error) throw error;
+
+      if (!data.user) {
+        throw new Error("No user data returned");
       }
 
       // The session change will trigger the onAuthStateChange listener
       // which will fetch the user profile and update the state
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        title: "Authentication failed",
-        description: error.message,
-        variant: "destructive",
-      });
       throw error;
     }
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setUser(null);
+      navigate("/login", { replace: true });
+    } catch (error: any) {
       console.error('Error signing out:', error);
-      return;
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-    setUser(null);
-    navigate("/login", { replace: true });
   };
 
   return (

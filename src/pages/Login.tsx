@@ -3,15 +3,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
     try {
       await login(email, password);
       toast({
@@ -20,11 +26,14 @@ export default function Login() {
       });
     } catch (error: any) {
       console.error('Login error:', error);
+      setError(error.message || "Failed to login. Please try again.");
       toast({
         title: "Authentication error",
-        description: "Invalid email or password",
+        description: error.message || "Invalid email or password",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,6 +49,12 @@ export default function Login() {
           </p>
         </div>
         
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
@@ -53,6 +68,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
             
@@ -67,12 +83,17 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            Sign in
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </div>
