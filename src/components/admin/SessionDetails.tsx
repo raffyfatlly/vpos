@@ -15,7 +15,7 @@ export function SessionDetails({
 }: SessionDetailsProps) {
   return (
     <Tabs defaultValue="inventory" className="w-full h-[calc(100vh-12rem)] flex flex-col">
-      <TabsList className="w-full bg-primary/5 mb-4 p-1">
+      <TabsList className="w-full bg-primary/5 mb-4 p-1 mx-0">
         <TabsTrigger 
           value="inventory"
           className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
@@ -36,7 +36,7 @@ export function SessionDetails({
         </TabsTrigger>
       </TabsList>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 px-0">
         <TabsContent value="inventory" className="h-full m-0 p-0">
           <InventoryManagement 
             session={session} 
