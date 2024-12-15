@@ -3,6 +3,7 @@ import { Session } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
+import { useAuth } from "@/hooks/useAuth";
 
 export function SessionList({ 
   sessions, 
@@ -17,6 +18,7 @@ export function SessionList({
 }) {
   const { toast } = useToast();
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
+  const { user } = useAuth();
 
   const handleToggleActive = async (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -77,13 +79,16 @@ export function SessionList({
               {session.status}
             </span>
             
-            <Toggle
-              pressed={session.status === "completed"}
-              onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
-              className="data-[state=on]:bg-green-500"
-            >
-              {session.status === "active" ? "Mark Complete" : "Reactivate"}
-            </Toggle>
+            {/* Only show toggle button for admin users */}
+            {(user?.role === "admin" || user?.role === "both") && (
+              <Toggle
+                pressed={session.status === "completed"}
+                onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
+                className="data-[state=on]:bg-green-500"
+              >
+                {session.status === "active" ? "Mark Complete" : "Reactivate"}
+              </Toggle>
+            )}
           </div>
         </div>
       ))}
