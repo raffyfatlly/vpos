@@ -54,7 +54,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       id: product?.id || 0,
       price: Number(formData.price),
       initialStock: Number(formData.initialStock),
-      currentStock: Number(formData.currentStock),
+      currentStock: product ? product.currentStock : Number(formData.initialStock), // Keep existing stock when editing
       variations: formData.variations.map(v => ({
         ...v,
         price: Number(v.price)
@@ -98,34 +98,24 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             />
           </div>
           
-          <div className="space-y-2">
-            <label htmlFor="initialStock" className="text-sm font-medium">
-              Initial Stock
-            </label>
-            <Input
-              id="initialStock"
-              type="number"
-              value={formData.initialStock}
-              onChange={(e) =>
-                setFormData({ ...formData, initialStock: parseInt(e.target.value) })
-              }
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="currentStock" className="text-sm font-medium">
-              Current Stock
-            </label>
-            <Input
-              id="currentStock"
-              type="number"
-              value={formData.currentStock}
-              onChange={(e) =>
-                setFormData({ ...formData, currentStock: parseInt(e.target.value) })
-              }
-              required
-            />
-          </div>
+          {/* Only show stock input when creating a new product */}
+          {!product && (
+            <div className="space-y-2">
+              <label htmlFor="initialStock" className="text-sm font-medium">
+                Initial Stock
+              </label>
+              <Input
+                id="initialStock"
+                type="number"
+                value={formData.initialStock}
+                onChange={(e) =>
+                  setFormData({ ...formData, initialStock: parseInt(e.target.value) })
+                }
+                required
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <label htmlFor="category" className="text-sm font-medium">
               Category
