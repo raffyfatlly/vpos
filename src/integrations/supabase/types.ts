@@ -34,10 +34,8 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
-          current_stock: number | null
           id: number
           image: string | null
-          initial_stock: number | null
           name: string
           price: number
           variations: Json[] | null
@@ -45,10 +43,8 @@ export type Database = {
         Insert: {
           category?: string | null
           created_at?: string
-          current_stock?: number | null
           id?: number
           image?: string | null
-          initial_stock?: number | null
           name: string
           price: number
           variations?: Json[] | null
@@ -56,10 +52,8 @@ export type Database = {
         Update: {
           category?: string | null
           created_at?: string
-          current_stock?: number | null
           id?: number
           image?: string | null
-          initial_stock?: number | null
           name?: string
           price?: number
           variations?: Json[] | null
@@ -86,6 +80,48 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      session_inventory: {
+        Row: {
+          created_at: string
+          current_stock: number | null
+          id: number
+          initial_stock: number | null
+          product_id: number | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_stock?: number | null
+          id?: number
+          initial_stock?: number | null
+          product_id?: number | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_stock?: number | null
+          id?: number
+          initial_stock?: number | null
+          product_id?: number | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_inventory_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sessions: {
         Row: {

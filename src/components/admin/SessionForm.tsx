@@ -32,7 +32,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
     
     try {
-      // Fetch all products with their current stock levels
+      // Fetch all products
       const { data: products, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -42,8 +42,8 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
 
       console.log('Fetched products for session:', products);
 
-      // Initialize all products with their current stock values
-      const sessionProducts: SessionProduct[] = (products || []).map(product => ({
+      // Initialize session products with zero stock
+      const sessionProducts = products.map(product => ({
         id: product.id,
         name: product.name,
         price: product.price,
@@ -51,8 +51,8 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         image: product.image,
         variations: product.variations || [],
         session_id: sessionId,
-        initial_stock: product.initial_stock,  // Use the actual initial_stock from products
-        current_stock: product.current_stock,  // Use the actual current_stock from products
+        initial_stock: 0,
+        current_stock: 0,
       }));
 
       const sessionData = {
@@ -65,6 +65,20 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         sales: [], 
         created_at: new Date().toISOString(),
       };
+
+      // Create session inventory records
+      const inventoryData = sessionProducts.map(product => ({
+        session_id: sessionId,
+        product_id: product.id,
+        initial_stock: 0,
+        current_stock: 0,
+      }));
+
+      const { error: inventoryError } = await supabase
+        .from('session_inventory')
+        .insert(inventoryData);
+
+      if (inventoryError) throw inventoryError;
 
       console.log('Creating session with data:', sessionData);
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Session, SessionProduct } from "@/types/pos";
+import { Session, SessionProduct, SessionInventory } from "@/types/pos";
 
 interface SessionDetailsProps {
   session: Session;
@@ -16,19 +16,42 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   useEffect(() => {
     const channel = supabase
-      .channel(`session_${session.id}`)
+      .channel(`session_inventory_${session.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
-          table: 'sessions',
-          filter: `id=eq.${session.id}`,
+          table: 'session_inventory',
+          filter: `session_id=eq.${session.id}`,
         },
-        (payload: any) => {
-          if (payload.new && payload.new.products) {
-            setProducts(payload.new.products);
+        async (payload: any) => {
+          // Fetch updated inventory data
+          const { data: inventoryData, error: inventoryError } = await supabase
+            .from('session_inventory')
+            .select('*')
+            .eq('session_id', session.id);
+
+          if (inventoryError) {
+            console.error('Error fetching inventory:', inventoryError);
+            return;
           }
+
+          // Update products with new inventory data
+          const updatedProducts = products.map(product => {
+            const inventory = inventoryData.find(inv => inv.product_id === product.id);
+            if (inventory) {
+              return {
+                ...product,
+                initial_stock: inventory.initial_stock,
+                current_stock: inventory.current_stock,
+              };
+            }
+            return product;
+          });
+
+          setProducts(updatedProducts);
+          onUpdateStock(session.id, updatedProducts);
         }
       )
       .subscribe();
@@ -40,38 +63,37 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
-      // Update products array with new initial and current stock
-      const updatedProducts = products.map((product: SessionProduct) =>
+      // Update session_inventory table
+      const { error: updateError } = await supabase
+        .from('session_inventory')
+        .update({
+          initial_stock: newInitialStock,
+          current_stock: newInitialStock // Reset current_stock to match initial_stock
+        })
+        .eq('session_id', session.id)
+        .eq('product_id', productId);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      const updatedProducts = products.map(product =>
         product.id === productId
-          ? { 
+          ? {
               ...product,
               initial_stock: newInitialStock,
-              current_stock: newInitialStock // Set current_stock equal to initial_stock
+              current_stock: newInitialStock
             }
           : product
       );
 
-      // Update session in database
-      const { error } = await supabase
-        .from('sessions')
-        .update({
-          products: updatedProducts
-        })
-        .eq('id', session.id);
-
-      if (error) throw error;
-
-      // Update local state
       setProducts(updatedProducts);
-      
-      // Notify parent component with session ID and updated products
       onUpdateStock(session.id, updatedProducts);
 
       toast({
         title: "Stock updated",
         description: "Initial and current stock have been updated successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating stock:', error);
       toast({
         title: "Error",

@@ -23,7 +23,7 @@ export type SessionProduct = {
   variations?: ProductVariation[];
   initial_stock: number;
   current_stock: number;
-  session_id: string; // Added this property
+  session_id: string;
 };
 
 export type Sale = {
@@ -56,4 +56,13 @@ export type Session = {
   sales: Sale[];
   created_at: string;
   variations?: ProductVariation[];
+};
+
+export type SessionInventory = {
+  id: number;
+  session_id: string;
+  product_id: number;
+  initial_stock: number;
+  current_stock: number;
+  created_at: string;
 };
