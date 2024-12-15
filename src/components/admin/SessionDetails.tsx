@@ -49,7 +49,7 @@ export function SessionDetails({
               
               if (!productExists) return prevSession;
 
-              // Update the product in our session
+              // Update the product in our session with both initial and current stock
               const updatedProducts = prevSession.products.map(existingProduct => 
                 existingProduct.id === updatedProduct.id
                   ? {
