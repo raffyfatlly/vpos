@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryManagement } from "./InventoryManagement";
 import { SalesOverview } from "./SalesOverview";
 import { SalesHistory } from "./SalesHistory";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface SessionDetailsProps {
   session: Session;
@@ -15,6 +15,11 @@ export function SessionDetails({
   onUpdateStock,
 }: SessionDetailsProps) {
   const [session, setSession] = useState(initialSession);
+
+  // Reset session state when initialSession changes (different session selected)
+  useEffect(() => {
+    setSession(initialSession);
+  }, [initialSession]);
 
   const handleUpdateStock = (productId: number, newStock: number) => {
     // Update local session state
