@@ -17,12 +17,25 @@ interface InventoryManagementProps {
   onUpdateStock: (productId: number, newInitialStock: number) => void;
 }
 
+const MAX_INTEGER = 2147483647; // PostgreSQL integer maximum value
+
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
 
   const handleStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
+    
+    // Validate the input value
+    if (newStock > MAX_INTEGER) {
+      toast({
+        title: "Invalid stock value",
+        description: "The stock value is too large. Maximum allowed value is 2,147,483,647.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setStockUpdates(prev => ({
       ...prev,
       [productId]: newStock
@@ -32,6 +45,16 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   const handleUpdateStock = async (productId: number) => {
     const newInitialStock = stockUpdates[productId];
     if (newInitialStock !== undefined) {
+      // Additional validation before update
+      if (newInitialStock > MAX_INTEGER) {
+        toast({
+          title: "Invalid stock value",
+          description: "The stock value is too large. Maximum allowed value is 2,147,483,647.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
         await onUpdateStock(productId, newInitialStock);
 
@@ -48,7 +71,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
         console.error('Error updating stock:', error);
         toast({
           title: "Error",
-          description: "Failed to update stock.",
+          description: error.message || "Failed to update stock.",
           variant: "destructive",
         });
       }
@@ -85,6 +108,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                     className="w-32"
                     onChange={(e) => handleStockChange(product.id, e.target.value)}
                     value={stockUpdates[product.id] || ''}
+                    max={MAX_INTEGER}
                   />
                 </TableCell>
                 <TableCell>
