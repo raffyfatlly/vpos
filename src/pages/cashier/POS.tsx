@@ -28,18 +28,6 @@ const POS = () => {
     return <SessionSelector />;
   }
 
-  // Check if products exist in the current session
-  if (!currentSession.products || currentSession.products.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="text-center space-y-2">
-          <h2 className="text-xl font-semibold text-gray-800">No Products Available</h2>
-          <p className="text-gray-600">There are no products available in this session.</p>
-        </div>
-      </div>
-    );
-  }
-
   const handleProductSelect = (product: SessionProduct) => {
     if (cartRef.current) {
       cartRef.current.addProduct(product);
@@ -78,10 +66,19 @@ const POS = () => {
           {/* Products Section */}
           <div className="lg:col-span-2 space-y-3 sm:space-y-4 order-2 lg:order-1">
             <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
-              <ProductGrid
-                products={currentSession.products}
-                onProductSelect={handleProductSelect}
-              />
+              {currentSession.products && currentSession.products.length > 0 ? (
+                <ProductGrid
+                  products={currentSession.products}
+                  onProductSelect={handleProductSelect}
+                />
+              ) : (
+                <div className="text-center py-8">
+                  <h3 className="text-lg font-medium text-gray-900">No Products Available</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    There are no products available in this session.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
