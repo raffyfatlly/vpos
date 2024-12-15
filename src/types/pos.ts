@@ -19,6 +19,19 @@ export type SessionProduct = {
   image?: string;
 };
 
+export type Sale = {
+  id: string;
+  products: {
+    productId: number;
+    quantity: number;
+    price: number;
+    discount: number;
+  }[];
+  total: number;
+  timestamp: string;
+  paymentMethod: PaymentMethod;
+};
+
 export type Session = {
   id: string;
   name: string;
@@ -28,23 +41,7 @@ export type Session = {
   staff: SessionStaff[];
   products: SessionProduct[];
   status: "active" | "completed";
-};
-
-export type Sale = {
-  id: string;
-  sessionId: string;
-  staffId: string;
-  products: {
-    productId: number;
-    quantity: number;
-    price: number;
-    discount: number;
-  }[];
-  subtotal: number;
-  discount: number;
-  total: number;
-  paymentMethod: PaymentMethod;
-  timestamp: string;
+  sales: Sale[];
 };
 
 export type AuthUser = {
