@@ -4,11 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -18,11 +19,21 @@ export default function Login() {
       await login(username, password);
       
       // Get the user's role from the profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('username', username)
         .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        toast({
+          title: "Error",
+          description: "Could not fetch user profile",
+          variant: "destructive",
+        });
+        return;
+      }
 
       if (profile) {
         // Redirect based on role
@@ -38,9 +49,10 @@ export default function Login() {
         description: "Welcome back!",
       });
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Authentication error",
-        description: error.message,
+        description: "Invalid email or password",
         variant: "destructive",
       });
     }
