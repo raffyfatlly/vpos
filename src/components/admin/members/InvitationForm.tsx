@@ -28,21 +28,11 @@ export function InvitationForm({ onInvite }: { onInvite: () => void }) {
     }
 
     try {
-      // Check if invitation already exists
-      const { data: existingInvitation } = await supabase
+      // Delete any existing invitations for this email
+      await supabase
         .from('pending_invitations')
-        .select('*')
-        .eq('email', newUserEmail)
-        .single();
-
-      if (existingInvitation && !existingInvitation.used) {
-        toast({
-          title: "Invitation exists",
-          description: "An invitation has already been sent to this email.",
-          variant: "destructive",
-        });
-        return;
-      }
+        .delete()
+        .eq('email', newUserEmail);
 
       // Create new invitation
       const { error: invitationError } = await supabase
