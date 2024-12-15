@@ -22,6 +22,11 @@ export function SessionList({
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
+
   const handleToggleActive = async (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -83,7 +88,7 @@ export function SessionList({
                 <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary whitespace-nowrap">
                   {session.id}
                 </span>
-                <span className="text-xs text-muted-foreground">{session.date}</span>
+                <span className="text-xs text-muted-foreground">{formatDate(session.date)}</span>
               </div>
             </div>
             

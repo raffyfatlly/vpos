@@ -19,20 +19,29 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    setFormData({
-      location: session?.location || "",
-      date: session?.date || "",
-    });
+    if (session) {
+      // Convert date from dd-mm-yyyy to yyyy-mm-dd for input field
+      const [day, month, year] = (session.date || '').split('-');
+      const formattedDate = day && month && year ? `${year}-${month}-${day}` : '';
+      
+      setFormData({
+        location: session.location || "",
+        date: formattedDate,
+      });
+    }
   }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Convert date from yyyy-mm-dd to dd-mm-yyyy for storage
+    const [year, month, day] = formData.date.split('-');
+    const formattedDate = `${day}-${month}-${year}`;
+    
     const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
     const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
     
     try {
-      // Fetch all products
       const { data: products, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -57,6 +66,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
 
       const sessionData = {
         ...formData,
+        date: formattedDate, // Use the formatted date
         id: sessionId,
         name: sessionId,
         staff: session?.staff || [],
@@ -66,7 +76,6 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         created_at: new Date().toISOString(),
       };
 
-      // Create session inventory records
       const inventoryData = sessionProducts.map(product => ({
         session_id: sessionId,
         product_id: product.id,
@@ -88,6 +97,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         title: "Session Created",
         description: `Created with ${sessionProducts.length} products`,
       });
+
     } catch (error: any) {
       console.error('Error creating session:', error);
       toast({

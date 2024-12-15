@@ -17,6 +17,15 @@ interface SalesHistoryProps {
 export function SalesHistory({ session }: SalesHistoryProps) {
   const isMobile = useIsMobile();
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   if (isMobile) {
     return (
       <div className="space-y-3 px-2">
@@ -26,7 +35,7 @@ export function SalesHistory({ session }: SalesHistoryProps) {
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium break-words">ID: {sale.id}</span>
                 <span className="text-sm text-muted-foreground ml-2 break-words">
-                  {new Date(sale.timestamp).toLocaleDateString()}
+                  {formatDate(sale.timestamp)}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -68,7 +77,7 @@ export function SalesHistory({ session }: SalesHistoryProps) {
                     <TableRow key={sale.id}>
                       <TableCell className="font-medium break-words">{sale.id}</TableCell>
                       <TableCell className="break-words">
-                        {new Date(sale.timestamp).toLocaleDateString()}
+                        {formatDate(sale.timestamp)}
                       </TableCell>
                       <TableCell>{sale.products.length}</TableCell>
                       <TableCell>${sale.total.toFixed(2)}</TableCell>
