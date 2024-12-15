@@ -5,6 +5,8 @@ export type UserRole = "admin" | "cashier";
 export type SessionStaff = {
   id: string;
   name: string;
+  role: UserRole;
+  password: string;
 };
 
 export type SessionProduct = {

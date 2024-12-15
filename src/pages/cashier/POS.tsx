@@ -3,25 +3,23 @@ import { SessionSelector } from "@/components/pos/SessionSelector";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { Cart } from "@/components/pos/Cart";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
-import { Sale } from "@/types/pos";
+import { Sale, SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
 
 const POS = () => {
   const { currentSession, currentStaff } = useSession();
   const { toast } = useToast();
+  const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
 
-  const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    console.log("Sale completed:", {
-      ...saleData,
-      sessionId: currentSession?.id,
-      staffId: currentStaff?.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    toast({
-      title: "Sale completed successfully",
-      description: `Total amount: $${saleData.total.toFixed(2)}`,
-    });
+  const handleProductSelect = (product: SessionProduct) => {
+    if (cartRef.current) {
+      cartRef.current.addProduct(product);
+      toast({
+        title: "Product added",
+        description: `Added ${product.name} to cart`,
+      });
+    }
   };
 
   if (!currentSession || !currentStaff) {
@@ -32,20 +30,22 @@ const POS = () => {
     <div className="space-y-6">
       <SessionIndicator />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 overflow-auto">
           <ProductGrid
             products={currentSession.products}
-            onProductSelect={(product) => {
-              console.log("Selected product:", product);
-            }}
+            onProductSelect={handleProductSelect}
           />
         </div>
-        <div>
-          <Cart onComplete={handleSaleComplete} />
+        <div className="overflow-auto">
+          <Cart ref={cartRef} onComplete={handleSaleComplete} />
         </div>
       </div>
     </div>
   );
+};
+
+const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
+  console.log("Sale completed:", saleData);
 };
 
 export default POS;

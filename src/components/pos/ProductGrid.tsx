@@ -18,27 +18,27 @@ export function ProductGrid({ products, onProductSelect }: ProductGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
         {products.map((product) => (
           <Button
             key={product.id}
             onClick={() => onProductSelect(product)}
             variant="outline"
-            className="h-auto p-4 hover:bg-accent transition-colors text-left space-y-2 flex flex-col items-start w-full"
+            className="h-auto p-2 sm:p-4 hover:bg-accent transition-colors text-left space-y-1 sm:space-y-2 flex flex-col items-start w-full"
           >
-            <div className="aspect-square w-full bg-gray-100 rounded-md mb-2 overflow-hidden">
+            <div className="aspect-square w-full bg-gray-100 rounded-md mb-1 sm:mb-2 overflow-hidden">
               <img 
                 src={product.image || "/placeholder.svg"} 
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <h3 className="font-medium truncate w-full">{product.name}</h3>
-            <div className="flex justify-between items-center w-full">
-              <p className="text-sm text-muted-foreground">
+            <h3 className="font-medium text-sm sm:text-base truncate w-full">{product.name}</h3>
+            <div className="flex justify-between items-center w-full text-xs sm:text-sm">
+              <p className="text-muted-foreground">
                 ${product.price.toFixed(2)}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground">
                 Stock: {product.currentStock}
               </p>
             </div>
