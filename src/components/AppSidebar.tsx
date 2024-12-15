@@ -10,6 +10,7 @@ import {
   LogOut,
   LayoutDashboard,
   Users,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,19 +41,25 @@ export function AppSidebar() {
 
   return (
     <>
+      {/* Mobile Menu Button */}
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-4 left-4 md:hidden z-50"
+        className="fixed top-4 right-4 md:hidden z-50"
         onClick={toggle}
       >
-        <Menu className="h-4 w-4" />
+        {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </Button>
+
+      {/* Sidebar/Header Navigation */}
       <div
         className={cn(
-          "fixed top-0 left-0 h-full bg-background border-r z-40 transition-all duration-300",
-          "flex flex-col",
-          isOpen ? "translate-x-0 w-60" : "-translate-x-full md:translate-x-0 md:w-[70px]"
+          "bg-background border-b md:border-r z-40 transition-all duration-300",
+          "fixed top-0 left-0 right-0 md:left-0 md:right-auto md:bottom-0",
+          "flex flex-col h-auto md:h-full",
+          isOpen ? "translate-y-0" : "-translate-y-full md:translate-y-0",
+          "md:w-[70px]",
+          isOpen && "md:w-60"
         )}
       >
         <div className="flex flex-col h-full relative">
@@ -74,7 +81,7 @@ export function AppSidebar() {
             </h1>
           </div>
 
-          <nav className="flex-1 p-2 space-y-1">
+          <nav className="flex md:flex-col p-2 space-x-2 md:space-x-0 md:space-y-1 overflow-x-auto md:overflow-x-visible">
             {isAdmin && (
               <>
                 <NavLink
@@ -82,7 +89,7 @@ export function AppSidebar() {
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
                       isActive && "bg-accent",
                       !isOpen && "md:justify-center"
                     )
@@ -99,7 +106,7 @@ export function AppSidebar() {
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
                       isActive && "bg-accent",
                       !isOpen && "md:justify-center"
                     )
@@ -116,7 +123,7 @@ export function AppSidebar() {
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
                       isActive && "bg-accent",
                       !isOpen && "md:justify-center"
                     )
@@ -133,7 +140,7 @@ export function AppSidebar() {
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
                       isActive && "bg-accent",
                       !isOpen && "md:justify-center"
                     )
@@ -154,7 +161,7 @@ export function AppSidebar() {
                 onClick={handleNavClick}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
                     isActive && "bg-accent",
                     !isOpen && "md:justify-center"
                   )
@@ -173,7 +180,7 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               className={cn(
-                "w-full flex items-center gap-3 justify-start",
+                "w-full flex items-center gap-3 justify-start whitespace-nowrap",
                 !isOpen && "md:justify-center"
               )}
               onClick={() => {

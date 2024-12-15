@@ -32,10 +32,11 @@ const Layout = ({ children, requireRole }: LayoutProps) => {
       <AppSidebar />
       <main className={cn(
         "flex-1 transition-all duration-300",
-        isOpen ? "md:ml-60" : "md:ml-[70px]",
-        "ml-0" // No margin on mobile when sidebar is hidden
+        "md:ml-[70px]",
+        isOpen && "md:ml-60",
+        "mt-16 md:mt-0" // Add top margin for mobile to account for header
       )}>
-        <div className="container p-6">
+        <div className="container p-4 md:p-6">
           {children}
         </div>
       </main>
