@@ -8,9 +8,9 @@ const Index = () => {
     return <Navigate to="/login" replace />;
   }
   
-  // For cashiers, redirect to sessions page first
+  // For cashiers, redirect directly to POS view
   // For admins, redirect to products page
-  const redirectPath = user.role === "cashier" ? "/admin/sessions" : "/admin/products";
+  const redirectPath = user.role === "cashier" || user.role === "both" ? "/cashier" : "/admin/products";
   
   return <Navigate to={redirectPath} replace />;
 };
