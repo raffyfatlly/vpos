@@ -91,29 +91,35 @@ const POS = () => {
   return (
     <>
       <SessionIndicator />
-      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
-        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4">
-          <div className="lg:col-span-2 space-y-3 sm:space-y-4 order-2 lg:order-1">
-            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
-              {currentSession.products && currentSession.products.length > 0 ? (
-                <ProductGrid
-                  products={currentSession.products}
-                  onProductSelect={handleProductSelect}
-                  variations={currentSession.variations}
-                />
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    No products available in this session.
-                  </p>
-                </div>
-              )}
+      <div className="min-h-[calc(100vh-65px)] bg-gradient-to-br from-gray-50 to-white">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
+            {/* Product Grid Section - Full width on mobile, 2/3 on desktop */}
+            <div className="order-2 lg:order-1 lg:col-span-2">
+              <div className="bg-white rounded-2xl shadow-xl p-6 backdrop-blur-lg bg-opacity-90 border border-gray-100">
+                {currentSession.products && currentSession.products.length > 0 ? (
+                  <ProductGrid
+                    products={currentSession.products}
+                    onProductSelect={handleProductSelect}
+                    variations={currentSession.variations}
+                  />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">
+                      No products available in this session.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="lg:col-span-1 order-1 lg:order-2 sticky top-[65px] z-10">
-            <div className="bg-white rounded-lg shadow-sm">
-              <Cart ref={cartRef} onComplete={handleSaleComplete} />
+            {/* Cart Section - Sticky on desktop */}
+            <div className="order-1 lg:order-2 lg:col-span-1">
+              <div className="sticky top-[80px]">
+                <div className="bg-white rounded-2xl shadow-xl backdrop-blur-lg bg-opacity-90 border border-gray-100">
+                  <Cart ref={cartRef} onComplete={handleSaleComplete} />
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -32,7 +32,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
     }));
 
     return (
-      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+      <div className="p-4 sm:p-6 space-y-6">
         <CartItemList
           items={items}
           onUpdateQuantity={updateQuantity}

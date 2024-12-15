@@ -19,20 +19,20 @@ export function ProductGrid({ products, onProductSelect, variations }: ProductGr
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2 items-center">
-        <div className="relative flex-1">
+    <div className="space-y-6">
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input 
             placeholder="Search products..." 
-            className="pl-10 bg-gray-50 border-gray-200"
+            className="pl-10 h-11 bg-gray-50/50 border-gray-200 rounded-xl"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {filteredProducts.map((product) => (
           <ProductCard
             key={product.id}
