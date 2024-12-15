@@ -6,11 +6,22 @@ import { SessionIndicator } from "@/components/pos/SessionIndicator";
 import { Sale, SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
 
 const POS = () => {
   const { currentSession, currentStaff } = useSession();
   const { toast } = useToast();
+  const { user } = useAuth();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (user.role !== "cashier") {
+    return <Navigate to="/" />;
+  }
 
   const handleProductSelect = (product: SessionProduct) => {
     if (cartRef.current) {
@@ -20,6 +31,10 @@ const POS = () => {
         description: `Added ${product.name} to cart`,
       });
     }
+  };
+
+  const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
+    console.log("Sale completed:", saleData);
   };
 
   if (!currentSession || !currentStaff) {
@@ -42,10 +57,6 @@ const POS = () => {
       </div>
     </div>
   );
-};
-
-const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-  console.log("Sale completed:", saleData);
 };
 
 export default POS;

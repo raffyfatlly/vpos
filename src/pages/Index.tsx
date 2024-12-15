@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { UserRole } from "@/types/pos";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  // For now, we'll hardcode the role. Later we'll integrate with auth
-  const userRole: UserRole = "cashier";
+  const { user } = useAuth();
+  const userRole = user?.role || "cashier";
   
   return <Navigate to={userRole === "admin" ? "/admin/products" : "/cashier"} replace />;
 };

@@ -54,3 +54,18 @@ export type Sale = {
   paymentMethod: PaymentMethod;
   timestamp: string;
 };
+
+export type AuthUser = {
+  id: string;
+  username: string;
+  password: string;
+  role: UserRole;
+};
+
+export type SessionLog = {
+  id: string;
+  sessionId: string;
+  userId: string;
+  action: string;
+  timestamp: string;
+};
