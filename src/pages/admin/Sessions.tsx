@@ -45,7 +45,6 @@ const Sessions = () => {
     try {
       const newSession = await createSession.mutateAsync(sessionData);
       setIsCreating(false);
-      // Set the newly created session as the selected session
       setSelectedSession(newSession);
       toast({
         title: "Success",
@@ -132,8 +131,8 @@ const Sessions = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6 max-w-[1600px]">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Sessions</h1>
         <Button onClick={() => setIsCreating(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -141,8 +140,8 @@ const Sessions = () => {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="w-full">
           <SessionList
             sessions={sessions}
             onSessionUpdate={updateSession.mutateAsync}
@@ -153,7 +152,7 @@ const Sessions = () => {
         </div>
         
         {selectedSession && (
-          <div className="border rounded-lg p-4">
+          <div className="w-full bg-white rounded-lg shadow-sm p-6">
             <div className="mb-4">
               <h2 className="text-xl font-semibold">{selectedSession.location}</h2>
               <p className="text-muted-foreground">{selectedSession.date}</p>
