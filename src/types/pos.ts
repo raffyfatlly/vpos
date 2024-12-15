@@ -1,6 +1,6 @@
 export type PaymentMethod = "cash" | "bayarlah_qr";
 
-export type UserRole = "admin" | "cashier";
+export type UserRole = "admin" | "cashier" | "both";
 
 export type SessionStaff = {
   id: string;
@@ -28,14 +28,6 @@ export type Session = {
   staff: SessionStaff[];
   products: SessionProduct[];
   status: "active" | "completed";
-};
-
-export type SessionLog = {
-  id: string;
-  sessionId: string;
-  userId: string;
-  action: string;
-  timestamp: string;
 };
 
 export type Sale = {

@@ -22,6 +22,12 @@ const mockUsers: AuthUser[] = [
     password: "cashier123",
     role: "cashier" as UserRole,
   },
+  {
+    id: "3",
+    username: "raffyfatlly",
+    password: "Type3user!",
+    role: "both" as UserRole,
+  },
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -56,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 export function useAuth() {
   const context = useContext(AuthContext);
