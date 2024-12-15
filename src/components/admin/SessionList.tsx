@@ -83,27 +83,29 @@ export function SessionList({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {localSessions.map((session) => (
         <div
           key={session.id}
-          className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md ${
-            selectedSession?.id === session.id ? 'ring-2 ring-primary' : ''
+          className={`group flex items-center justify-between p-4 bg-white rounded-lg border transition-all duration-200 cursor-pointer hover:border-primary/50 hover:shadow-md ${
+            selectedSession?.id === session.id ? 'border-primary shadow-md' : 'border-border'
           }`}
           onClick={() => onSelect(session)}
         >
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold">{session.location}</h3>
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+              <h3 className="text-lg font-semibold text-foreground truncate">
+                {session.location}
+              </h3>
+              <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
                 {session.id}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{session.date}</p>
           </div>
           
-          <div className="flex items-center gap-4">
-            <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+          <div className="flex items-center gap-3">
+            <span className={`px-2 py-1 text-sm font-medium rounded-full ${
               session.status === "active" 
                 ? "bg-green-100 text-green-700" 
                 : "bg-gray-100 text-gray-700"
@@ -112,7 +114,7 @@ export function SessionList({
             </span>
             
             {(user?.role === "admin" || user?.role === "both") && (
-              <>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Toggle
                   pressed={session.status === "completed"}
                   onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
@@ -128,7 +130,7 @@ export function SessionList({
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              </>
+              </div>
             )}
           </div>
         </div>

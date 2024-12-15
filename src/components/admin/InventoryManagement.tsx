@@ -76,47 +76,50 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
   };
 
   return (
-    <div className="rounded-md border w-full overflow-x-auto">
-      <Table>
-        <TableHeader className="bg-background">
-          <TableRow>
-            <TableHead className="min-w-[200px]">Product Name</TableHead>
-            <TableHead className="min-w-[100px]">Price</TableHead>
-            <TableHead className="min-w-[120px]">Initial Stock</TableHead>
-            <TableHead className="min-w-[120px]">Current Stock</TableHead>
-            <TableHead className="min-w-[150px]">Update Initial Stock</TableHead>
-            <TableHead className="min-w-[150px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {session.products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>${product.price.toFixed(2)}</TableCell>
-              <TableCell>{product.initial_stock}</TableCell>
-              <TableCell>{product.current_stock}</TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  placeholder="New initial stock"
-                  className="w-24"
-                  onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
-                  value={initialStockUpdates[product.id] || ''}
-                />
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleUpdateInitialStock(product.id)}
-                >
-                  Update Initial Stock
-                </Button>
-              </TableCell>
+    <div className="rounded-lg border border-border/50 overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-primary/5 hover:bg-primary/5">
+              <TableHead className="min-w-[250px]">Product Name</TableHead>
+              <TableHead className="min-w-[120px]">Price</TableHead>
+              <TableHead className="min-w-[150px]">Initial Stock</TableHead>
+              <TableHead className="min-w-[150px]">Current Stock</TableHead>
+              <TableHead className="min-w-[180px]">Update Initial Stock</TableHead>
+              <TableHead className="min-w-[180px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {session.products.map((product) => (
+              <TableRow key={product.id} className="hover:bg-primary/5">
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.initial_stock}</TableCell>
+                <TableCell>{product.current_stock}</TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    placeholder="New initial stock"
+                    className="w-32"
+                    onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
+                    value={initialStockUpdates[product.id] || ''}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:text-primary"
+                    onClick={() => handleUpdateInitialStock(product.id)}
+                  >
+                    Update Initial Stock
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

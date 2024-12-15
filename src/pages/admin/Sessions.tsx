@@ -35,7 +35,7 @@ const Sessions = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-muted-foreground">Loading sessions...</div>
       </div>
     );
@@ -133,38 +133,56 @@ const Sessions = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-[1600px]">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Sessions</h1>
-        <Button onClick={() => setIsCreating(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Session
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="w-full">
-          <SessionList
-            sessions={sessions}
-            onSessionUpdate={updateSession.mutateAsync}
-            onSelect={setSelectedSession}
-            selectedSession={selectedSession}
-            onDelete={handleDeleteSession}
-          />
+    <div className="h-[calc(100vh-4rem)] bg-background">
+      <div className="h-full flex flex-col gap-6 max-w-[1600px] mx-auto p-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-primary">Sessions</h1>
+          <Button 
+            onClick={() => setIsCreating(true)}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Session
+          </Button>
         </div>
-        
-        {selectedSession && (
-          <div className="w-full bg-white rounded-lg shadow-sm p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold">{selectedSession.location}</h2>
-              <p className="text-muted-foreground">{selectedSession.date}</p>
+
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-primary/5">
+              <h2 className="text-lg font-semibold text-primary">All Sessions</h2>
             </div>
-            <SessionDetails
-              session={selectedSession}
-              onUpdateStock={handleUpdateStock}
-            />
+            <div className="p-4 overflow-auto max-h-[calc(100vh-16rem)]">
+              <SessionList
+                sessions={sessions}
+                onSessionUpdate={updateSession.mutateAsync}
+                onSelect={setSelectedSession}
+                selectedSession={selectedSession}
+                onDelete={handleDeleteSession}
+              />
+            </div>
           </div>
-        )}
+          
+          {selectedSession ? (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4 border-b bg-primary/5">
+                <h2 className="text-lg font-semibold text-primary">
+                  {selectedSession.location}
+                </h2>
+                <p className="text-sm text-muted-foreground">{selectedSession.date}</p>
+              </div>
+              <div className="p-4 overflow-auto max-h-[calc(100vh-16rem)]">
+                <SessionDetails
+                  session={selectedSession}
+                  onUpdateStock={handleUpdateStock}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm flex items-center justify-center text-muted-foreground">
+              Select a session to view details
+            </div>
+          )}
+        </div>
       </div>
 
       {isCreating && (
