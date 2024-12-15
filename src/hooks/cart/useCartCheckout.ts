@@ -21,20 +21,19 @@ export const useCartCheckout = (
   const updateProductStocks = async () => {
     if (!currentSession) return;
 
-    // Update products in the database
+    // Update session_inventory in the database
     for (const item of items) {
-      const newStock = item.current_stock - item.quantity;
-      
-      const { error } = await supabase
-        .from('products')
+      const { error: inventoryError } = await supabase
+        .from('session_inventory')
         .update({
           current_stock: item.current_stock - item.quantity
         })
-        .eq('id', item.id);
+        .eq('session_id', currentSession.id)
+        .eq('product_id', item.id);
 
-      if (error) {
-        console.error('Error updating stock:', error);
-        throw error;
+      if (inventoryError) {
+        console.error('Error updating session inventory:', inventoryError);
+        throw inventoryError;
       }
     }
 
