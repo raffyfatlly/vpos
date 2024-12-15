@@ -35,8 +35,10 @@ const POS = () => {
             table: 'sessions',
             filter: `id=eq.${currentSession.id}`,
           },
-          (payload) => {
+          (payload: any) => {
+            console.log('Session update received:', payload);
             const updatedSession = payload.new as any;
+            
             if (updatedSession.status === 'completed') {
               toast({
                 title: "Session completed",
@@ -44,41 +46,16 @@ const POS = () => {
               });
               clearSession();
             } else {
-              // Update session with new data
+              // Update session with new data, including product stock changes
               setCurrentSession(updatedSession);
-            }
-          }
-        )
-        .subscribe();
-
-      // Listen for product updates
-      const productsChannel = supabase
-        .channel('products_updates')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'products',
-          },
-          async (payload) => {
-            console.log('Product update received:', payload);
-            
-            // Fetch the latest session data to get updated products
-            const { data: sessionData, error } = await supabase
-              .from('sessions')
-              .select('*')
-              .eq('id', currentSession.id)
-              .single();
-
-            if (error) {
-              console.error('Error fetching updated session:', error);
-              return;
-            }
-
-            if (sessionData) {
-              console.log('Updating session with new data:', sessionData);
-              setCurrentSession(sessionData);
+              
+              // Show toast for stock updates
+              if (updatedSession.products) {
+                toast({
+                  title: "Stock updated",
+                  description: "Product stock has been updated",
+                });
+              }
             }
           }
         )
@@ -86,10 +63,9 @@ const POS = () => {
 
       return () => {
         supabase.removeChannel(sessionChannel);
-        supabase.removeChannel(productsChannel);
       };
     }
-  }, [currentSession, toast]);
+  }, [currentSession, toast, setCurrentSession, clearSession]);
 
   if (!user) {
     return <Navigate to="/login" replace />;
