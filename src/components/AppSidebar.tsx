@@ -1,20 +1,19 @@
-import { NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
   Store,
   Package,
   CalendarDays,
-  Menu,
   ChevronLeft,
   LogOut,
   LayoutDashboard,
   Users,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { MobileHeader } from "./navigation/MobileHeader";
+import { NavigationLink } from "./navigation/NavigationLink";
 
 export function AppSidebar() {
   const { isOpen, toggle } = useSidebar();
@@ -33,7 +32,6 @@ export function AppSidebar() {
   };
 
   const handleNavClick = () => {
-    // Only collapse on mobile
     if (window.innerWidth < 768) {
       toggle();
     }
@@ -41,138 +39,78 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 right-4 md:hidden z-50"
-        onClick={toggle}
-      >
-        {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-      </Button>
+      <MobileHeader />
 
-      {/* Sidebar/Header Navigation */}
+      {/* Sidebar Navigation */}
       <div
         className={cn(
-          "bg-background border-b md:border-r z-40 transition-all duration-300",
-          "fixed top-0 left-0 right-0 md:left-0 md:right-auto md:bottom-0",
-          "flex flex-col h-auto md:h-full",
-          isOpen ? "translate-y-0" : "-translate-y-full md:translate-y-0",
-          "md:w-[70px]",
-          isOpen && "md:w-60"
+          "bg-background/80 backdrop-blur-sm border-r z-40 transition-all duration-300",
+          "fixed md:left-0 md:right-auto md:bottom-0 md:top-0",
+          "w-full h-[calc(100vh-4rem)] md:h-full md:w-[70px]",
+          isOpen ? (
+            "top-16 translate-y-0 md:translate-y-0 md:w-60"
+          ) : (
+            "-translate-y-full md:translate-y-0"
+          )
         )}
       >
-        <div className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full relative overflow-y-auto">
           <Button
             variant="ghost"
             size="icon"
             className="absolute -right-3 top-3 hidden md:flex h-6 w-6 border shadow-sm bg-background"
             onClick={toggle}
           >
-            <ChevronLeft className={cn("h-4 w-4 transition-transform", !isOpen && "rotate-180")} />
+            <ChevronLeft 
+              className={cn(
+                "h-4 w-4 transition-transform",
+                !isOpen && "rotate-180"
+              )} 
+            />
           </Button>
 
-          <div className="p-4">
-            <h1 className={cn(
-              "text-xl font-semibold transition-opacity duration-200",
-              !isOpen && "md:opacity-0"
-            )}>
-              POS System
-            </h1>
-          </div>
-
-          <nav className="flex md:flex-col p-2 space-x-2 md:space-x-0 md:space-y-1 overflow-x-auto md:overflow-x-visible">
+          <nav className="flex flex-col p-2 space-y-1">
             {isAdmin && (
               <>
-                <NavLink
+                <NavigationLink
                   to="/admin/dashboard"
+                  icon={LayoutDashboard}
+                  label="Dashboard"
                   onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
-                      isActive && "bg-accent",
-                      !isOpen && "md:justify-center"
-                    )
-                  }
-                >
-                  <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
-                  <span className={cn(
-                    "transition-opacity duration-200",
-                    !isOpen && "md:hidden"
-                  )}>Dashboard</span>
-                </NavLink>
-                <NavLink
+                  isOpen={isOpen}
+                />
+                <NavigationLink
                   to="/admin/sessions"
+                  icon={CalendarDays}
+                  label="Sessions"
                   onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
-                      isActive && "bg-accent",
-                      !isOpen && "md:justify-center"
-                    )
-                  }
-                >
-                  <CalendarDays className="w-4 h-4 flex-shrink-0" />
-                  <span className={cn(
-                    "transition-opacity duration-200",
-                    !isOpen && "md:hidden"
-                  )}>Sessions</span>
-                </NavLink>
-                <NavLink
+                  isOpen={isOpen}
+                />
+                <NavigationLink
                   to="/admin/products"
+                  icon={Package}
+                  label="Products"
                   onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
-                      isActive && "bg-accent",
-                      !isOpen && "md:justify-center"
-                    )
-                  }
-                >
-                  <Package className="w-4 h-4 flex-shrink-0" />
-                  <span className={cn(
-                    "transition-opacity duration-200",
-                    !isOpen && "md:hidden"
-                  )}>Products</span>
-                </NavLink>
-                <NavLink
+                  isOpen={isOpen}
+                />
+                <NavigationLink
                   to="/admin/members"
+                  icon={Users}
+                  label="Members"
                   onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
-                      isActive && "bg-accent",
-                      !isOpen && "md:justify-center"
-                    )
-                  }
-                >
-                  <Users className="w-4 h-4 flex-shrink-0" />
-                  <span className={cn(
-                    "transition-opacity duration-200",
-                    !isOpen && "md:hidden"
-                  )}>Members</span>
-                </NavLink>
+                  isOpen={isOpen}
+                />
               </>
             )}
 
             {isCashier && (
-              <NavLink
+              <NavigationLink
                 to="/cashier"
+                icon={Store}
+                label="POS"
                 onClick={handleNavClick}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors whitespace-nowrap",
-                    isActive && "bg-accent",
-                    !isOpen && "md:justify-center"
-                  )
-                }
-              >
-                <Store className="w-4 h-4 flex-shrink-0" />
-                <span className={cn(
-                  "transition-opacity duration-200",
-                  !isOpen && "md:hidden"
-                )}>POS</span>
-              </NavLink>
+                isOpen={isOpen}
+              />
             )}
           </nav>
 
@@ -180,7 +118,8 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               className={cn(
-                "w-full flex items-center gap-3 justify-start whitespace-nowrap",
+                "w-full flex items-center gap-3 justify-start",
+                "hover:bg-primary/10 hover:text-primary",
                 !isOpen && "md:justify-center"
               )}
               onClick={() => {
@@ -188,7 +127,7 @@ export function AppSidebar() {
                 handleLogout();
               }}
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <LogOut className="w-5 h-5 flex-shrink-0" />
               <span className={cn(
                 "transition-opacity duration-200",
                 !isOpen && "md:hidden"

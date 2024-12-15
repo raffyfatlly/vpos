@@ -17,12 +17,10 @@ const Layout = ({ children, requireRole }: LayoutProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If this is an admin route and user is not admin or both
   if (requireRole === "admin" && user.role !== "admin" && user.role !== "both") {
     return <Navigate to="/cashier" replace />;
   }
 
-  // If this is a cashier route and user is not cashier or both
   if (requireRole === "cashier" && user.role !== "cashier" && user.role !== "both") {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -34,7 +32,7 @@ const Layout = ({ children, requireRole }: LayoutProps) => {
         "flex-1 transition-all duration-300",
         "md:ml-[70px]",
         isOpen && "md:ml-60",
-        "mt-16 md:mt-0" // Add top margin for mobile to account for header
+        "pt-16 md:pt-0" // Add top padding for mobile to account for header
       )}>
         <div className="container p-4 md:p-6">
           {children}
@@ -42,6 +40,6 @@ const Layout = ({ children, requireRole }: LayoutProps) => {
       </main>
     </div>
   );
-};
+}
 
 export default Layout;
