@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Session } from "@/types/pos";
+import { Session, SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useSessions } from "@/hooks/useSessions";
@@ -67,14 +67,8 @@ export function useSessionManagement() {
     }
   };
 
-  const handleUpdateStock = async (productId: number, newStock: number) => {
+  const handleUpdateStock = async (sessionId: string, updatedProducts: SessionProduct[]) => {
     if (!selectedSession) return;
-
-    const updatedProducts = selectedSession.products.map(product =>
-      product.id === productId
-        ? { ...product, current_stock: newStock }
-        : product
-    );
 
     try {
       const { error } = await supabase
@@ -82,7 +76,7 @@ export function useSessionManagement() {
         .update({
           products: updatedProducts
         })
-        .eq('id', selectedSession.id);
+        .eq('id', sessionId);
 
       if (error) throw error;
 

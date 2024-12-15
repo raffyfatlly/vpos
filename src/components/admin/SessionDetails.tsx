@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Session } from "@/types/pos";
+import { Session, SessionProduct } from "@/types/pos";
 
 interface SessionDetailsProps {
   session: Session;
-  onUpdateStock?: (sessionId: string, updatedProducts: any[]) => void;
+  onUpdateStock: (sessionId: string, updatedProducts: SessionProduct[]) => void;
 }
 
 export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) {
@@ -41,7 +41,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
   const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
       // Update products array with new initial and current stock
-      const updatedProducts = products.map((product: any) =>
+      const updatedProducts = products.map((product: SessionProduct) =>
         product.id === productId
           ? { 
               ...product,
@@ -64,10 +64,8 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
       // Update local state
       setProducts(updatedProducts);
       
-      // Notify parent component
-      if (onUpdateStock) {
-        onUpdateStock(session.id, updatedProducts);
-      }
+      // Notify parent component with session ID and updated products
+      onUpdateStock(session.id, updatedProducts);
 
       toast({
         title: "Stock updated",
@@ -95,7 +93,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
               <div>Current Stock</div>
               <div>Actions</div>
             </div>
-            {products.map((product: any) => (
+            {products.map((product: SessionProduct) => (
               <div key={product.id} className="grid grid-cols-4 gap-4 py-2 border-t items-center">
                 <div>{product.name}</div>
                 <div>
