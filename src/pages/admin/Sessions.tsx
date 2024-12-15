@@ -78,8 +78,11 @@ const Sessions = () => {
 
   const handleDeleteSession = async (sessionId: string) => {
     try {
+      // If the deleted session is currently selected, clear the selection
+      if (selectedSession?.id === sessionId) {
+        setSelectedSession(null);
+      }
       await deleteSession.mutateAsync(sessionId);
-      setSelectedSession(null);
     } catch (error: any) {
       toast({
         title: "Error",
