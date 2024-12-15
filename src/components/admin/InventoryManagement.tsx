@@ -30,10 +30,10 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   };
 
   const handleUpdateStock = async (productId: number) => {
-    const newInitialStock = stockUpdates[productId];
-    if (newInitialStock !== undefined) {
+    const newStock = stockUpdates[productId];
+    if (newStock !== undefined) {
       try {
-        await onUpdateStock(productId, newInitialStock);
+        await onUpdateStock(productId, newStock);
 
         toast({
           title: "Stock Updated",
@@ -63,7 +63,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
             <TableRow className="hover:bg-background">
               <TableHead className="w-[250px]">Product Name</TableHead>
               <TableHead className="w-[120px]">Price</TableHead>
-              <TableHead className="w-[150px]">Initial Stock</TableHead>
               <TableHead className="w-[150px]">Current Stock</TableHead>
               <TableHead className="w-[150px]">Update Stock</TableHead>
               <TableHead className="w-[180px]">Actions</TableHead>
@@ -76,7 +75,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.initial_stock}</TableCell>
                 <TableCell>{product.current_stock}</TableCell>
                 <TableCell>
                   <Input
