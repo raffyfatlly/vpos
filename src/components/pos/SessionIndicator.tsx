@@ -7,30 +7,32 @@ export function SessionIndicator() {
   if (!currentSession || !currentStaff) return null;
 
   return (
-    <div className="bg-white border-b p-2 sticky top-0 z-10">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div className="space-y-0.5">
-          <h2 className="text-base font-semibold text-primary truncate">
-            {currentSession.name}
-          </h2>
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              <span>{currentSession.date}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>{currentSession.time}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate">{currentSession.location}</span>
+    <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-primary">
+              {currentSession.name}
+            </h2>
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                <span>{currentSession.date}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4" />
+                <span>{currentSession.time}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4" />
+                <span>{currentSession.location}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-1 text-xs">
-          <User className="w-3 h-3" />
-          <span className="font-medium">{currentStaff.name}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+            <User className="w-4 h-4 text-primary" />
+            <span className="font-medium text-sm text-primary">{currentStaff.name}</span>
+          </div>
         </div>
       </div>
     </div>

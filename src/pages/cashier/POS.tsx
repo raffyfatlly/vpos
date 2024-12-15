@@ -15,17 +15,14 @@ const POS = () => {
   const { user } = useAuth();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
 
-  // Redirect if not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check if user has cashier access
   if (user.role !== "cashier" && user.role !== "both") {
     return <Navigate to="/" replace />;
   }
 
-  // If no session is selected, show session selector
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
@@ -41,7 +38,6 @@ const POS = () => {
   };
 
   const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    // Add the sale to the session
     console.log("Sale completed:", {
       ...saleData,
       sessionId: currentSession.id,
@@ -56,25 +52,27 @@ const POS = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Header with session info */}
-      <div className="flex-none">
-        <SessionIndicator />
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <SessionIndicator />
+      
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Products Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <ProductGrid
+                products={currentSession.products}
+                onProductSelect={handleProductSelect}
+              />
+            </div>
+          </div>
 
-      {/* Main content area */}
-      <div className="flex flex-1 gap-4 p-4 overflow-hidden">
-        {/* Products grid - takes 2/3 of the space */}
-        <div className="flex-1 overflow-auto rounded-lg border bg-background">
-          <ProductGrid
-            products={currentSession.products}
-            onProductSelect={handleProductSelect}
-          />
-        </div>
-
-        {/* Cart section - takes 1/3 of the space */}
-        <div className="w-1/3 overflow-auto">
-          <Cart ref={cartRef} onComplete={handleSaleComplete} />
+          {/* Cart Section */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm sticky top-20">
+              <Cart ref={cartRef} onComplete={handleSaleComplete} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
