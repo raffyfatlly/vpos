@@ -49,9 +49,11 @@ export function SessionSelector() {
         return;
       }
 
+      // Fetch all current products
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*');
+        .select('*')
+        .order('name');
 
       if (productsError) throw productsError;
 
@@ -61,17 +63,33 @@ export function SessionSelector() {
           name: user.username,
           role: user.role,
         };
+
+        // Create a map of existing session products for quick lookup
+        const sessionProductsMap = new Map(
+          sessionData.products.map((p: any) => [p.id, p])
+        );
+
+        // Merge current products with session-specific data
+        const mergedProducts = productsData.map(product => {
+          const sessionProduct = sessionProductsMap.get(product.id);
+          return {
+            ...product,
+            // If this product exists in the session, use its stock values
+            initial_stock: sessionProduct?.initial_stock ?? product.initial_stock ?? 0,
+            current_stock: sessionProduct?.current_stock ?? product.current_stock ?? 0,
+          };
+        });
         
         const session = {
           ...sessionData,
           staff: sessionData.staff as SessionStaff[],
-          products: productsData || [],
+          products: mergedProducts,
           sales: sessionData.sales || [],
           variations: sessionData.variations || [],
         };
 
         console.log("Selected session data:", session);
-        console.log("Products loaded:", productsData);
+        console.log("Products loaded:", mergedProducts);
         
         setSelectedSessionId(sessionId);
         setCurrentSession(session);
@@ -79,7 +97,7 @@ export function SessionSelector() {
 
         toast({
           title: "Session loaded",
-          description: `Loaded ${productsData.length} products`,
+          description: `Loaded ${mergedProducts.length} products`,
         });
       }
     } catch (error: any) {
