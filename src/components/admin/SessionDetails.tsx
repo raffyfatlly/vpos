@@ -32,27 +32,24 @@ export function SessionDetails({
           schema: 'public',
           table: 'products',
         },
-        async () => {
-          // Fetch latest product data
-          const { data: products } = await supabase
-            .from('products')
-            .select('*');
-
-          if (products) {
-            // Update session with latest product data
+        (payload) => {
+          // Only update if this is not our own update
+          if (payload.eventType === 'UPDATE') {
+            const updatedProduct = payload.new;
+            
+            // Update session with the changed product
             setSession(prevSession => ({
               ...prevSession,
-              products: prevSession.products.map(existingProduct => {
-                const updatedProduct = products.find(p => p.id === existingProduct.id);
-                if (!updatedProduct) return existingProduct;
-                
-                return {
-                  ...updatedProduct,
-                  session_id: prevSession.id,
-                  initial_stock: existingProduct.initial_stock, // Preserve existing initial_stock
-                  current_stock: updatedProduct.current_stock // Use updated current_stock
-                };
-              })
+              products: prevSession.products.map(existingProduct => 
+                existingProduct.id === updatedProduct.id
+                  ? {
+                      ...existingProduct,
+                      current_stock: updatedProduct.current_stock,
+                      // Keep the existing initial_stock
+                      initial_stock: existingProduct.initial_stock
+                    }
+                  : existingProduct
+              )
             }));
           }
         }
