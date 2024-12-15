@@ -57,9 +57,7 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-20 bg-white border-b shadow-sm">
-        <SessionIndicator />
-      </div>
+      <SessionIndicator />
       
       <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4">
@@ -83,7 +81,7 @@ const POS = () => {
           </div>
 
           {/* Cart Section - Sticky on mobile */}
-          <div className="lg:col-span-1 order-1 lg:order-2 sticky top-[120px] z-10">
+          <div className="lg:col-span-1 order-1 lg:order-2 sticky top-[65px] z-10">
             <div className="bg-white rounded-lg shadow-sm">
               <Cart ref={cartRef} onComplete={handleSaleComplete} />
             </div>
