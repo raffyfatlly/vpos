@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface InventoryManagementProps {
   products: SessionProduct[];
@@ -22,8 +23,8 @@ const MAX_INTEGER = 2147483647; // PostgreSQL integer maximum value
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
-  // Initialize stockUpdates with current initial_stock values
   useEffect(() => {
     const initialValues: Record<number, number> = {};
     products.forEach(product => {
@@ -35,7 +36,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   const handleStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
     
-    // Validate the input value
     if (newStock > MAX_INTEGER) {
       toast({
         title: "Invalid stock value",
@@ -54,7 +54,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   const handleUpdateStock = async (productId: number) => {
     const newInitialStock = stockUpdates[productId];
     if (newInitialStock !== undefined) {
-      // Additional validation before update
       if (newInitialStock > MAX_INTEGER) {
         toast({
           title: "Invalid stock value",
@@ -81,6 +80,43 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
       }
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {products.map((product) => (
+          <div 
+            key={product.id}
+            className="bg-card p-4 rounded-lg border space-y-3"
+          >
+            <div className="font-medium">{product.name}</div>
+            <div className="text-sm text-muted-foreground">
+              Price: ${product.price.toFixed(2)}
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>Initial Stock: {product.initial_stock}</div>
+              <div>Current Stock: {product.current_stock}</div>
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="number"
+                className="w-full"
+                onChange={(e) => handleStockChange(product.id, e.target.value)}
+                value={stockUpdates[product.id]}
+              />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleUpdateStock(product.id)}
+              >
+                Update Stock
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col space-y-4">
