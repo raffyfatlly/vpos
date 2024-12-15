@@ -3,6 +3,12 @@ import { Session, SessionProduct } from "@/types/pos";
 import { supabase } from "@/lib/supabase";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
+type ProductPayload = {
+  id: number;
+  initial_stock: number;
+  current_stock: number;
+};
+
 export function useInventoryUpdates(initialSession: Session, onSessionUpdate: (session: Session) => void) {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -16,13 +22,14 @@ export function useInventoryUpdates(initialSession: Session, onSessionUpdate: (s
           schema: 'public',
           table: 'products',
         },
-        async (payload: RealtimePostgresChangesPayload<{ id: number; initial_stock: number; current_stock: number }>) => {
+        async (payload: RealtimePostgresChangesPayload<ProductPayload>) => {
           console.log('Product update received:', payload);
           
           if (isUpdating) return;
 
           try {
-            if (!payload.new?.id) {
+            // Check if payload.new exists and has an id
+            if (!payload.new || !('id' in payload.new)) {
               console.error('Invalid payload received:', payload);
               return;
             }
@@ -70,6 +77,12 @@ export function useInventoryUpdates(initialSession: Session, onSessionUpdate: (s
           if (isUpdating) return;
 
           try {
+            // Check if payload.new exists and has an id
+            if (!payload.new || !('id' in payload.new)) {
+              console.error('Invalid payload received:', payload);
+              return;
+            }
+
             const { data: sessionData, error: sessionError } = await supabase
               .from('sessions')
               .select('*')
