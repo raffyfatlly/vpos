@@ -4,8 +4,8 @@ interface SessionLayoutProps {
 
 export function SessionLayout({ children }: SessionLayoutProps) {
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background">
-      <div className="container mx-auto max-w-[1600px] p-6 h-full">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto max-w-[1600px] p-6">
         {children}
       </div>
     </div>
