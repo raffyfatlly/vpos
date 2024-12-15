@@ -52,10 +52,18 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      // Delete from auth.users (this will cascade to profiles due to FK constraint)
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
 
-      if (deleteError) throw deleteError;
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
 
       toast({
         title: "User deleted",
