@@ -83,7 +83,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium text-muted-foreground">Total Sales (Active Sessions)</span>
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <p className="text-2xl font-semibold">${totalSales.toFixed(2)}</p>
+            <p className="text-2xl font-semibold">RM {totalSales.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">From active sessions only</p>
           </div>
         </Card>
