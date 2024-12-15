@@ -5,20 +5,25 @@ import { InventoryManagement } from "./InventoryManagement";
 import { SalesOverview } from "./SalesOverview";
 import { SalesHistory } from "./SalesHistory";
 import { supabase } from "@/lib/supabase";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SessionDetailsProps {
   session: Session;
   onUpdateStock: (productId: number, newInitialStock: number) => void;
+  onBack?: () => void;
 }
 
 export function SessionDetails({ 
   session: initialSession, 
   onUpdateStock,
+  onBack
 }: SessionDetailsProps) {
   const [session, setSession] = useState<Session>(initialSession);
   const [isUpdating, setIsUpdating] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Subscribe to product updates
   useEffect(() => {
     // First, sync with initial session data
     setSession(initialSession);
@@ -122,24 +127,46 @@ export function SessionDetails({
   };
 
   return (
-    <Tabs defaultValue="inventory" className="w-full">
-      <TabsList className="w-full">
-        <TabsTrigger value="inventory" className="flex-1">Inventory</TabsTrigger>
-        <TabsTrigger value="overview" className="flex-1">Sales Overview</TabsTrigger>
-        <TabsTrigger value="history" className="flex-1">Sales History</TabsTrigger>
-      </TabsList>
-      <TabsContent value="inventory">
-        <InventoryManagement 
-          products={session.products} 
-          onUpdateStock={handleUpdateStock}
-        />
-      </TabsContent>
-      <TabsContent value="overview">
-        <SalesOverview session={session} />
-      </TabsContent>
-      <TabsContent value="history">
-        <SalesHistory session={session} />
-      </TabsContent>
-    </Tabs>
+    <div className="flex flex-col w-full gap-4">
+      {isMobile && onBack && (
+        <Button
+          variant="ghost"
+          className="self-start -ml-2 text-muted-foreground"
+          onClick={onBack}
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Back to Sessions
+        </Button>
+      )}
+      
+      <Tabs defaultValue="inventory" className="w-full">
+        <TabsList className="w-full grid grid-cols-3 h-auto gap-2 bg-transparent">
+          <TabsTrigger value="inventory" className="data-[state=active]:bg-primary/10">
+            Inventory
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="data-[state=active]:bg-primary/10">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-primary/10">
+            History
+          </TabsTrigger>
+        </TabsList>
+
+        <div className="mt-4">
+          <TabsContent value="inventory" className="m-0">
+            <InventoryManagement 
+              products={session.products} 
+              onUpdateStock={handleUpdateStock}
+            />
+          </TabsContent>
+          <TabsContent value="overview" className="m-0">
+            <SalesOverview session={session} />
+          </TabsContent>
+          <TabsContent value="history" className="m-0">
+            <SalesHistory session={session} />
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   );
 }

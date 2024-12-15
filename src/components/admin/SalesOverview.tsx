@@ -1,4 +1,5 @@
 import { Session } from "@/types/pos";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface SalesOverviewProps {
   session: Session;
@@ -11,14 +12,18 @@ export function SalesOverview({ session }: SalesOverviewProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div className="rounded-lg border p-4">
-        <h3 className="font-semibold">Total Sales</h3>
-        <p className="text-2xl">${calculateTotalSales().toFixed(2)}</p>
-      </div>
-      <div className="rounded-lg border p-4">
-        <h3 className="font-semibold">Total Transactions</h3>
-        <p className="text-2xl">{session.sales?.length || 0}</p>
-      </div>
+      <Card className="card-gradient">
+        <CardContent className="p-6">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Sales</h3>
+          <p className="text-2xl font-semibold">${calculateTotalSales().toFixed(2)}</p>
+        </CardContent>
+      </Card>
+      <Card className="card-gradient">
+        <CardContent className="p-6">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Transactions</h3>
+          <p className="text-2xl font-semibold">{session.sales?.length || 0}</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
