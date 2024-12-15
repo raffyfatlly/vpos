@@ -4,16 +4,23 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
 
-export function SessionList({ sessions, onSessionUpdate }: { 
+export function SessionList({ 
+  sessions, 
+  onSessionUpdate,
+  onSelect,
+  selectedSession 
+}: { 
   sessions: Session[]; 
   onSessionUpdate: (updatedSession: Session) => void;
+  onSelect: (session: Session) => void;
+  selectedSession: Session | null;
 }) {
   const { toast } = useToast();
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
 
   const handleToggleActive = async (session: Session) => {
     try {
-      const newStatus = session.status === "active" ? "completed" : "active";
+      const newStatus = session.status === "active" ? "completed" : "active" as const;
       
       // Update local state immediately for UI feedback
       const updatedLocalSessions = localSessions.map(s => 
@@ -30,7 +37,7 @@ export function SessionList({ sessions, onSessionUpdate }: {
       if (error) throw error;
 
       // Call the parent update handler
-      const updatedSession: Session = { ...session, status: newStatus };
+      const updatedSession = { ...session, status: newStatus };
       onSessionUpdate(updatedSession);
 
       toast({
@@ -53,7 +60,10 @@ export function SessionList({ sessions, onSessionUpdate }: {
       {localSessions.map((session) => (
         <div
           key={session.id}
-          className="flex items-center justify-between p-4 bg-white rounded-lg shadow transition-all duration-200"
+          className={`flex items-center justify-between p-4 bg-white rounded-lg shadow transition-all duration-200 cursor-pointer hover:shadow-md ${
+            selectedSession?.id === session.id ? 'ring-2 ring-primary' : ''
+          }`}
+          onClick={() => onSelect(session)}
         >
           <div className="flex-1">
             <h3 className="text-lg font-semibold">{session.name}</h3>
@@ -70,7 +80,10 @@ export function SessionList({ sessions, onSessionUpdate }: {
             
             <Toggle
               pressed={session.status === "completed"}
-              onPressedChange={() => handleToggleActive(session)}
+              onPressedChange={(e) => {
+                e.stopPropagation();
+                handleToggleActive(session);
+              }}
               className="data-[state=on]:bg-green-500"
             >
               {session.status === "active" ? "Mark Complete" : "Reactivate"}

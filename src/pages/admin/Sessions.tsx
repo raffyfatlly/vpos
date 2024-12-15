@@ -112,6 +112,8 @@ const Sessions = () => {
           <SessionList
             sessions={sessions}
             onSessionUpdate={updateSession.mutateAsync}
+            onSelect={setSelectedSession}
+            selectedSession={selectedSession}
           />
         </div>
         

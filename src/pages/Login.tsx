@@ -31,7 +31,7 @@ export default function Login() {
         await login(username, password);
         toast({
           title: "Login successful",
-          description: "Welcome to Vanillicious!",
+          description: "Welcome back!",
         });
         navigate("/admin/sessions");
       }
@@ -45,24 +45,23 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-amber-50 to-orange-50">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-orange-600 mb-2">Vanillicious</h1>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-            {isSignUp ? "Create an account" : "Welcome back!"}
+          <h2 className="text-2xl font-semibold text-foreground mb-1">
+            {isSignUp ? "Create an account" : "Welcome back"}
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {isSignUp
-              ? "Sign up to start your sweet journey"
-              : "Sign in to manage your ice cream business"}
+              ? "Sign up to get started"
+              : "Sign in to your account"}
           </p>
         </div>
         
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-sm font-medium text-foreground">
                 Email
               </label>
               <Input
@@ -76,7 +75,7 @@ export default function Login() {
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground">
                 Password
               </label>
               <Input
@@ -90,7 +89,7 @@ export default function Login() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
+          <Button type="submit" className="w-full">
             {isSignUp ? "Sign up" : "Sign in"}
           </Button>
 
@@ -98,7 +97,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-orange-600 hover:text-orange-500"
+              className="text-sm text-primary hover:underline"
             >
               {isSignUp
                 ? "Already have an account? Sign in"
