@@ -41,10 +41,14 @@ export default function Dashboard() {
     },
   });
 
-  // Calculate total sales from all sessions
+  // Calculate total sales from active sessions only
   const totalSales = sessionsData?.reduce((total, session) => {
-    return total + (session.sales?.reduce((sessionTotal, sale) => 
-      sessionTotal + (sale.total || 0), 0) || 0);
+    // Only count sales if session is active
+    if (session.status === 'active') {
+      return total + (session.sales?.reduce((sessionTotal, sale) => 
+        sessionTotal + (sale.total || 0), 0) || 0);
+    }
+    return total;
   }, 0) || 0;
 
   // Count products with low stock (less than 10 items)
@@ -76,11 +80,11 @@ export default function Dashboard() {
         <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Total Sales</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Sales (Active Sessions)</span>
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
             <p className="text-2xl font-semibold">${totalSales.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">From all active sessions</p>
+            <p className="text-xs text-muted-foreground">From active sessions only</p>
           </div>
         </Card>
         
