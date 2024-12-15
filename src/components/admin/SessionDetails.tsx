@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Session, SessionProduct } from "@/types/pos";
 import { SalesOverview } from "@/components/admin/SalesOverview";
+import { InventoryTable } from "@/components/admin/sessions/inventory/InventoryTable";
 
 interface SessionDetailsProps {
   session: Session;
@@ -13,6 +13,11 @@ interface SessionDetailsProps {
 export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) {
   const [products, setProducts] = useState(session.products);
   const { toast } = useToast();
+
+  const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
 
   useEffect(() => {
     const fetchSessionInventory = async () => {
@@ -26,7 +31,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
         return;
       }
 
-      // Map inventory data to products
       const updatedProducts = products.map(product => {
         const inventory = inventoryData?.find(inv => inv.product_id === product.id);
         if (inventory) {
@@ -60,7 +64,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
         async (payload: any) => {
           console.log('Received session inventory update:', payload);
           
-          // Fetch updated inventory data for this session
           const { data: inventoryData, error: inventoryError } = await supabase
             .from('session_inventory')
             .select('*')
@@ -71,7 +74,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
             return;
           }
 
-          // Update products with new inventory data
           const updatedProducts = products.map(product => {
             const inventory = inventoryData?.find(inv => inv.product_id === product.id);
             if (inventory) {
@@ -97,7 +99,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
-      // First check if a record exists
       const { data: existingRecord, error: checkError } = await supabase
         .from('session_inventory')
         .select('*')
@@ -105,13 +106,12 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
         .eq('product_id', productId)
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      if (checkError && checkError.code !== 'PGRST116') {
         throw checkError;
       }
 
       let updateError;
       if (existingRecord) {
-        // Update existing record
         const { error } = await supabase
           .from('session_inventory')
           .update({
@@ -123,7 +123,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
         
         updateError = error;
       } else {
-        // Insert new record
         const { error } = await supabase
           .from('session_inventory')
           .insert({
@@ -138,7 +137,6 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
       if (updateError) throw updateError;
 
-      // Update local state
       const updatedProducts = products.map(product =>
         product.id === productId
           ? {
@@ -168,35 +166,17 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   return (
     <div className="space-y-6">
+      <div className="text-sm text-muted-foreground mb-4">
+        Session Date: {formatDate(session.date)}
+      </div>
       <SalesOverview session={session} />
       <div className="rounded-lg border">
         <div className="p-4">
           <h3 className="text-lg font-medium">Session Inventory</h3>
-          <div className="mt-4">
-            <div className="grid grid-cols-3 gap-4 font-medium text-sm text-gray-500 mb-2">
-              <div>Product</div>
-              <div>Initial Stock</div>
-              <div>Current Stock</div>
-            </div>
-            {products.map((product: SessionProduct) => (
-              <div key={product.id} className="grid grid-cols-3 gap-4 py-2 border-t items-center">
-                <div>{product.name}</div>
-                <div>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={product.initial_stock || 0}
-                    onChange={(e) => {
-                      const newValue = parseInt(e.target.value) || 0;
-                      handleInitialStockChange(product.id, newValue);
-                    }}
-                    className="w-24"
-                  />
-                </div>
-                <div>{product.current_stock || 0}</div>
-              </div>
-            ))}
-          </div>
+          <InventoryTable 
+            products={products}
+            onInitialStockChange={handleInitialStockChange}
+          />
         </div>
       </div>
     </div>
