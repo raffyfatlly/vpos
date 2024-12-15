@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,13 +16,13 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(username, password);
+      await login(email, password);
       
       // Get the user's role from the profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('username', username)
+        .eq('email', email)
         .single();
 
       if (profileError) {
@@ -73,14 +73,14 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-foreground">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground">
                 Email
               </label>
               <Input
-                id="username"
+                id="email"
                 type="email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="mt-1"
               />
