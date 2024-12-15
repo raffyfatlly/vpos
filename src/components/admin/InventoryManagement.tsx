@@ -9,10 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InventoryManagementProps {
   session: Session;
@@ -22,36 +21,6 @@ interface InventoryManagementProps {
 export function InventoryManagement({ session }: InventoryManagementProps) {
   const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
-
-  const { data: products, isLoading, refetch } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-
-      // If product has null current_stock, set it to initial_stock
-      const updatedData = data.map(product => ({
-        ...product,
-        current_stock: product.current_stock === null ? product.initial_stock : product.current_stock
-      }));
-
-      // Update products with null current_stock in database
-      updatedData.forEach(async (product) => {
-        if (data.find(p => p.id === product.id).current_stock === null) {
-          await supabase
-            .from('products')
-            .update({ current_stock: product.initial_stock })
-            .eq('id', product.id);
-        }
-      });
-
-      return updatedData;
-    }
-  });
 
   const handleInitialStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
@@ -95,9 +64,6 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
           const { [productId]: _, ...rest } = prev;
           return rest;
         });
-
-        // Refresh the products list
-        refetch();
       } catch (error) {
         console.error('Error updating stock:', error);
         toast({
@@ -108,10 +74,6 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
       }
     }
   };
-
-  if (isLoading) {
-    return <div>Loading products...</div>;
-  }
 
   return (
     <div className="rounded-md border">
@@ -127,7 +89,7 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products?.map((product) => (
+          {session.products.map((product) => (
             <TableRow key={product.id}>
               <TableCell>{product.name}</TableCell>
               <TableCell>${product.price.toFixed(2)}</TableCell>
