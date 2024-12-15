@@ -25,6 +25,11 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
+  // If no session is selected, show session selector
+  if (!currentSession || !currentStaff) {
+    return <SessionSelector />;
+  }
+
   const handleProductSelect = (product: SessionProduct) => {
     if (cartRef.current) {
       cartRef.current.addProduct(product);
@@ -36,31 +41,41 @@ const POS = () => {
   };
 
   const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    console.log("Sale completed:", saleData);
+    // Add the sale to the session
+    console.log("Sale completed:", {
+      ...saleData,
+      sessionId: currentSession.id,
+      staffId: currentStaff.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    toast({
+      title: "Sale completed",
+      description: `Total: RM${saleData.total.toFixed(2)}`,
+    });
   };
 
-  if (!currentSession || !currentStaff) {
-    return <SessionSelector />;
-  }
-
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {/* Header with session info */}
       <div className="flex-none">
         <SessionIndicator />
       </div>
 
-      {/* Products Section */}
-      <div className="flex-1 overflow-auto">
-        <ProductGrid
-          products={currentSession.products}
-          onProductSelect={handleProductSelect}
-        />
-      </div>
+      {/* Main content area */}
+      <div className="flex flex-1 gap-4 p-4 overflow-hidden">
+        {/* Products grid - takes 2/3 of the space */}
+        <div className="flex-1 overflow-auto rounded-lg border bg-background">
+          <ProductGrid
+            products={currentSession.products}
+            onProductSelect={handleProductSelect}
+          />
+        </div>
 
-      {/* Cart/Calculator Section */}
-      <div className="flex-none mt-4">
-        <Cart ref={cartRef} onComplete={handleSaleComplete} />
+        {/* Cart section - takes 1/3 of the space */}
+        <div className="w-1/3 overflow-auto">
+          <Cart ref={cartRef} onComplete={handleSaleComplete} />
+        </div>
       </div>
     </div>
   );

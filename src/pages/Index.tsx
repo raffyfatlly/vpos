@@ -1,5 +1,4 @@
 import { Navigate } from "react-router-dom";
-import { UserRole } from "@/types/pos";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
@@ -9,8 +8,8 @@ const Index = () => {
     return <Navigate to="/login" replace />;
   }
   
-  // For users with admin or both roles, redirect to admin products
-  // For cashiers, redirect to session selection
+  // For cashiers, redirect to sessions page first
+  // For admins, redirect to products page
   const redirectPath = user.role === "cashier" ? "/admin/sessions" : "/admin/products";
   
   return <Navigate to={redirectPath} replace />;
