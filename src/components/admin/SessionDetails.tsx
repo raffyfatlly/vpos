@@ -28,8 +28,8 @@ export function SessionDetails({
     // First, sync with initial session data
     setSession(initialSession);
 
-    // Then subscribe to product updates
-    const channel = supabase
+    // Subscribe to both session and product updates
+    const productsChannel = supabase
       .channel('product_updates')
       .on(
         'postgres_changes',
@@ -38,31 +38,32 @@ export function SessionDetails({
           schema: 'public',
           table: 'products',
         },
-        (payload) => {
+        async (payload) => {
           console.log('Product update received:', payload);
           
           // Skip if we're currently performing our own update
           if (isUpdating) return;
 
-          // Only update if this is an UPDATE event
-          if (payload.eventType === 'UPDATE') {
-            const updatedProduct = payload.new;
-            
-            setSession(prevSession => {
-              // Find if this product exists in our session
-              const productExists = prevSession.products.some(p => p.id === updatedProduct.id);
-              
-              if (!productExists) return prevSession;
+          try {
+            // Fetch the latest product data
+            const { data: updatedProduct, error: productError } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', payload.new.id)
+              .single();
 
-              // Update both initial_stock and current_stock in our session state
-              const updatedProducts = prevSession.products.map(existingProduct => 
-                existingProduct.id === updatedProduct.id
+            if (productError) throw productError;
+
+            // Update session state with new product data
+            setSession(prevSession => {
+              const updatedProducts = prevSession.products.map(product =>
+                product.id === updatedProduct.id
                   ? {
-                      ...existingProduct,
+                      ...product,
                       initial_stock: updatedProduct.initial_stock,
                       current_stock: updatedProduct.current_stock
                     }
-                  : existingProduct
+                  : product
               );
 
               console.log('Updated products after real-time update:', updatedProducts);
@@ -72,13 +73,50 @@ export function SessionDetails({
                 products: updatedProducts
               };
             });
+          } catch (error) {
+            console.error('Error handling product update:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to session updates
+    const sessionChannel = supabase
+      .channel('session_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sessions',
+          filter: `id=eq.${initialSession.id}`,
+        },
+        async (payload) => {
+          console.log('Session update received:', payload);
+          
+          if (isUpdating) return;
+
+          try {
+            // Fetch the latest session data
+            const { data: sessionData, error: sessionError } = await supabase
+              .from('sessions')
+              .select('*')
+              .eq('id', initialSession.id)
+              .single();
+
+            if (sessionError) throw sessionError;
+
+            setSession(sessionData);
+          } catch (error) {
+            console.error('Error handling session update:', error);
           }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(sessionChannel);
     };
   }, [initialSession, isUpdating]);
 
@@ -101,7 +139,7 @@ export function SessionDetails({
       if (updateError) throw updateError;
 
       if (data && data[0]) {
-        // Update local state immediately with the returned data
+        // Update local state immediately
         setSession(prevSession => ({
           ...prevSession,
           products: prevSession.products.map(product => 
