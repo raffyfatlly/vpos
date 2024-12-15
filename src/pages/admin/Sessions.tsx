@@ -155,6 +155,7 @@ const Sessions = () => {
           <SessionPanel 
             title={selectedSession.location}
             subtitle={selectedSession.date}
+            height="large"
           >
             <SessionDetails
               session={selectedSession}
@@ -162,7 +163,7 @@ const Sessions = () => {
             />
           </SessionPanel>
         ) : (
-          <SessionPanel title="Session Details">
+          <SessionPanel title="Session Details" height="large">
             <div className="flex items-center justify-center h-full text-muted-foreground">
               Select a session to view details
             </div>
