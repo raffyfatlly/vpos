@@ -82,10 +82,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
     }
   };
 
-  // Add console logs to debug the values
-  console.log('Products received:', products);
-  console.log('Current stock updates state:', stockUpdates);
-
   return (
     <div className="h-full flex flex-col space-y-4">
       <div className="flex-1 overflow-auto border rounded-lg">
@@ -101,40 +97,33 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => {
-              // Debug log for each product
-              console.log(`Product ${product.id} initial_stock:`, product.initial_stock);
-              console.log(`Product ${product.id} stockUpdates value:`, stockUpdates[product.id]);
-              
-              return (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">
-                    {product.name}
-                  </TableCell>
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
-                  <TableCell>{product.initial_stock}</TableCell>
-                  <TableCell>{product.current_stock}</TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      className="w-32"
-                      onChange={(e) => handleStockChange(product.id, e.target.value)}
-                      value={stockUpdates[product.id] ?? product.initial_stock}
-                      max={MAX_INTEGER}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateStock(product.id)}
-                    >
-                      Update Stock
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">
+                  {product.name}
+                </TableCell>
+                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.initial_stock}</TableCell>
+                <TableCell>{product.current_stock}</TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    className="w-32"
+                    onChange={(e) => handleStockChange(product.id, e.target.value)}
+                    value={stockUpdates[product.id]}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUpdateStock(product.id)}
+                  >
+                    Update Stock
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
