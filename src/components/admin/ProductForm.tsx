@@ -50,7 +50,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       category,
       initial_stock: parsedInitialStock,
       current_stock: parsedInitialStock,
-      variations: product?.variations || []
+      variations: product?.variations || [],
+      session_id: product?.session_id || '' // Add session_id with fallback
     };
 
     await onSubmit(productData);

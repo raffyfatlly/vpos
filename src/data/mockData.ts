@@ -8,7 +8,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     category: "Apparel",
     image: "/placeholder.svg",
     initial_stock: 0,
-    current_stock: 0
+    current_stock: 0,
+    session_id: "1" // Add session_id
   },
   {
     id: 2,
@@ -17,7 +18,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     category: "Apparel",
     image: "/placeholder.svg",
     initial_stock: 0,
-    current_stock: 0
+    current_stock: 0,
+    session_id: "1" // Add session_id
   },
   {
     id: 3,
@@ -26,7 +28,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     category: "Accessories",
     image: "/placeholder.svg",
     initial_stock: 0,
-    current_stock: 0
+    current_stock: 0,
+    session_id: "1" // Add session_id
   },
   {
     id: 4,
@@ -35,7 +38,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     category: "Merchandise",
     image: "/placeholder.svg",
     initial_stock: 0,
-    current_stock: 0
+    current_stock: 0,
+    session_id: "1" // Add session_id
   }
 ];
 

@@ -33,7 +33,8 @@ export default function Products() {
           price: Number(v.price) || 0
         })) as ProductVariation[],
         initial_stock: product.initial_stock || 0,
-        current_stock: product.current_stock || 0
+        current_stock: product.current_stock || 0,
+        session_id: product.session_id || '' // Add session_id with fallback
       }));
       
       setProducts(transformedProducts);
@@ -64,7 +65,8 @@ export default function Products() {
             image: productData.image,
             variations: productData.variations,
             initial_stock: productData.initial_stock,
-            current_stock: productData.current_stock
+            current_stock: productData.current_stock,
+            session_id: productData.session_id // Include session_id in update
           })
           .eq('id', editingProduct.id);
 
@@ -85,7 +87,8 @@ export default function Products() {
             image: productData.image,
             variations: productData.variations,
             initial_stock: productData.initial_stock,
-            current_stock: productData.current_stock
+            current_stock: productData.current_stock,
+            session_id: productData.session_id // Include session_id in insert
           }]);
 
         if (error) throw error;
