@@ -3,7 +3,7 @@ import { SessionProduct, ProductVariation } from "@/types/pos";
 
 export const useCartOperations = (
   items: CartItem[],
-  setItems: (items: CartItem[]) => void,
+  setItems: React.Dispatch<React.SetStateAction<CartItem[]>>,
   toast: any
 ) => {
   const addProduct = (product: SessionProduct) => {
@@ -16,7 +16,7 @@ export const useCartOperations = (
       return;
     }
 
-    setItems((current: CartItem[]) => {
+    setItems(current => {
       const existingItem = current.find((item) => 
         item.id === product.id && 
         !item.selectedVariation
@@ -43,7 +43,7 @@ export const useCartOperations = (
   };
 
   const updateQuantity = (id: number, delta: number) => {
-    setItems((current: CartItem[]) => {
+    setItems(current => {
       const updatedItems = current.map((item) => {
         if (item.id === id) {
           const newQuantity = Math.max(0, item.quantity + delta);
@@ -64,7 +64,7 @@ export const useCartOperations = (
   };
 
   const applyDiscount = (id: number, discountAmount: number) => {
-    setItems((current: CartItem[]) =>
+    setItems(current =>
       current.map((item) =>
         item.id === id
           ? { ...item, discount: Math.max(0, discountAmount) }
@@ -74,7 +74,7 @@ export const useCartOperations = (
   };
 
   const selectVariation = (id: number, variation: ProductVariation | undefined) => {
-    setItems((current: CartItem[]) =>
+    setItems(current =>
       current.map((item) =>
         item.id === id
           ? { ...item, selectedVariation: variation }

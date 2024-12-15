@@ -23,11 +23,11 @@ export const useCartCheckout = (
 
     // Update products in the database
     for (const item of items) {
+      const newStock = item.currentStock - item.quantity;
+      
       const { error } = await supabase
         .from('products')
-        .update({ 
-          current_stock: item.currentStock - item.quantity 
-        })
+        .update({ current_stock: newStock })
         .eq('id', item.id);
 
       if (error) {
@@ -36,19 +36,7 @@ export const useCartCheckout = (
       }
     }
 
-    // Update products in the current session
-    const updatedProducts = currentSession.products.map(product => {
-      const soldItem = items.find(item => item.id === product.id);
-      if (soldItem) {
-        return {
-          ...product,
-          currentStock: product.currentStock - soldItem.quantity
-        };
-      }
-      return product;
-    });
-
-    // Update session in database with new products and sale
+    // Create sale data
     const saleData: SaleData = {
       id: uuidv4(),
       products: items.map((item) => ({
@@ -65,6 +53,19 @@ export const useCartCheckout = (
       timestamp: new Date().toISOString()
     };
 
+    // Update session products with new stock levels
+    const updatedProducts = currentSession.products.map(product => {
+      const soldItem = items.find(item => item.id === product.id);
+      if (soldItem) {
+        return {
+          ...product,
+          currentStock: product.currentStock - soldItem.quantity
+        };
+      }
+      return product;
+    });
+
+    // Update session in database with new products and sale
     const { error: sessionError } = await supabase
       .from('sessions')
       .update({
@@ -88,7 +89,7 @@ export const useCartCheckout = (
     return saleData;
   };
 
-  const handleCheckout = async (onComplete: (saleData: SaleData) => void) => {
+  const handleCheckout = async (onComplete: (sale: SaleData) => void) => {
     const total = getTotal();
     const payment = parseFloat(paymentAmount);
     
