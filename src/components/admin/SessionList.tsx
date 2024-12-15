@@ -27,23 +27,16 @@ export function SessionList({
     try {
       const newStatus = session.status === "active" ? "completed" : "active";
       
-      // Create updated session object first
-      const updatedSession: Session = {
+      // Create updated session object
+      const updatedSession = {
         ...session,
         status: newStatus
       };
 
-      // Update local state immediately for responsive UI
-      const updatedSessions = sessions.map(s => 
-        s.id === session.id ? updatedSession : s
-      );
-      updatedSessions.forEach(s => {
-        if (s.id === session.id) {
-          onSelect(updatedSession);
-        }
-      });
+      // Update local state immediately
+      onSelect(updatedSession);
 
-      // Then update the database
+      // Update the database
       const { error } = await supabase
         .from('sessions')
         .update({ status: newStatus })
@@ -103,10 +96,10 @@ export function SessionList({
                     checked={session.status === "active"}
                     onCheckedChange={() => handleToggleActive(session)}
                     onClick={(e) => e.stopPropagation()}
-                    className="transition-transform duration-200"
+                    className="data-[state=checked]:bg-green-500 transition-all duration-200"
                   />
                   <span className={cn(
-                    "text-sm font-medium transition-colors duration-200",
+                    "text-sm font-medium transition-all duration-200",
                     session.status === "active" ? "text-green-600" : "text-muted-foreground"
                   )}>
                     {session.status === "active" ? "Active" : "Completed"}
