@@ -13,9 +13,9 @@ const Index = () => {
     return <Navigate to="/cashier" replace />;
   }
   
-  // For admin or both roles, redirect to products page
+  // For admin or both roles, redirect to dashboard
   if (user.role === "admin" || user.role === "both") {
-    return <Navigate to="/admin/products" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
   
   // Fallback redirect to login if somehow role is invalid

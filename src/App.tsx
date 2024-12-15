@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Products from "./pages/admin/Products";
 import Sessions from "./pages/admin/Sessions";
+import Dashboard from "./pages/admin/Dashboard";
 import POS from "./pages/cashier/POS";
 import Login from "./pages/Login";
 import "./App.css";
@@ -27,6 +28,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Layout><Index /></Layout>} />
+                <Route path="/admin/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/admin/products" element={<Layout><Products /></Layout>} />
                 <Route path="/admin/sessions" element={<Layout><Sessions /></Layout>} />
                 <Route path="/cashier" element={<Layout><POS /></Layout>} />
