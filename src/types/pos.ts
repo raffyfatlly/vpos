@@ -33,7 +33,7 @@ export type Session = {
 export type SessionLog = {
   id: string;
   sessionId: string;
-  staffId: string;
+  userId: string;
   action: string;
   timestamp: string;
 };
@@ -60,12 +60,4 @@ export type AuthUser = {
   username: string;
   password: string;
   role: UserRole;
-};
-
-export type SessionLog = {
-  id: string;
-  sessionId: string;
-  userId: string;
-  action: string;
-  timestamp: string;
 };
