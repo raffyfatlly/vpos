@@ -15,12 +15,14 @@ const POS = () => {
   const { user } = useAuth();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
 
+  // Redirect if not logged in
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== "cashier") {
-    return <Navigate to="/" />;
+  // Check if user has cashier access
+  if (user.role !== "cashier" && user.role !== "both") {
+    return <Navigate to="/" replace />;
   }
 
   const handleProductSelect = (product: SessionProduct) => {

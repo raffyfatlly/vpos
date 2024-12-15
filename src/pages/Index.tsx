@@ -4,9 +4,15 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const { user } = useAuth();
-  const userRole = user?.role || "cashier";
   
-  return <Navigate to={userRole === "admin" ? "/admin/products" : "/cashier"} replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // For users with both roles, default to admin view
+  const redirectPath = user.role === "cashier" ? "/cashier" : "/admin/products";
+  
+  return <Navigate to={redirectPath} replace />;
 };
 
 export default Index;
