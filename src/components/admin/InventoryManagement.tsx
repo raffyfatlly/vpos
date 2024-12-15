@@ -30,14 +30,14 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   };
 
   const handleUpdateStock = async (productId: number) => {
-    const newStock = stockUpdates[productId];
-    if (newStock !== undefined) {
+    const newInitialStock = stockUpdates[productId];
+    if (newInitialStock !== undefined) {
       try {
-        await onUpdateStock(productId, newStock);
+        await onUpdateStock(productId, newInitialStock);
 
         toast({
           title: "Stock Updated",
-          description: "Stock value has been updated successfully.",
+          description: "Initial stock value has been updated successfully.",
         });
 
         setStockUpdates(prev => {
@@ -63,8 +63,9 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
             <TableRow className="hover:bg-background">
               <TableHead className="w-[250px]">Product Name</TableHead>
               <TableHead className="w-[120px]">Price</TableHead>
+              <TableHead className="w-[150px]">Initial Stock</TableHead>
               <TableHead className="w-[150px]">Current Stock</TableHead>
-              <TableHead className="w-[150px]">Update Stock</TableHead>
+              <TableHead className="w-[150px]">Update Initial Stock</TableHead>
               <TableHead className="w-[180px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -75,11 +76,12 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.initial_stock}</TableCell>
                 <TableCell>{product.current_stock}</TableCell>
                 <TableCell>
                   <Input
                     type="number"
-                    placeholder="New stock value"
+                    placeholder="New initial stock"
                     className="w-32"
                     onChange={(e) => handleStockChange(product.id, e.target.value)}
                     value={stockUpdates[product.id] || ''}
