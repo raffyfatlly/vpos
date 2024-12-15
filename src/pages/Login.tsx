@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,33 +16,6 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(email, password);
-      
-      // Get the user's profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        toast({
-          title: "Error",
-          description: "Could not fetch user profile",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (profile) {
-        // Redirect based on role
-        if (profile.role === 'admin' || profile.role === 'both') {
-          navigate("/admin/dashboard", { replace: true });
-        } else if (profile.role === 'cashier') {
-          navigate("/cashier", { replace: true });
-        }
-      }
-      
       toast({
         title: "Login successful",
         description: "Welcome back!",
