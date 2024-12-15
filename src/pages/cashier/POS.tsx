@@ -21,10 +21,11 @@ const POS = () => {
     clearSession();
   }, []);
 
-  // Effect to check session status
+  // Effect to check session status and listen for product updates
   useEffect(() => {
     if (currentSession) {
-      const channel = supabase
+      // Listen for session status changes
+      const sessionChannel = supabase
         .channel('session_status')
         .on(
           'postgres_changes',
@@ -42,13 +43,50 @@ const POS = () => {
                 description: "This session has been marked as completed. Returning to session selection.",
               });
               clearSession();
+            } else {
+              // Update session with new data
+              setCurrentSession(updatedSession);
+            }
+          }
+        )
+        .subscribe();
+
+      // Listen for product updates
+      const productsChannel = supabase
+        .channel('products_updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'products',
+          },
+          async (payload) => {
+            console.log('Product update received:', payload);
+            
+            // Fetch the latest session data to get updated products
+            const { data: sessionData, error } = await supabase
+              .from('sessions')
+              .select('*')
+              .eq('id', currentSession.id)
+              .single();
+
+            if (error) {
+              console.error('Error fetching updated session:', error);
+              return;
+            }
+
+            if (sessionData) {
+              console.log('Updating session with new data:', sessionData);
+              setCurrentSession(sessionData);
             }
           }
         )
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(sessionChannel);
+        supabase.removeChannel(productsChannel);
       };
     }
   }, [currentSession, toast]);
@@ -61,12 +99,10 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Always show session selector if no active session
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
 
-  // Only show POS interface if session is active
   if (currentSession.status !== "active") {
     clearSession();
     return <SessionSelector />;
