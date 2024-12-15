@@ -34,7 +34,14 @@ export function SessionList({
       };
 
       // Update local state immediately for responsive UI
-      onSelect(updatedSession);
+      const updatedSessions = sessions.map(s => 
+        s.id === session.id ? updatedSession : s
+      );
+      updatedSessions.forEach(s => {
+        if (s.id === session.id) {
+          onSelect(updatedSession);
+        }
+      });
 
       // Then update the database
       const { error } = await supabase
@@ -96,9 +103,10 @@ export function SessionList({
                     checked={session.status === "active"}
                     onCheckedChange={() => handleToggleActive(session)}
                     onClick={(e) => e.stopPropagation()}
+                    className="transition-transform duration-200"
                   />
                   <span className={cn(
-                    "text-sm font-medium",
+                    "text-sm font-medium transition-colors duration-200",
                     session.status === "active" ? "text-green-600" : "text-muted-foreground"
                   )}>
                     {session.status === "active" ? "Active" : "Completed"}
