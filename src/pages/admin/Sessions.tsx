@@ -12,6 +12,7 @@ import { SessionHeader } from "@/components/admin/sessions/SessionHeader";
 import { SessionLayout } from "@/components/admin/sessions/SessionLayout";
 import { SessionGrid } from "@/components/admin/sessions/SessionGrid";
 import { SessionPanel } from "@/components/admin/sessions/SessionPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Sessions = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -19,6 +20,7 @@ const Sessions = () => {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const {
     sessions,
     isLoading,
@@ -141,32 +143,52 @@ const Sessions = () => {
       <SessionHeader onCreateClick={() => setIsCreating(true)} />
       
       <SessionGrid>
-        <SessionPanel title="All Sessions">
-          <SessionList
-            sessions={sessions}
-            onSessionUpdate={updateSession.mutateAsync}
-            onSelect={setSelectedSession}
-            selectedSession={selectedSession}
-            onDelete={handleDeleteSession}
-          />
-        </SessionPanel>
-        
-        {selectedSession ? (
+        {(!isMobile || !selectedSession) && (
           <SessionPanel 
-            title={selectedSession.location}
-            subtitle={selectedSession.date}
-            height="large"
+            title="All Sessions" 
+            height={isMobile ? "large" : "default"}
           >
-            <SessionDetails
-              session={selectedSession}
-              onUpdateStock={handleUpdateStock}
+            <SessionList
+              sessions={sessions}
+              onSessionUpdate={updateSession.mutateAsync}
+              onSelect={(session) => {
+                setSelectedSession(session);
+                if (isMobile) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              selectedSession={selectedSession}
+              onDelete={handleDeleteSession}
             />
           </SessionPanel>
-        ) : (
-          <SessionPanel title="Session Details" height="large">
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              Select a session to view details
-            </div>
+        )}
+        
+        {(!isMobile || selectedSession) && (
+          <SessionPanel 
+            title={selectedSession?.location || "Session Details"}
+            subtitle={selectedSession?.date}
+            height="large"
+          >
+            {selectedSession ? (
+              <>
+                {isMobile && (
+                  <button
+                    onClick={() => setSelectedSession(null)}
+                    className="mb-4 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Sessions
+                  </button>
+                )}
+                <SessionDetails
+                  session={selectedSession}
+                  onUpdateStock={handleUpdateStock}
+                />
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                Select a session to view details
+              </div>
+            )}
           </SessionPanel>
         )}
       </SessionGrid>
