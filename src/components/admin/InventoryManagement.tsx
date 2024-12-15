@@ -43,12 +43,23 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
         if (rpcError) throw rpcError;
 
+        // Update both initial and current stock in the database
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({
+            initial_stock: newInitialStock,
+            current_stock: newCurrentStock
+          })
+          .eq('id', productId);
+
+        if (updateError) throw updateError;
+
         // Call onUpdateStock with both initial and current stock values
         onUpdateStock(productId, newInitialStock, newCurrentStock);
 
         toast({
           title: "Stock Updated",
-          description: "Initial stock has been updated successfully.",
+          description: "Initial and current stock have been updated successfully.",
         });
 
         setInitialStockUpdates(prev => {
@@ -59,7 +70,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
         console.error('Error updating stock:', error);
         toast({
           title: "Error",
-          description: "Failed to update initial stock.",
+          description: "Failed to update stock.",
           variant: "destructive",
         });
       }
