@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSession } from "@/contexts/SessionContext";
 import { useSessions } from "@/hooks/useSessions";
-import { SessionStaff } from "@/types/pos";
+import { SessionStaff, SessionProduct } from "@/types/pos";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,6 +16,13 @@ import { useToast } from "@/hooks/use-toast";
 import { SessionCard } from "./session-selector/SessionCard";
 import { SessionOption } from "./session-selector/SessionOption";
 import { NoActiveSessions } from "./session-selector/NoActiveSessions";
+
+type SessionProductData = {
+  id: number;
+  initial_stock?: number;
+  current_stock?: number;
+  [key: string]: any;
+};
 
 export function SessionSelector() {
   const { sessions, isLoading } = useSessions();
@@ -66,11 +73,11 @@ export function SessionSelector() {
 
         // Create a map of existing session products for quick lookup
         const sessionProductsMap = new Map(
-          sessionData.products.map((p: any) => [p.id, p])
+          (sessionData.products as SessionProductData[]).map((p) => [p.id, p])
         );
 
         // Merge current products with session-specific data
-        const mergedProducts = productsData.map(product => {
+        const mergedProducts = (productsData as SessionProductData[]).map(product => {
           const sessionProduct = sessionProductsMap.get(product.id);
           return {
             ...product,
@@ -83,7 +90,7 @@ export function SessionSelector() {
         const session = {
           ...sessionData,
           staff: sessionData.staff as SessionStaff[],
-          products: mergedProducts,
+          products: mergedProducts as SessionProduct[],
           sales: sessionData.sales || [],
           variations: sessionData.variations || [],
         };
