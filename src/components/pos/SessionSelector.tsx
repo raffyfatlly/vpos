@@ -36,7 +36,6 @@ export function SessionSelector() {
 
   const handleSessionSelect = async (sessionId: string) => {
     try {
-      // First, fetch the session data
       const { data: sessionData, error: sessionError } = await supabase
         .from('sessions')
         .select('*')
@@ -45,7 +44,6 @@ export function SessionSelector() {
 
       if (sessionError) throw sessionError;
 
-      // Then, fetch all products
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*');
@@ -53,18 +51,16 @@ export function SessionSelector() {
       if (productsError) throw productsError;
 
       if (sessionData && user) {
-        // Create a staff entry for the current user
         const staffEntry: SessionStaff = {
           id: user.id,
           name: user.username,
           role: user.role,
         };
         
-        // Convert the raw session data to the correct type and include products
         const session: Session = {
           ...sessionData,
           staff: sessionData.staff as SessionStaff[],
-          products: productsData || [], // Use the fetched products
+          products: productsData || [],
           sales: sessionData.sales || [],
           variations: sessionData.variations || [],
         };
@@ -101,12 +97,12 @@ export function SessionSelector() {
 
   if (activeSessions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>No Active Sessions</CardTitle>
-            <CardDescription>
-              There are no active sessions available. Please contact an administrator to create a new session.
+            <CardTitle className="text-2xl font-bold">No Active Sessions</CardTitle>
+            <CardDescription className="text-lg">
+              There are no active sessions available. Please contact an administrator to activate a session.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -115,20 +111,20 @@ export function SessionSelector() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50/50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Select a Session</CardTitle>
-          <CardDescription>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white p-4">
+      <Card className="w-full max-w-md shadow-xl border-gray-200">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-2xl font-bold">Select a Session</CardTitle>
+          <CardDescription className="text-lg">
             Choose an active session to begin
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <Select
             value={selectedSessionId}
             onValueChange={handleSessionSelect}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a session" />
             </SelectTrigger>
             <SelectContent>
@@ -154,7 +150,7 @@ export function SessionSelector() {
 
           {selectedSessionId && (
             <Button
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
               onClick={() => handleSessionSelect(selectedSessionId)}
             >
               Start Session
