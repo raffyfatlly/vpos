@@ -25,12 +25,15 @@ export function SessionDetails({
   const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock, newCurrentStock });
     
+    // Create a new products array with the updated values
     const updatedProducts = session.products.map(product => {
       if (product.id === productId) {
         console.log('Updating product:', {
           before: product,
           after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
         });
+        
+        // Create a new product object with updated values
         return {
           ...product,
           initial_stock: newInitialStock,
@@ -40,11 +43,13 @@ export function SessionDetails({
       return product;
     });
 
-    setSession(prev => ({
-      ...prev,
+    // Update the session state with the new products array
+    setSession(prevSession => ({
+      ...prevSession,
       products: updatedProducts
     }));
 
+    // Call the parent's onUpdateStock callback
     onUpdateStock(productId, newInitialStock, newCurrentStock);
   };
 
