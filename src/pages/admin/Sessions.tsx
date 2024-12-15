@@ -61,7 +61,7 @@ const Sessions = () => {
 
     const updatedProducts = selectedSession.products.map(product =>
       product.id === productId
-        ? { ...product, currentStock: newStock }
+        ? { ...product, current_stock: newStock }
         : product
     );
 
@@ -111,10 +111,7 @@ const Sessions = () => {
         <div>
           <SessionList
             sessions={sessions}
-            onEdit={setEditingSession}
-            onDelete={handleDeleteSession}
-            onSelect={setSelectedSession}
-            selectedSession={selectedSession}
+            onSessionUpdate={updateSession.mutateAsync}
           />
         </div>
         

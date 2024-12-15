@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
 
-export default function SessionList({ sessions, onSessionUpdate }: { 
+export function SessionList({ sessions, onSessionUpdate }: { 
   sessions: Session[]; 
   onSessionUpdate: (updatedSession: Session) => void;
 }) {
@@ -13,7 +13,7 @@ export default function SessionList({ sessions, onSessionUpdate }: {
 
   const handleToggleActive = async (session: Session) => {
     try {
-      const newStatus = (session.status === "active" ? "completed" : "active") as const;
+      const newStatus = session.status === "active" ? "completed" : "active";
       
       // Update local state immediately for UI feedback
       const updatedLocalSessions = localSessions.map(s => 
@@ -30,7 +30,8 @@ export default function SessionList({ sessions, onSessionUpdate }: {
       if (error) throw error;
 
       // Call the parent update handler
-      onSessionUpdate({ ...session, status: newStatus });
+      const updatedSession: Session = { ...session, status: newStatus };
+      onSessionUpdate(updatedSession);
 
       toast({
         title: "Status updated",
