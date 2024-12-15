@@ -73,11 +73,11 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-auto rounded-lg border border-border/50">
+    <div className="h-full flex flex-col space-y-4">
+      <div className="flex-1 overflow-auto border rounded-lg">
         <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            <TableRow className="bg-primary/5 hover:bg-primary/5">
+          <TableHeader className="sticky top-0 bg-background">
+            <TableRow className="hover:bg-background">
               <TableHead className="w-[250px]">Product Name</TableHead>
               <TableHead className="w-[120px]">Price</TableHead>
               <TableHead className="w-[150px]">Initial Stock</TableHead>
@@ -88,8 +88,8 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
           </TableHeader>
           <TableBody>
             {session.products.map((product) => (
-              <TableRow key={product.id} className="hover:bg-primary/5">
-                <TableCell className="font-medium truncate max-w-[250px]">
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
@@ -108,7 +108,6 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="hover:bg-primary/10 hover:text-primary whitespace-nowrap"
                     onClick={() => handleUpdateInitialStock(product.id)}
                   >
                     Update Initial Stock

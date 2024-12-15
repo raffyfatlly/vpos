@@ -14,41 +14,41 @@ export function SessionDetails({
   onUpdateStock,
 }: SessionDetailsProps) {
   return (
-    <Tabs defaultValue="inventory" className="w-full h-[calc(100vh-12rem)] flex flex-col">
-      <TabsList className="w-full bg-primary/5 mb-4 p-1 mx-0">
+    <Tabs defaultValue="inventory" className="w-full flex-1 flex flex-col">
+      <TabsList className="w-full bg-background border-b">
         <TabsTrigger 
           value="inventory"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
+          className="px-8 py-3 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
         >
           Inventory Management
         </TabsTrigger>
         <TabsTrigger 
           value="sales"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
+          className="px-8 py-3 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
         >
           Sales Overview
         </TabsTrigger>
         <TabsTrigger 
           value="history"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
+          className="px-8 py-3 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
         >
           Sales History
         </TabsTrigger>
       </TabsList>
 
-      <div className="flex-1 min-h-0 px-0">
-        <TabsContent value="inventory" className="h-full m-0 p-0">
+      <div className="flex-1 overflow-hidden">
+        <TabsContent value="inventory" className="h-full m-0 p-4">
           <InventoryManagement 
             session={session} 
             onUpdateStock={onUpdateStock}
           />
         </TabsContent>
 
-        <TabsContent value="sales" className="h-full m-0 p-0">
+        <TabsContent value="sales" className="h-full m-0 p-4">
           <SalesOverview session={session} />
         </TabsContent>
 
-        <TabsContent value="history" className="h-full m-0 p-0">
+        <TabsContent value="history" className="h-full m-0 p-4">
           <SalesHistory session={session} />
         </TabsContent>
       </div>
