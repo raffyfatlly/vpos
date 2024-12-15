@@ -21,11 +21,23 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
       disabled={product.current_stock <= 0}
     >
       <div className="aspect-square w-full bg-gray-100 overflow-hidden">
-        <img 
-          src={product.image || "/placeholder.svg"} 
-          alt={product.name}
-          className="w-full h-full object-cover"
-        />
+        {product.image ? (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+            }}
+          />
+        ) : (
+          <img 
+            src="/placeholder.svg" 
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+        )}
       </div>
       <div className="p-2 w-full space-y-0.5">
         <h3 className="font-medium text-xs sm:text-sm truncate">{product.name}</h3>
