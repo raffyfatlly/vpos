@@ -10,6 +10,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUsers: AuthUser[] = [
+  // Original users
   {
     id: "1",
     username: "admin",
@@ -28,6 +29,19 @@ const mockUsers: AuthUser[] = [
     password: "Type3user!",
     role: "both" as UserRole,
   },
+  // New mock users
+  {
+    id: "4",
+    username: "sarah.admin",
+    password: "sarah123",
+    role: "admin" as UserRole,
+  },
+  {
+    id: "5",
+    username: "john.cashier",
+    password: "john123",
+    role: "cashier" as UserRole,
+  }
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
