@@ -18,7 +18,7 @@ interface InventoryManagementProps {
   onUpdateStock: (productId: number, newStock: number) => void;
 }
 
-export function InventoryManagement({ session }: InventoryManagementProps) {
+export function InventoryManagement({ session, onUpdateStock }: InventoryManagementProps) {
   const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
 
@@ -34,6 +34,7 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
     const newInitialStock = initialStockUpdates[productId];
     if (typeof newInitialStock === 'number') {
       try {
+        // Calculate new current stock
         const { data: newCurrentStock, error: rpcError } = await supabase
           .rpc('calculate_new_current_stock', {
             product_id: productId,
@@ -42,6 +43,7 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
 
         if (rpcError) throw rpcError;
 
+        // Update product in database
         const { error: updateError } = await supabase
           .from('products')
           .update({ 
@@ -51,6 +53,23 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
           .eq('id', productId);
 
         if (updateError) throw updateError;
+
+        // Update session products in database
+        const updatedProducts = session.products.map(product => 
+          product.id === productId 
+            ? { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
+            : product
+        );
+
+        const { error: sessionError } = await supabase
+          .from('sessions')
+          .update({ products: updatedProducts })
+          .eq('id', session.id);
+
+        if (sessionError) throw sessionError;
+
+        // Call onUpdateStock to trigger parent component refresh
+        onUpdateStock(productId, newCurrentStock);
 
         toast({
           title: "Stock Updated",

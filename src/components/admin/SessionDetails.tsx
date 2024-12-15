@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryManagement } from "./InventoryManagement";
 import { SalesOverview } from "./SalesOverview";
 import { SalesHistory } from "./SalesHistory";
+import { useState } from "react";
 
 interface SessionDetailsProps {
   session: Session;
@@ -10,9 +11,26 @@ interface SessionDetailsProps {
 }
 
 export function SessionDetails({ 
-  session, 
+  session: initialSession, 
   onUpdateStock,
 }: SessionDetailsProps) {
+  const [session, setSession] = useState(initialSession);
+
+  const handleUpdateStock = (productId: number, newStock: number) => {
+    // Update local session state
+    setSession(prev => ({
+      ...prev,
+      products: prev.products.map(product =>
+        product.id === productId
+          ? { ...product, current_stock: newStock }
+          : product
+      )
+    }));
+    
+    // Call parent handler
+    onUpdateStock(productId, newStock);
+  };
+
   return (
     <Tabs defaultValue="inventory" className="w-full flex-1 flex flex-col">
       <TabsList className="w-full bg-background border-b">
@@ -40,7 +58,7 @@ export function SessionDetails({
         <TabsContent value="inventory" className="h-full m-0 p-4">
           <InventoryManagement 
             session={session} 
-            onUpdateStock={onUpdateStock}
+            onUpdateStock={handleUpdateStock}
           />
         </TabsContent>
 
