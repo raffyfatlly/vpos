@@ -7,7 +7,7 @@ interface SessionPanelProps {
 
 export function SessionPanel({ title, subtitle, children, height = "default" }: SessionPanelProps) {
   return (
-    <div className={`bg-white rounded-lg shadow-sm overflow-hidden flex flex-col card-gradient ${
+    <div className={`w-full bg-white rounded-lg shadow-sm overflow-hidden flex flex-col card-gradient ${
       height === "large" ? "min-h-[500px]" : "min-h-[200px]"
     }`}>
       <div className="p-4 border-b bg-primary/5 sticky top-0 z-10">
@@ -16,7 +16,7 @@ export function SessionPanel({ title, subtitle, children, height = "default" }: 
           <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
         )}
       </div>
-      <div className="p-4 overflow-auto flex-1">
+      <div className="p-4 overflow-x-hidden overflow-y-auto flex-1">
         {children}
       </div>
     </div>
