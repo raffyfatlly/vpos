@@ -31,6 +31,13 @@ export function AppSidebar() {
     });
   };
 
+  const handleNavClick = () => {
+    // Only collapse on mobile
+    if (window.innerWidth < 768) {
+      toggle();
+    }
+  };
+
   return (
     <>
       <Button
@@ -72,6 +79,7 @@ export function AppSidebar() {
               <>
                 <NavLink
                   to="/admin/dashboard"
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -88,6 +96,7 @@ export function AppSidebar() {
                 </NavLink>
                 <NavLink
                   to="/admin/sessions"
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -104,6 +113,7 @@ export function AppSidebar() {
                 </NavLink>
                 <NavLink
                   to="/admin/products"
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -120,6 +130,7 @@ export function AppSidebar() {
                 </NavLink>
                 <NavLink
                   to="/admin/members"
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -140,6 +151,7 @@ export function AppSidebar() {
             {isCashier && (
               <NavLink
                 to="/cashier"
+                onClick={handleNavClick}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -164,7 +176,10 @@ export function AppSidebar() {
                 "w-full flex items-center gap-3 justify-start",
                 !isOpen && "md:justify-center"
               )}
-              onClick={handleLogout}
+              onClick={() => {
+                handleNavClick();
+                handleLogout();
+              }}
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
               <span className={cn(
