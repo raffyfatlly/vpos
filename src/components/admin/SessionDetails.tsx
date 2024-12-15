@@ -14,17 +14,11 @@ export function SessionDetails({
   session: initialSession, 
   onUpdateStock,
 }: SessionDetailsProps) {
-  const [session, setSession] = useState<Session>({
-    ...initialSession,
-    sales: initialSession.sales || []
-  });
+  const [session, setSession] = useState<Session>(initialSession);
 
   // Reset session state when initialSession changes (different session selected)
   useEffect(() => {
-    setSession({
-      ...initialSession,
-      sales: initialSession.sales || []
-    });
+    setSession(initialSession);
   }, [initialSession]);
 
   const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
