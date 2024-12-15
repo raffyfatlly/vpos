@@ -62,30 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // First check if there's a pending invitation
-      const { data: invitation } = await supabase
-        .from('pending_invitations')
-        .select('*')
-        .eq('email', email)
-        .eq('used', false)
-        .single();
+      // Try to sign in directly first
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // If there's an invitation and it's not used, try to sign up
-      if (invitation && !invitation.used) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
+      if (signInError) {
+        console.error('Sign in error:', signInError);
+        toast({
+          title: "Authentication failed",
+          description: "Invalid email or password",
+          variant: "destructive",
         });
-
-        if (signUpError) throw signUpError;
-      } else {
-        // If no invitation or it's already used, try to sign in
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
+        throw signInError;
       }
 
       // The session change will trigger the onAuthStateChange listener
