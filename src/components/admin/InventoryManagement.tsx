@@ -12,16 +12,18 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface InventoryManagementProps {
   session: Session;
   onUpdateStock: (productId: number, newStock: number) => void;
 }
 
-export function InventoryManagement({ session, onUpdateStock }: InventoryManagementProps) {
-  const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
+export function InventoryManagement({ session }: InventoryManagementProps) {
+  const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
+  const { toast } = useToast();
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -34,12 +36,54 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
     }
   });
 
-  const handleStockChange = (productId: number, value: string) => {
+  const handleInitialStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
-    setStockUpdates(prev => ({
+    setInitialStockUpdates(prev => ({
       ...prev,
       [productId]: newStock
     }));
+  };
+
+  const handleUpdateInitialStock = async (productId: number) => {
+    const newInitialStock = initialStockUpdates[productId];
+    if (typeof newInitialStock === 'number') {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .update({ 
+            initial_stock: newInitialStock,
+            // Update current_stock by the difference in initial stock
+            current_stock: supabase.rpc('calculate_new_current_stock', {
+              product_id: productId,
+              new_initial_stock: newInitialStock
+            })
+          })
+          .eq('id', productId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Stock Updated",
+          description: "Initial stock has been updated successfully.",
+        });
+
+        // Clear the input after update
+        setInitialStockUpdates(prev => {
+          const { [productId]: _, ...rest } = prev;
+          return rest;
+        });
+
+        // Refresh the products list
+        refetch();
+      } catch (error) {
+        console.error('Error updating stock:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update initial stock.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   if (isLoading) {
@@ -55,7 +99,7 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
             <TableHead>Price</TableHead>
             <TableHead>Initial Stock</TableHead>
             <TableHead>Current Stock</TableHead>
-            <TableHead>Update Stock</TableHead>
+            <TableHead>Update Initial Stock</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -69,29 +113,19 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
               <TableCell>
                 <Input
                   type="number"
-                  placeholder="New stock count"
+                  placeholder="New initial stock"
                   className="w-24"
-                  onChange={(e) => handleStockChange(product.id, e.target.value)}
-                  value={stockUpdates[product.id] || ''}
+                  onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
+                  value={initialStockUpdates[product.id] || ''}
                 />
               </TableCell>
               <TableCell>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const newStock = stockUpdates[product.id];
-                    if (typeof newStock === 'number') {
-                      onUpdateStock(product.id, newStock);
-                      // Clear the input after update
-                      setStockUpdates(prev => {
-                        const { [product.id]: _, ...rest } = prev;
-                        return rest;
-                      });
-                    }
-                  }}
+                  onClick={() => handleUpdateInitialStock(product.id)}
                 >
-                  Update Stock
+                  Update Initial Stock
                 </Button>
               </TableCell>
             </TableRow>
