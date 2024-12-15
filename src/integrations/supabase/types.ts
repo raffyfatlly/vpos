@@ -110,7 +110,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_new_current_stock: {
+        Args: {
+          product_id: number
+          new_initial_stock: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       session_status: "active" | "completed"

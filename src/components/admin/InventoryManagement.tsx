@@ -48,19 +48,25 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
     const newInitialStock = initialStockUpdates[productId];
     if (typeof newInitialStock === 'number') {
       try {
-        const { error } = await supabase
+        // First, get the calculated new current stock
+        const { data: newCurrentStock, error: rpcError } = await supabase
+          .rpc('calculate_new_current_stock', {
+            product_id: productId,
+            new_initial_stock: newInitialStock
+          });
+
+        if (rpcError) throw rpcError;
+
+        // Then update the product with both new values
+        const { error: updateError } = await supabase
           .from('products')
           .update({ 
             initial_stock: newInitialStock,
-            // Update current_stock by the difference in initial stock
-            current_stock: supabase.rpc('calculate_new_current_stock', {
-              product_id: productId,
-              new_initial_stock: newInitialStock
-            })
+            current_stock: newCurrentStock
           })
           .eq('id', productId);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         toast({
           title: "Stock Updated",
