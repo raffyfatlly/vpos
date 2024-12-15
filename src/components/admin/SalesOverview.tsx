@@ -15,7 +15,7 @@ export function SalesOverview({ session }: SalesOverviewProps) {
       <Card className="card-gradient w-full">
         <CardContent className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground mb-2 break-words">Total Sales</h3>
-          <p className="text-2xl font-semibold break-words">${calculateTotalSales().toFixed(2)}</p>
+          <p className="text-2xl font-semibold break-words">RM {calculateTotalSales().toFixed(2)}</p>
         </CardContent>
       </Card>
       <Card className="card-gradient w-full">
