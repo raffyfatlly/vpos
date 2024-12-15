@@ -28,10 +28,10 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Layout><Index /></Layout>} />
-                <Route path="/admin/dashboard" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/admin/products" element={<Layout><Products /></Layout>} />
-                <Route path="/admin/sessions" element={<Layout><Sessions /></Layout>} />
-                <Route path="/cashier" element={<Layout><POS /></Layout>} />
+                <Route path="/admin/dashboard" element={<Layout requireRole="admin"><Dashboard /></Layout>} />
+                <Route path="/admin/products" element={<Layout requireRole="admin"><Products /></Layout>} />
+                <Route path="/admin/sessions" element={<Layout requireRole="admin"><Sessions /></Layout>} />
+                <Route path="/cashier" element={<Layout requireRole="cashier"><POS /></Layout>} />
               </Routes>
             </SessionProvider>
           </AuthProvider>
