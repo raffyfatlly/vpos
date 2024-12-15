@@ -17,7 +17,7 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
       variant="outline"
       className={cn(
         "h-auto p-0 transition-all duration-300 text-left group",
-        "flex flex-col items-start w-full overflow-hidden rounded-xl",
+        "flex flex-col items-start w-full overflow-hidden rounded-lg",
         "border border-gray-100 hover:border-primary/20",
         "bg-white shadow-sm hover:shadow-md",
         "active:scale-[0.98] transform",
@@ -43,22 +43,22 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
             className="w-full h-full object-cover opacity-30"
           />
         )}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-1 right-1">
           <span className={cn(
-            "px-3 py-1.5 text-sm font-medium rounded-full",
+            "px-1.5 py-0.5 text-xs font-medium rounded-full",
             isOutOfStock && "bg-gray-100 text-gray-600",
             isLowStock && !isOutOfStock && "bg-red-50 text-red-600",
             !isLowStock && !isOutOfStock && "bg-green-50 text-green-600"
           )}>
-            Stock: {product.current_stock}
+            {product.current_stock}
           </span>
         </div>
       </div>
-      <div className="p-4 w-full space-y-3">
-        <h3 className="font-medium text-lg truncate leading-tight text-gray-900">
+      <div className="p-2 w-full space-y-1">
+        <h3 className="font-medium text-sm truncate leading-tight text-gray-900">
           {product.name}
         </h3>
-        <p className="font-semibold text-primary text-xl tracking-tight">
+        <p className="font-semibold text-primary text-sm tracking-tight">
           RM{product.price.toFixed(2)}
         </p>
       </div>
