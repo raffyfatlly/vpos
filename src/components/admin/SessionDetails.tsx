@@ -32,35 +32,23 @@ export function SessionDetails({
     setSession(initialSession);
   }, [initialSession]);
 
-  // Subscribe to real-time product updates
+  // Subscribe to session-specific updates
   useEffect(() => {
     const channel = supabase
-      .channel('session_product_updates')
+      .channel('session_updates')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'products',
+          table: 'sessions',
+          filter: `id=eq.${session.id}`,
         },
         async (payload) => {
-          console.log('Product update received in SessionDetails:', payload);
-          
-          if (payload.new && 'id' in payload.new) {
-            const updatedProduct = payload.new;
-            
-            setSession(prevSession => ({
-              ...prevSession,
-              products: prevSession.products.map(product =>
-                product.id === updatedProduct.id
-                  ? {
-                      ...product,
-                      initial_stock: updatedProduct.initial_stock,
-                      current_stock: updatedProduct.current_stock
-                    }
-                  : product
-              )
-            }));
+          console.log('Session update received:', payload);
+          if (payload.new) {
+            const updatedSession = payload.new as Session;
+            setSession(updatedSession);
           }
         }
       )
@@ -69,7 +57,7 @@ export function SessionDetails({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [session.id]);
 
   const handleUpdateStock = async (productId: number, newInitialStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
@@ -77,38 +65,40 @@ export function SessionDetails({
     try {
       setIsUpdating(true);
 
+      // Update the session's products array with new stock values
+      const updatedProducts = session.products.map(product =>
+        product.id === productId
+          ? { 
+              ...product,
+              initial_stock: newInitialStock,
+              current_stock: newInitialStock
+            }
+          : product
+      );
+
+      // Update the session in the database with the new products array
       const { data, error: updateError } = await supabase
-        .from('products')
+        .from('sessions')
         .update({
-          initial_stock: newInitialStock,
-          current_stock: newInitialStock
+          products: updatedProducts
         })
-        .eq('id', productId)
-        .select();
+        .eq('id', session.id)
+        .select()
+        .single();
 
       if (updateError) throw updateError;
 
-      if (data && data[0]) {
-        // Update local session state immediately
-        setSession(prevSession => ({
-          ...prevSession,
-          products: prevSession.products.map(product => 
-            product.id === productId 
-              ? { 
-                  ...product,
-                  initial_stock: data[0].initial_stock,
-                  current_stock: data[0].current_stock
-                } 
-              : product
-          )
-        }));
-
+      if (data) {
+        // Update local session state
+        setSession(data);
+        
         toast({
           title: "Stock Updated",
           description: "Stock has been updated successfully.",
         });
       }
 
+      // Call the parent's onUpdateStock callback
       onUpdateStock(productId, newInitialStock);
     } catch (error: any) {
       console.error('Error updating stock:', error);
