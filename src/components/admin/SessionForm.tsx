@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Session } from "@/types/pos";
+import { Session, SessionProduct } from "@/types/pos";
+import { MOCK_PRODUCTS } from "@/data/mockData";
 
 interface SessionFormProps {
   session?: Session;
@@ -18,12 +19,20 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const sessionId = session?.id || `SESSION-${Date.now()}`;
+    
+    // Add all products with initial stock when creating a new session
+    const sessionProducts = MOCK_PRODUCTS.map(product => ({
+      ...product,
+      initialStock: 50, // Default initial stock
+      currentStock: 50, // Initially same as initial stock
+    }));
+
     onSubmit({
       ...formData,
       id: sessionId,
       name: sessionId,
       staff: session?.staff || [],
-      products: session?.products || [],
+      products: session ? session.products : sessionProducts,
       status: session?.status || "active",
     });
   };

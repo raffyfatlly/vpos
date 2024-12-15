@@ -15,6 +15,8 @@ export type SessionProduct = {
   category: string;
   image?: string;
   variations?: ProductVariation[];
+  initialStock?: number;
+  currentStock?: number;
 };
 
 export type Sale = {
