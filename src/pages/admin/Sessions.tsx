@@ -114,6 +114,7 @@ const Sessions = () => {
             onSessionUpdate={updateSession.mutateAsync}
             onSelect={setSelectedSession}
             selectedSession={selectedSession}
+            onDelete={handleDeleteSession}
           />
         </div>
         

@@ -5,17 +5,21 @@ import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export function SessionList({ 
   sessions, 
   onSessionUpdate,
   onSelect,
-  selectedSession 
+  selectedSession,
+  onDelete 
 }: { 
   sessions: Session[]; 
   onSessionUpdate: (updatedSession: Session) => void;
   onSelect: (session: Session) => void;
   selectedSession: Session | null;
+  onDelete: (sessionId: string) => void;
 }) {
   const { toast } = useToast();
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
@@ -55,6 +59,25 @@ export function SessionList({
     }
   };
 
+  const handleDelete = async (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete the session "${session.location}"?`)) {
+      try {
+        onDelete(session.id);
+        toast({
+          title: "Session deleted",
+          description: "The session has been successfully deleted",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error deleting session",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       {localSessions.map((session) => (
@@ -85,13 +108,23 @@ export function SessionList({
             </span>
             
             {(user?.role === "admin" || user?.role === "both") && (
-              <Toggle
-                pressed={session.status === "completed"}
-                onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
-                className="data-[state=on]:bg-green-500"
-              >
-                {session.status === "active" ? "Complete" : "Reactivate"}
-              </Toggle>
+              <>
+                <Toggle
+                  pressed={session.status === "completed"}
+                  onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
+                  className="data-[state=on]:bg-green-500"
+                >
+                  {session.status === "active" ? "Complete" : "Reactivate"}
+                </Toggle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => handleDelete(session, e)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
         </div>
