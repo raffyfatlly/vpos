@@ -163,7 +163,7 @@ export function SessionDetails({
 
         <div className="mt-4 w-full max-w-full overflow-hidden">
           <TabsContent value="inventory" className="m-0 w-full">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto px-2">
               <InventoryManagement 
                 products={session.products} 
                 onUpdateStock={handleUpdateStock}
