@@ -117,7 +117,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                   <TableCell>
                     <Input
                       type="number"
-                      placeholder="New initial stock"
                       className="w-32"
                       onChange={(e) => handleStockChange(product.id, e.target.value)}
                       value={stockUpdates[product.id] ?? product.initial_stock}
