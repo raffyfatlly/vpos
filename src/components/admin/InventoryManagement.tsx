@@ -1,4 +1,4 @@
-import { Session } from "@/types/pos";
+import { SessionProduct } from "@/types/pos";
 import {
   Table,
   TableBody,
@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface InventoryManagementProps {
-  session: Session;
+  products: SessionProduct[];
   onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
 }
 
-export function InventoryManagement({ session, onUpdateStock }: InventoryManagementProps) {
+export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
 
@@ -42,31 +42,6 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
           });
 
         if (rpcError) throw rpcError;
-
-        // Update product in database
-        const { error: updateError } = await supabase
-          .from('products')
-          .update({ 
-            initial_stock: newInitialStock,
-            current_stock: newCurrentStock
-          })
-          .eq('id', productId);
-
-        if (updateError) throw updateError;
-
-        // Update session products in database
-        const updatedProducts = session.products.map(product => 
-          product.id === productId 
-            ? { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
-            : product
-        );
-
-        const { error: sessionError } = await supabase
-          .from('sessions')
-          .update({ products: updatedProducts })
-          .eq('id', session.id);
-
-        if (sessionError) throw sessionError;
 
         // Call onUpdateStock with both initial and current stock values
         onUpdateStock(productId, newInitialStock, newCurrentStock);
@@ -106,7 +81,7 @@ export function InventoryManagement({ session, onUpdateStock }: InventoryManagem
             </TableRow>
           </TableHeader>
           <TableBody>
-            {session.products.map((product) => (
+            {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell className="font-medium">
                   {product.name}
