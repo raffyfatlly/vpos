@@ -44,16 +44,16 @@ const POS = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SessionIndicator />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-        <div className="lg:col-span-2 overflow-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-8rem)]">
+        <div className="lg:col-span-2 overflow-auto order-2 lg:order-1">
           <ProductGrid
             products={currentSession.products}
             onProductSelect={handleProductSelect}
           />
         </div>
-        <div className="overflow-auto">
+        <div className="overflow-auto order-1 lg:order-2">
           <Cart ref={cartRef} onComplete={handleSaleComplete} />
         </div>
       </div>
