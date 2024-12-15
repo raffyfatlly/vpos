@@ -76,22 +76,22 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border h-[calc(100vh-16rem)] overflow-auto">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-background z-10">
           <TableRow>
-            <TableHead>Product Name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Initial Stock</TableHead>
-            <TableHead>Current Stock</TableHead>
-            <TableHead>Update Initial Stock</TableHead>
+            <TableHead className="w-1/4">Product Name</TableHead>
+            <TableHead className="w-1/6">Price</TableHead>
+            <TableHead className="w-1/6">Initial Stock</TableHead>
+            <TableHead className="w-1/6">Current Stock</TableHead>
+            <TableHead className="w-1/6">Update Initial Stock</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {session.products.map((product) => (
             <TableRow key={product.id}>
-              <TableCell>{product.name}</TableCell>
+              <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell>${product.price.toFixed(2)}</TableCell>
               <TableCell>{product.initial_stock}</TableCell>
               <TableCell>{product.current_stock}</TableCell>
