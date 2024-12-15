@@ -21,10 +21,19 @@ export type Session = {
   id: string;
   name: string;
   date: string;
+  time: string;
   location: string;
   staff: SessionStaff[];
   products: SessionProduct[];
   status: "active" | "completed";
+};
+
+export type SessionLog = {
+  id: string;
+  sessionId: string;
+  staffId: string;
+  action: string;
+  timestamp: string;
 };
 
 export type Sale = {

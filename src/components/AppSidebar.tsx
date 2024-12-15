@@ -3,8 +3,8 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -35,16 +35,16 @@ const cashierItems = [
 
 export function AppSidebar() {
   const navigate = useNavigate();
-  const userRole: UserRole = "cashier";
+  const userRole = "cashier" as UserRole;
 
   const items = userRole === "admin" ? adminItems : cashierItems;
   const menuLabel = userRole === "admin" ? "Admin" : "Cashier";
-  const switchToRole: UserRole = userRole === "admin" ? "cashier" : "admin";
+  const switchToRole = userRole === "admin" ? "cashier" as UserRole : "admin" as UserRole;
   const switchToPath = switchToRole === "admin" ? "/admin/products" : "/cashier";
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <div className="px-4 py-6">
           <h1 className="text-2xl font-bold text-primary">POS System</h1>
         </div>
@@ -60,21 +60,29 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => navigate(switchToPath)}>
-                  <UserCog className="w-5 h-5" />
-                  <span>Switch to {switchToRole}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <LogOut className="w-5 h-5" />
-                  <span>Logout</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="mt-auto">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => navigate(switchToPath)}>
+                    <UserCog className="w-5 h-5" />
+                    <span>Switch to {switchToRole}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <LogOut className="w-5 h-5" />
+                    <span>Logout</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

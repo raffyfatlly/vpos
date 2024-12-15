@@ -31,7 +31,7 @@ interface CartProps {
 export function Cart({ onComplete }: CartProps) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("cash");
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("bayarlah_qr");
   const { toast } = useToast();
 
   const updateQuantity = (id: number, delta: number) => {
@@ -202,18 +202,18 @@ export function Cart({ onComplete }: CartProps) {
 
         <div className="flex gap-2">
           <Button
-            variant={selectedPayment === "cash" ? "default" : "outline"}
-            className="flex-1"
-            onClick={() => setSelectedPayment("cash")}
-          >
-            Cash
-          </Button>
-          <Button
             variant={selectedPayment === "bayarlah_qr" ? "default" : "outline"}
             className="flex-1"
             onClick={() => setSelectedPayment("bayarlah_qr")}
           >
             Bayarlah QR
+          </Button>
+          <Button
+            variant={selectedPayment === "cash" ? "default" : "outline"}
+            className="flex-1"
+            onClick={() => setSelectedPayment("cash")}
+          >
+            Cash
           </Button>
         </div>
 
