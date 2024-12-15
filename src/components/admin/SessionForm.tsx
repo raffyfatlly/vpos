@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Session, SessionProduct } from "@/types/pos";
@@ -12,9 +12,17 @@ interface SessionFormProps {
 
 export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const [formData, setFormData] = useState({
-    location: session?.location || "",
-    date: session?.date || "",
+    location: "",
+    date: "",
   });
+
+  // Reset form data when the form is opened
+  useEffect(() => {
+    setFormData({
+      location: session?.location || "",
+      date: session?.date || "",
+    });
+  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
