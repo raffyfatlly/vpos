@@ -25,7 +25,8 @@ export function SessionList({
 
   const handleToggleActive = async (session: Session) => {
     try {
-      const newStatus = session.status === "active" ? "inactive" : "active";
+      // If the session is active, mark it as completed, otherwise mark it as active
+      const newStatus = session.status === "active" ? "completed" : "active";
       
       const { error } = await supabase
         .from('sessions')
@@ -87,7 +88,7 @@ export function SessionList({
                     "text-sm font-medium",
                     session.status === "active" ? "text-green-600" : "text-muted-foreground"
                   )}>
-                    {session.status === "active" ? "Active" : "Inactive"}
+                    {session.status === "active" ? "Active" : "Completed"}
                   </span>
                 </div>
                 <div className="flex gap-2">
