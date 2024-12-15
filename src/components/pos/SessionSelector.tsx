@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 export function SessionSelector() {
   const { sessions, isLoading } = useSessions();
@@ -28,11 +29,6 @@ export function SessionSelector() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const { user } = useAuth();
   const { toast } = useToast();
-
-  // Filter only active sessions
-  const activeSessions = sessions.filter(
-    (session) => session.status === "active"
-  );
 
   const handleSessionSelect = async (sessionId: string) => {
     try {
@@ -95,14 +91,14 @@ export function SessionSelector() {
     );
   }
 
-  if (activeSessions.length === 0) {
+  if (sessions.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">No Active Sessions</CardTitle>
+            <CardTitle className="text-2xl font-bold">No Sessions Available</CardTitle>
             <CardDescription className="text-lg">
-              There are no active sessions available. Please contact an administrator to activate a session.
+              There are no sessions available. Please contact an administrator to create a session.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -116,7 +112,7 @@ export function SessionSelector() {
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl font-bold">Select a Session</CardTitle>
           <CardDescription className="text-lg">
-            Choose an active session to begin
+            Choose a session to begin
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -128,10 +124,20 @@ export function SessionSelector() {
               <SelectValue placeholder="Select a session" />
             </SelectTrigger>
             <SelectContent>
-              {activeSessions.map((session) => (
+              {sessions.map((session) => (
                 <SelectItem key={session.id} value={session.id}>
                   <div className="flex flex-col gap-1">
-                    <div className="font-medium">{session.location}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{session.name}</span>
+                      <Badge variant={session.status === "active" ? "default" : "secondary"}>
+                        {session.status === "active" ? (
+                          <Clock className="w-3 h-3 mr-1" />
+                        ) : (
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                        )}
+                        {session.status}
+                      </Badge>
+                    </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -153,7 +159,7 @@ export function SessionSelector() {
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
               onClick={() => handleSessionSelect(selectedSessionId)}
             >
-              Start Session
+              Load Session
             </Button>
           )}
         </CardContent>
