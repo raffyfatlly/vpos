@@ -17,6 +17,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const fetchUserProfile = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return;
+    }
+
+    if (profile) {
+      setUser({
+        id: userId,
+        username: profile.username,
+        role: profile.role as UserRole,
+      });
+      
+      // Log the profile for debugging
+      console.log('Fetched profile:', profile);
+    }
+  };
+
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,27 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      return;
-    }
-
-    if (profile) {
-      setUser({
-        id: userId,
-        username: profile.username,
-        role: profile.role as UserRole,
-      });
-    }
-  };
 
   const login = async (email: string, password: string) => {
     try {
