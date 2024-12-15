@@ -15,8 +15,10 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
       className={cn(
         "h-auto p-0 hover:bg-gray-50 transition-all duration-200 text-left",
         "flex flex-col items-start w-full overflow-hidden rounded-lg border border-gray-200",
-        "hover:border-primary hover:shadow-md active:scale-95"
+        "hover:border-primary hover:shadow-md active:scale-95",
+        product.current_stock <= 0 && "opacity-50"
       )}
+      disabled={product.current_stock <= 0}
     >
       <div className="aspect-square w-full bg-gray-100 overflow-hidden">
         <img 
@@ -31,9 +33,14 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
           <p className="font-semibold text-primary">
             RM{product.price.toFixed(2)}
           </p>
-          <p className="text-muted-foreground text-[10px] sm:text-xs">
-            Stock: {product.currentStock}
-          </p>
+          <div className="text-right">
+            <p className={cn(
+              "text-[10px] sm:text-xs",
+              product.current_stock <= 5 ? "text-red-500" : "text-muted-foreground"
+            )}>
+              Stock: {product.current_stock}
+            </p>
+          </div>
         </div>
       </div>
     </Button>
