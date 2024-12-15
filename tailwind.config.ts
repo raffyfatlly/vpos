@@ -18,6 +18,20 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'display-lg': ['3.75rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        'display': ['3rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        'heading-lg': ['2.5rem', { lineHeight: '1.3', letterSpacing: '-0.02em' }],
+        'heading': ['2rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
+        'title': ['1.5rem', { lineHeight: '1.4', letterSpacing: '-0.01em' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.6' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'small': ['0.875rem', { lineHeight: '1.5' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
