@@ -140,22 +140,22 @@ export function SessionDetails({
       )}
       
       <Tabs defaultValue="inventory" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 h-auto gap-2 bg-transparent">
+        <TabsList className="w-full grid grid-cols-3 h-auto gap-4 bg-transparent p-1">
           <TabsTrigger 
             value="inventory" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
+            className="data-[state=active]:bg-primary/10 px-4 py-2 text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
           >
             Inventory
           </TabsTrigger>
           <TabsTrigger 
             value="overview" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
+            className="data-[state=active]:bg-primary/10 px-4 py-2 text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
           >
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
+            className="data-[state=active]:bg-primary/10 px-4 py-2 text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
           >
             History
           </TabsTrigger>
