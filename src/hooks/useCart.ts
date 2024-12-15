@@ -23,6 +23,7 @@ export const useCart = (onComplete: (sale: SaleData) => void) => {
     updateQuantity,
     applyDiscount,
     selectVariation,
+    updateSessionProducts,
   } = useCartOperations(items, setItems, toast);
 
   const {
@@ -55,6 +56,7 @@ export const useCart = (onComplete: (sale: SaleData) => void) => {
     updateQuantity,
     applyDiscount,
     selectVariation,
+    updateSessionProducts,
     getSubtotal,
     getTotal,
     handleCheckout: () => handleCheckout(onComplete),

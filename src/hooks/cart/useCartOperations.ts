@@ -83,10 +83,27 @@ export const useCartOperations = (
     );
   };
 
+  const updateSessionProducts = (newProducts: SessionProduct[]) => {
+    setItems(current => 
+      current.map(item => {
+        const updatedProduct = newProducts.find(p => p.id === item.id);
+        if (updatedProduct) {
+          return {
+            ...item,
+            ...updatedProduct,
+            quantity: Math.min(item.quantity, updatedProduct.current_stock)
+          };
+        }
+        return item;
+      })
+    );
+  };
+
   return {
     addProduct,
     updateQuantity,
     applyDiscount,
     selectVariation,
+    updateSessionProducts,
   };
 };

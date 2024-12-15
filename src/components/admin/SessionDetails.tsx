@@ -1,41 +1,22 @@
 import { useState, useEffect } from "react";
-import { Session } from "@/types/pos";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SalesOverview } from "./SalesOverview";
-import { SalesHistory } from "./SalesHistory";
-import { supabase } from "@/lib/supabase";
-import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { InventoryTable } from "./sessions/inventory/InventoryTable";
-import { useInventoryUpdates } from "./sessions/inventory/useInventoryUpdates";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { Session } from "@/types/pos";
 
 interface SessionDetailsProps {
   session: Session;
-  onUpdateStock: (productId: number, newInitialStock: number) => void;
-  onBack?: () => void;
+  onUpdateStock?: (sessionId: string, updatedProducts: any[]) => void;
 }
 
-export function SessionDetails({ 
-  session: initialSession, 
-  onUpdateStock,
-  onBack
-}: SessionDetailsProps) {
-  const [session, setSession] = useState<Session>(initialSession);
-  const { isUpdating, setIsUpdating } = useInventoryUpdates(initialSession, setSession);
-  const isMobile = useIsMobile();
+export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) {
+  const [products, setProducts] = useState(session.products);
   const { toast } = useToast();
 
-  // Update local session when initial session changes
-  useEffect(() => {
-    setSession(initialSession);
-  }, [initialSession]);
-
-  // Subscribe to session-specific updates
   useEffect(() => {
     const channel = supabase
-      .channel('session_updates')
+      .channel(`session_${session.id}`)
       .on(
         'postgres_changes',
         {
@@ -44,11 +25,9 @@ export function SessionDetails({
           table: 'sessions',
           filter: `id=eq.${session.id}`,
         },
-        async (payload) => {
-          console.log('Session update received:', payload);
-          if (payload.new) {
-            const updatedSession = payload.new as Session;
-            setSession(updatedSession);
+        (payload: any) => {
+          if (payload.new && payload.new.products) {
+            setProducts(payload.new.products);
           }
         }
       )
@@ -59,14 +38,10 @@ export function SessionDetails({
     };
   }, [session.id]);
 
-  const handleUpdateStock = async (productId: number, newInitialStock: number) => {
-    console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
-    
+  const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
-      setIsUpdating(true);
-
-      // Update the session's products array with new stock values
-      const updatedProducts = session.products.map(product =>
+      // Update products array with new initial and current stock
+      const updatedProducts = products.map((product: any) =>
         product.id === productId
           ? { 
               ...product,
@@ -76,95 +51,80 @@ export function SessionDetails({
           : product
       );
 
-      // Update the session in the database with the new products array
-      const { data, error: updateError } = await supabase
+      // Update session in database
+      const { error } = await supabase
         .from('sessions')
         .update({
           products: updatedProducts
         })
-        .eq('id', session.id)
-        .select()
-        .single();
+        .eq('id', session.id);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      if (data) {
-        // Update local session state
-        setSession(data);
-        
-        toast({
-          title: "Stock Updated",
-          description: "Stock has been updated successfully.",
-        });
+      // Update local state
+      setProducts(updatedProducts);
+      
+      // Notify parent component
+      if (onUpdateStock) {
+        onUpdateStock(session.id, updatedProducts);
       }
 
-      // Call the parent's onUpdateStock callback
-      onUpdateStock(productId, newInitialStock);
-    } catch (error: any) {
+      toast({
+        title: "Stock updated",
+        description: "Initial and current stock have been updated successfully.",
+      });
+    } catch (error) {
       console.error('Error updating stock:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update stock.",
+        description: "Failed to update stock. Please try again.",
         variant: "destructive",
       });
-      throw error;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   return (
-    <div className="flex flex-col w-full gap-4 max-w-full overflow-hidden px-0 sm:px-4">
-      {isMobile && onBack && (
-        <Button
-          variant="ghost"
-          className="self-start -ml-2 text-muted-foreground"
-          onClick={onBack}
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back to Sessions
-        </Button>
-      )}
-      
-      <Tabs defaultValue="inventory" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 h-auto gap-2 sm:gap-16 bg-transparent p-2 sm:p-4">
-          <TabsTrigger 
-            value="inventory" 
-            className="data-[state=active]:bg-primary/10 px-3 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
-          >
-            Inventory
-          </TabsTrigger>
-          <TabsTrigger 
-            value="overview" 
-            className="data-[state=active]:bg-primary/10 px-3 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
-          >
-            Overview
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="data-[state=active]:bg-primary/10 px-3 sm:px-8 py-2 sm:py-3 text-xs sm:text-sm whitespace-nowrap min-w-0 flex-shrink rounded-md hover:bg-muted/50"
-          >
-            History
-          </TabsTrigger>
-        </TabsList>
-
-        <div className="mt-4 w-full max-w-full overflow-hidden">
-          <TabsContent value="inventory" className="m-0 w-full">
-            <div className="overflow-x-auto px-2">
-              <InventoryTable 
-                products={session.products} 
-                onUpdateStock={handleUpdateStock}
-              />
+    <div className="space-y-6">
+      <div className="rounded-lg border">
+        <div className="p-4">
+          <h3 className="text-lg font-medium">Inventory</h3>
+          <div className="mt-4">
+            <div className="grid grid-cols-4 gap-4 font-medium text-sm text-gray-500 mb-2">
+              <div>Product</div>
+              <div>Initial Stock</div>
+              <div>Current Stock</div>
+              <div>Actions</div>
             </div>
-          </TabsContent>
-          <TabsContent value="overview" className="m-0">
-            <SalesOverview session={session} />
-          </TabsContent>
-          <TabsContent value="history" className="m-0">
-            <SalesHistory session={session} />
-          </TabsContent>
+            {products.map((product: any) => (
+              <div key={product.id} className="grid grid-cols-4 gap-4 py-2 border-t items-center">
+                <div>{product.name}</div>
+                <div>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={product.initial_stock || 0}
+                    onChange={(e) => {
+                      const newValue = parseInt(e.target.value) || 0;
+                      handleInitialStockChange(product.id, newValue);
+                    }}
+                    className="w-24"
+                  />
+                </div>
+                <div>{product.current_stock || 0}</div>
+                <div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleInitialStockChange(product.id, product.initial_stock || 0)}
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </Tabs>
+      </div>
     </div>
   );
 }
