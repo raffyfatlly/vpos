@@ -12,20 +12,20 @@ import Products from "./pages/admin/Products";
 import Sessions from "./pages/admin/Sessions";
 import Dashboard from "./pages/admin/Dashboard";
 
-function App() {
-  // Create a client
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: 1,
-      },
+// Create a client outside of the component to avoid recreation on each render
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
     },
-  });
+  },
+});
 
+function App() {
   return (
-    <Router>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <Router>
         <AuthProvider>
           <SidebarProvider>
             <SessionProvider>
@@ -41,8 +41,8 @@ function App() {
             </SessionProvider>
           </SidebarProvider>
         </AuthProvider>
-      </QueryClientProvider>
-    </Router>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
