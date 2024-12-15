@@ -24,6 +24,7 @@ export function SessionSelector() {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Only show active sessions
   const activeSessions = sessions.filter(session => session.status === "active");
 
   const handleSessionSelect = async (sessionId: string) => {
@@ -32,9 +33,21 @@ export function SessionSelector() {
         .from('sessions')
         .select('*')
         .eq('id', sessionId)
+        .eq('status', 'active') // Only allow active sessions
         .single();
 
       if (sessionError) throw sessionError;
+
+      // If no active session found
+      if (!sessionData) {
+        toast({
+          title: "Session unavailable",
+          description: "This session is no longer active",
+          variant: "destructive",
+        });
+        setSelectedSessionId("");
+        return;
+      }
 
       const { data: productsData, error: productsError } = await supabase
         .from('products')
@@ -43,16 +56,6 @@ export function SessionSelector() {
       if (productsError) throw productsError;
 
       if (sessionData && user) {
-        // Double check that the session is still active
-        if (sessionData.status !== "active") {
-          toast({
-            title: "Session unavailable",
-            description: "This session is no longer active",
-            variant: "destructive",
-          });
-          return;
-        }
-
         const staffEntry: SessionStaff = {
           id: user.id,
           name: user.username,
@@ -86,6 +89,7 @@ export function SessionSelector() {
         description: "Failed to load session data",
         variant: "destructive",
       });
+      setSelectedSessionId("");
     }
   };
 
