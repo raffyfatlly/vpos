@@ -25,10 +25,10 @@ export function SessionList({
 
   const handleToggleActive = async (session: Session) => {
     try {
-      const newStatus = session.status === "active" ? "completed" : "active";
+      const newStatus = session.status === "active" ? "completed" : "active" as const;
       
       // Create updated session object
-      const updatedSession = {
+      const updatedSession: Session = {
         ...session,
         status: newStatus
       };
