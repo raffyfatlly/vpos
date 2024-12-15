@@ -63,6 +63,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
         if (updateError) throw updateError;
 
         // Update the session's products array
+        const sessionId = products[0]?.id;
         const { error: sessionError } = await supabase
           .from('sessions')
           .update({
@@ -72,7 +73,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                 : p
             )
           })
-          .eq('id', products[0]?.id);
+          .eq('id', sessionId);
 
         if (sessionError) throw sessionError;
 

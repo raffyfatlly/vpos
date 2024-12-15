@@ -16,38 +16,41 @@ export function SessionDetails({
 }: SessionDetailsProps) {
   const [session, setSession] = useState<Session>(initialSession);
 
-  // Reset session state when initialSession changes (different session selected)
+  // Only update session state when initialSession changes completely
   useEffect(() => {
     console.log('Session updated in SessionDetails:', initialSession);
-    setSession(initialSession);
+    // Deep compare products to prevent unnecessary updates
+    const hasProductChanges = JSON.stringify(initialSession.products) !== JSON.stringify(session.products);
+    if (hasProductChanges) {
+      setSession(initialSession);
+    }
   }, [initialSession]);
 
   const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock, newCurrentStock });
     
-    // Create a new products array with the updated values
-    const updatedProducts = session.products.map(product => {
-      if (product.id === productId) {
-        console.log('Updating product:', {
-          before: product,
-          after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
-        });
-        
-        // Create a new product object with updated values
-        return {
-          ...product,
-          initial_stock: newInitialStock,
-          current_stock: newCurrentStock
-        };
-      }
-      return product;
-    });
+    // Update local session state first
+    setSession(prevSession => {
+      const updatedProducts = prevSession.products.map(product => {
+        if (product.id === productId) {
+          console.log('Updating product:', {
+            before: product,
+            after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
+          });
+          return {
+            ...product,
+            initial_stock: newInitialStock,
+            current_stock: newCurrentStock
+          };
+        }
+        return product;
+      });
 
-    // Update the session state with the new products array
-    setSession(prevSession => ({
-      ...prevSession,
-      products: updatedProducts
-    }));
+      return {
+        ...prevSession,
+        products: updatedProducts
+      };
+    });
 
     // Call the parent's onUpdateStock callback
     onUpdateStock(productId, newInitialStock, newCurrentStock);
