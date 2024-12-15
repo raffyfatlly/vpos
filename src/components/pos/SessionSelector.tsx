@@ -56,7 +56,7 @@ export function SessionSelector() {
         return;
       }
 
-      // Fetch all current products
+      // Fetch all current products with their latest stock values
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -76,20 +76,17 @@ export function SessionSelector() {
           (sessionData.products as SessionProductData[]).map((p) => [p.id, p])
         );
 
-        // Initialize all products with default stock values
+        // Initialize all products with latest stock values from the products table
         const mergedProducts = (productsData as SessionProductData[]).map(product => {
           const sessionProduct = sessionProductsMap.get(product.id);
-          
-          // If this product exists in the session, use its stock values
-          // Otherwise, use the current product's stock values
           return {
             ...product,
-            initial_stock: sessionProduct?.initial_stock ?? product.initial_stock ?? 0,
-            current_stock: sessionProduct?.current_stock ?? product.current_stock ?? 0,
+            initial_stock: product.initial_stock ?? 0,  // Use the current initial_stock
+            current_stock: product.current_stock ?? 0,  // Use the current current_stock
           };
         });
 
-        // Update the session's products in the database
+        // Update the session's products in the database with latest stock values
         const { error: updateError } = await supabase
           .from('sessions')
           .update({

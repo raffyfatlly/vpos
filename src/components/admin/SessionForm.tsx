@@ -51,8 +51,8 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         image: product.image,
         variations: product.variations || [],
         session_id: sessionId,
-        initial_stock: product.initial_stock ?? 0,
-        current_stock: product.current_stock ?? 0,
+        initial_stock: product.initial_stock,  // Use the actual initial_stock from products
+        current_stock: product.current_stock,  // Use the actual current_stock from products
       }));
 
       const sessionData = {
