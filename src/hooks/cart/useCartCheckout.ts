@@ -2,13 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/contexts/SessionContext";
 import { CartItem, SaleData } from "./types";
 import { v4 as uuidv4 } from "uuid";
+import { PaymentMethod } from "@/types/pos";
 
 export const useCartCheckout = (
   items: CartItem[],
   getSubtotal: () => number,
   getTotal: () => number,
   globalDiscount: number,
-  selectedPayment: string,
+  selectedPayment: PaymentMethod,
+  paymentAmount: string,
   setItems: (items: CartItem[]) => void,
   setPaymentAmount: (amount: string) => void,
   setGlobalDiscount: (amount: number) => void,
@@ -59,7 +61,7 @@ export const useCartCheckout = (
       subtotal: getSubtotal(),
       discount: globalDiscount,
       total: getTotal(),
-      paymentMethod: selectedPayment as any,
+      paymentMethod: selectedPayment,
       timestamp: new Date().toISOString()
     };
 

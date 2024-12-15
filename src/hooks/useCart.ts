@@ -36,6 +36,7 @@ export const useCart = (onComplete: (sale: SaleData) => void) => {
     getTotal,
     globalDiscount,
     selectedPayment,
+    paymentAmount,
     setItems,
     setPaymentAmount,
     setGlobalDiscount,

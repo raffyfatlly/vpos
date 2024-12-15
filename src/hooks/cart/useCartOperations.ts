@@ -1,5 +1,5 @@
 import { CartItem } from "./types";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, ProductVariation } from "@/types/pos";
 
 export const useCartOperations = (
   items: CartItem[],
@@ -16,7 +16,7 @@ export const useCartOperations = (
       return;
     }
 
-    setItems((current) => {
+    setItems((current: CartItem[]) => {
       const existingItem = current.find((item) => 
         item.id === product.id && 
         !item.selectedVariation
@@ -43,7 +43,7 @@ export const useCartOperations = (
   };
 
   const updateQuantity = (id: number, delta: number) => {
-    setItems((current) => {
+    setItems((current: CartItem[]) => {
       const updatedItems = current.map((item) => {
         if (item.id === id) {
           const newQuantity = Math.max(0, item.quantity + delta);
@@ -64,7 +64,7 @@ export const useCartOperations = (
   };
 
   const applyDiscount = (id: number, discountAmount: number) => {
-    setItems((current) =>
+    setItems((current: CartItem[]) =>
       current.map((item) =>
         item.id === id
           ? { ...item, discount: Math.max(0, discountAmount) }
@@ -74,7 +74,7 @@ export const useCartOperations = (
   };
 
   const selectVariation = (id: number, variation: ProductVariation | undefined) => {
-    setItems((current) =>
+    setItems((current: CartItem[]) =>
       current.map((item) =>
         item.id === id
           ? { ...item, selectedVariation: variation }
