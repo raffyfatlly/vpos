@@ -8,16 +8,27 @@ import {
   CalendarDays,
   Menu,
   ChevronLeft,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export function AppSidebar() {
   const { isOpen, toggle } = useSidebar();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const isAdmin = user?.role === "admin" || user?.role === "both";
   const isCashier = user?.role === "cashier" || user?.role === "both";
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Signed out successfully",
+      description: "You have been signed out of your account",
+    });
+  };
 
   return (
     <>
@@ -32,6 +43,7 @@ export function AppSidebar() {
       <div
         className={cn(
           "fixed top-0 left-0 h-full bg-background border-r z-40 transition-all duration-300 md:translate-x-0",
+          "flex flex-col",
           isOpen ? "translate-x-0 w-60" : "-translate-x-full md:translate-x-0 md:w-[70px]"
         )}
       >
@@ -127,6 +139,23 @@ export function AppSidebar() {
               </NavLink>
             )}
           </nav>
+
+          <div className="p-2 mt-auto border-t">
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full flex items-center gap-3 justify-start",
+                !isOpen && "md:justify-center"
+              )}
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <span className={cn(
+                "transition-opacity duration-200",
+                !isOpen && "md:hidden"
+              )}>Sign Out</span>
+            </Button>
+          </div>
         </div>
       </div>
     </>
