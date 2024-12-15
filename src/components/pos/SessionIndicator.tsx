@@ -7,13 +7,13 @@ export function SessionIndicator() {
   if (!currentSession || !currentStaff) return null;
 
   return (
-    <div className="bg-white border rounded-lg p-3 mb-4 shadow-sm lg:mb-6">
+    <div className="bg-white border-b p-2 sticky top-0 z-10">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-primary truncate">
+        <div className="space-y-0.5">
+          <h2 className="text-base font-semibold text-primary truncate">
             {currentSession.name}
           </h2>
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               <span>{currentSession.date}</span>

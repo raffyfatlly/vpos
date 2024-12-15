@@ -44,18 +44,23 @@ const POS = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <SessionIndicator />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-8rem)]">
-        <div className="lg:col-span-2 overflow-auto order-2 lg:order-1">
-          <ProductGrid
-            products={currentSession.products}
-            onProductSelect={handleProductSelect}
-          />
-        </div>
-        <div className="overflow-auto order-1 lg:order-2">
-          <Cart ref={cartRef} onComplete={handleSaleComplete} />
-        </div>
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      <div className="flex-none">
+        <SessionIndicator />
+      </div>
+
+      {/* Products Section */}
+      <div className="flex-1 overflow-auto">
+        <ProductGrid
+          products={currentSession.products}
+          onProductSelect={handleProductSelect}
+        />
+      </div>
+
+      {/* Cart/Calculator Section */}
+      <div className="flex-none mt-4">
+        <Cart ref={cartRef} onComplete={handleSaleComplete} />
       </div>
     </div>
   );
