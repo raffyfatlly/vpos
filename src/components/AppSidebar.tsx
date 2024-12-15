@@ -38,7 +38,9 @@ export function AppSidebar() {
   // For now, we'll hardcode the role. Later we'll integrate with Supabase auth
   const userRole: UserRole = "cashier";
 
+  // Use type narrowing for type safety
   const items = userRole === "admin" ? adminItems : cashierItems;
+  const menuLabel = userRole === "admin" ? "Admin" : "Cashier";
 
   return (
     <Sidebar>
@@ -47,7 +49,7 @@ export function AppSidebar() {
           <h1 className="text-2xl font-bold text-primary">POS System</h1>
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel>{userRole === "admin" ? "Admin" : "Cashier"} Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{menuLabel} Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
