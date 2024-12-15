@@ -12,13 +12,20 @@ import Products from "./pages/admin/Products";
 import Sessions from "./pages/admin/Sessions";
 import Dashboard from "./pages/admin/Dashboard";
 
-// Create a client
-const queryClient = new QueryClient();
-
 function App() {
+  // Create a client
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        retry: 1,
+      },
+    },
+  });
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
+    <Router>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <SidebarProvider>
             <SessionProvider>
@@ -34,8 +41,8 @@ function App() {
             </SessionProvider>
           </SidebarProvider>
         </AuthProvider>
-      </Router>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </Router>
   );
 }
 
