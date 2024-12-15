@@ -1,41 +1,120 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { MOCK_PRODUCTS } from "@/data/mockData";
 import { SessionProduct } from "@/types/pos";
 import { Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Products() {
-  const [products, setProducts] = useState<SessionProduct[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<SessionProduct[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<SessionProduct | null>(null);
   const { toast } = useToast();
 
-  const handleSubmit = (productData: SessionProduct) => {
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? productData : p));
+  // Fetch products from Supabase on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+      
+      if (error) throw error;
+      
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
       toast({
-        title: "Product updated",
-        description: `${productData.name} has been updated successfully.`
-      });
-    } else {
-      setProducts([...products, { ...productData, id: products.length + 1 }]);
-      toast({
-        title: "Product created",
-        description: `${productData.name} has been added successfully.`
+        title: "Error fetching products",
+        description: "Please try again later.",
+        variant: "destructive"
       });
     }
-    setIsFormOpen(false);
-    setEditingProduct(null);
   };
 
-  const handleDelete = (product: SessionProduct) => {
-    setProducts(products.filter(p => p.id !== product.id));
-    toast({
-      title: "Product deleted",
-      description: `${product.name} has been deleted successfully.`
-    });
+  const handleSubmit = async (productData: SessionProduct) => {
+    try {
+      if (editingProduct) {
+        // Update existing product
+        const { error } = await supabase
+          .from('products')
+          .update({
+            name: productData.name,
+            price: productData.price,
+            category: productData.category,
+            image: productData.image,
+            variations: productData.variations
+          })
+          .eq('id', editingProduct.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Product updated",
+          description: `${productData.name} has been updated successfully.`
+        });
+      } else {
+        // Create new product
+        const { error } = await supabase
+          .from('products')
+          .insert([{
+            name: productData.name,
+            price: productData.price,
+            category: productData.category,
+            image: productData.image,
+            variations: productData.variations
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Product created",
+          description: `${productData.name} has been added successfully.`
+        });
+      }
+
+      // Refresh products list
+      fetchProducts();
+      setIsFormOpen(false);
+      setEditingProduct(null);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({
+        title: "Error saving product",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDelete = async (product: SessionProduct) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', product.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Product deleted",
+        description: `${product.name} has been deleted successfully.`
+      });
+
+      // Refresh products list
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error deleting product",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -60,7 +139,7 @@ export default function Products() {
             <h3 className="font-semibold">{product.name}</h3>
             <p className="text-sm text-muted-foreground">RM {product.price.toFixed(2)}</p>
             <div className="flex justify-between items-center">
-              <p className="text-sm">Stock: {product.currentStock}</p>
+              <p className="text-sm">Category: {product.category}</p>
               <div className="space-x-2">
                 <Button
                   variant="outline"
