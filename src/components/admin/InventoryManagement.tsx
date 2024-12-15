@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
@@ -21,6 +21,11 @@ interface InventoryManagementProps {
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
+
+  // Debug log when products prop changes
+  useEffect(() => {
+    console.log('Products updated in InventoryManagement:', products);
+  }, [products]);
 
   const handleInitialStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
@@ -34,6 +39,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
     const newInitialStock = initialStockUpdates[productId];
     if (typeof newInitialStock === 'number') {
       try {
+        console.log('Starting stock update for product:', productId, 'new initial stock:', newInitialStock);
+
         // Calculate new current stock
         const { data: newCurrentStock, error: rpcError } = await supabase
           .rpc('calculate_new_current_stock', {
@@ -42,6 +49,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           });
 
         if (rpcError) throw rpcError;
+
+        console.log('Calculated new current stock:', newCurrentStock);
 
         // Update both initial and current stock in the database
         const { error: updateError } = await supabase
@@ -53,6 +62,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           .eq('id', productId);
 
         if (updateError) throw updateError;
+
+        console.log('Database update successful');
 
         // Call onUpdateStock with both initial and current stock values
         onUpdateStock(productId, newInitialStock, newCurrentStock);
@@ -68,8 +79,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           return rest;
         });
 
-        // Log the update for debugging
-        console.log('Stock updated:', { productId, newInitialStock, newCurrentStock });
       } catch (error) {
         console.error('Error updating stock:', error);
         toast({
@@ -102,8 +111,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.initial_stock || 0}</TableCell>
-                <TableCell>{product.current_stock || 0}</TableCell>
+                <TableCell>{product.initial_stock}</TableCell>
+                <TableCell>{product.current_stock}</TableCell>
                 <TableCell>
                   <Input
                     type="number"

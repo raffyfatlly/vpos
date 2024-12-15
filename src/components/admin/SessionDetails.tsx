@@ -18,12 +18,19 @@ export function SessionDetails({
 
   // Reset session state when initialSession changes (different session selected)
   useEffect(() => {
+    console.log('Session updated in SessionDetails:', initialSession);
     setSession(initialSession);
   }, [initialSession]);
 
   const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
+    console.log('Updating stock in SessionDetails:', { productId, newInitialStock, newCurrentStock });
+    
     const updatedProducts = session.products.map(product => {
       if (product.id === productId) {
+        console.log('Updating product:', {
+          before: product,
+          after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
+        });
         return {
           ...product,
           initial_stock: newInitialStock,
