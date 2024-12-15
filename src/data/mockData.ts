@@ -7,8 +7,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     price: 29.99,
     category: "Apparel",
     image: "/placeholder.svg",
-    initialStock: 0,
-    currentStock: 0
+    initial_stock: 0,
+    current_stock: 0
   },
   {
     id: 2,
@@ -16,8 +16,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     price: 59.99,
     category: "Apparel",
     image: "/placeholder.svg",
-    initialStock: 0,
-    currentStock: 0
+    initial_stock: 0,
+    current_stock: 0
   },
   {
     id: 3,
@@ -25,8 +25,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     price: 24.99,
     category: "Accessories",
     image: "/placeholder.svg",
-    initialStock: 0,
-    currentStock: 0
+    initial_stock: 0,
+    current_stock: 0
   },
   {
     id: 4,
@@ -34,8 +34,8 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     price: 9.99,
     category: "Merchandise",
     image: "/placeholder.svg",
-    initialStock: 0,
-    currentStock: 0
+    initial_stock: 0,
+    current_stock: 0
   }
 ];
 
@@ -51,8 +51,8 @@ export const MOCK_SESSIONS: Session[] = [
     ],
     products: MOCK_PRODUCTS.map(product => ({
       ...product,
-      initialStock: 50,
-      currentStock: 45
+      initial_stock: 50,
+      current_stock: 45
     })),
     status: "active",
     created_at: new Date().toISOString(),
@@ -80,8 +80,8 @@ export const MOCK_SESSIONS: Session[] = [
     ],
     products: MOCK_PRODUCTS.map(product => ({
       ...product,
-      initialStock: 50,
-      currentStock: 50
+      initial_stock: 50,
+      current_stock: 50
     })),
     status: "active",
     created_at: new Date().toISOString(),

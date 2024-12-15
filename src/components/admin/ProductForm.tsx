@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SessionProduct, ProductVariation } from "@/types/pos";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Upload } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface ProductFormProps {
   product?: SessionProduct;
@@ -11,6 +13,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: product?.name || "",
     price: product?.price ? product.price.toString() : "",
@@ -18,6 +21,81 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     image: product?.image || "",
     variations: product?.variations || [] as ProductVariation[],
   });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      await uploadFile(file);
+    }
+  }, []);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file);
+    }
+  }, []);
+
+  const uploadFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({
+        ...prev,
+        image: publicUrl
+      }));
+
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your image",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleAddVariation = () => {
     setFormData({
@@ -61,8 +139,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       name: formData.name,
       category: formData.category,
       image: formData.image,
-      initialStock: 0, // Default value, will be set in session
-      currentStock: 0, // Default value, will be set in session
+      initial_stock: product?.initial_stock || 0,
+      current_stock: product?.current_stock || 0,
     });
   };
 
@@ -118,16 +196,53 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="image" className="text-sm font-medium">
-              Image URL
-            </label>
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-            />
+            <label className="text-sm font-medium">Product Image</label>
+            <div
+              className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                isDragging ? 'border-primary bg-primary/5' : 'border-gray-300'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleFileDrop}
+            >
+              {formData.image ? (
+                <div className="space-y-2">
+                  <img
+                    src={formData.image}
+                    alt="Product"
+                    className="mx-auto h-32 w-32 object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData({ ...formData, image: '' })}
+                  >
+                    Remove Image
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="flex items-center justify-center text-sm text-gray-600">
+                    <label className="relative cursor-pointer rounded-md font-semibold text-primary hover:text-primary/80">
+                      <span>Upload a file</span>
+                      <input
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        disabled={isUploading}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -181,7 +296,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={isUploading}>
               {product ? "Update Product" : "Create Product"}
             </Button>
           </div>
