@@ -1,20 +1,20 @@
-import { useSession } from "@/contexts/SessionContext";
-import { SessionSelector } from "@/components/pos/SessionSelector";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { Cart } from "@/components/pos/Cart";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
-import { Sale, SessionProduct, Session } from "@/types/pos";
+import { Sale, SessionProduct, Session, ProductVariation } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSession } from "@/contexts/SessionContext";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { SessionSelector } from "@/components/pos/SessionSelector";
+import { supabase } from "@/lib/supabase";
 
 const POS = () => {
+  const { user } = useAuth();
   const { currentSession, currentStaff, setCurrentSession } = useSession();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
+  const cartRef = useRef<{ handleCheckout: () => void }>(null);
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -28,22 +28,22 @@ const POS = () => {
     return <SessionSelector />;
   }
 
-  const handleProductSelect = (product: SessionProduct) => {
-    if (cartRef.current) {
-      cartRef.current.addProduct(product);
-      toast({
-        title: "Product added",
-        description: `Added ${product.name} to cart`,
-      });
-    }
-  };
-
-  const handleSaleComplete = async (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    const completeSale = {
-      ...saleData,
+  const handleSaleComplete = async (sale: {
+    products: {
+      productId: number;
+      quantity: number;
+      price: number;
+      discount: number;
+      variationId?: number;
+    }[];
+    subtotal: number;
+    discount: number;
+    total: number;
+    paymentMethod: "cash" | "bayarlah_qr";
+  }) => {
+    const newSale: Sale = {
+      ...sale,
       id: `SALE-${Date.now()}`,
-      sessionId: currentSession.id,
-      staffId: currentStaff.id,
       timestamp: new Date().toISOString(),
     };
 
@@ -53,7 +53,8 @@ const POS = () => {
       .eq('id', currentSession.id)
       .single();
 
-    if (fetchError || !latestSession) {
+    if (fetchError) {
+      console.error('Error fetching latest session:', fetchError);
       toast({
         title: "Error",
         description: "Failed to complete sale. Please try again.",
@@ -62,26 +63,30 @@ const POS = () => {
       return;
     }
 
-    // Convert the raw data to Session type
+    // Convert the raw data to Session type with proper type assertions
     const typedSession: Session = {
       ...latestSession,
       staff: latestSession.staff as Session['staff'],
-      products: latestSession.products as Session['products'],
-      sales: latestSession.sales as Session['sales'],
+      products: latestSession.products as SessionProduct[],
+      sales: latestSession.sales as Sale[],
+      variations: latestSession.variations as ProductVariation[] | undefined,
     };
 
     setCurrentSession(typedSession);
 
     toast({
       title: "Sale completed",
-      description: `Total: RM${saleData.total.toFixed(2)}`,
+      description: `Total: RM${sale.total.toFixed(2)}`,
     });
+
+    if (cartRef.current) {
+      cartRef.current.handleCheckout();
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       <SessionIndicator />
-      
       <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4">
           <div className="lg:col-span-2 space-y-3 sm:space-y-4 order-2 lg:order-1">
@@ -89,13 +94,12 @@ const POS = () => {
               {currentSession.products && currentSession.products.length > 0 ? (
                 <ProductGrid
                   products={currentSession.products}
-                  onProductSelect={handleProductSelect}
+                  variations={currentSession.variations}
                 />
               ) : (
                 <div className="text-center py-8">
-                  <h3 className="text-lg font-medium text-gray-900">No Products Available</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    There are no products available in this session.
+                  <p className="text-muted-foreground">
+                    No products available in this session.
                   </p>
                 </div>
               )}
@@ -109,7 +113,7 @@ const POS = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
