@@ -76,16 +76,28 @@ export function SessionSelector() {
           (sessionData.products as SessionProductData[]).map((p) => [p.id, p])
         );
 
-        // Merge current products with session-specific data
+        // Initialize all products with default stock values
         const mergedProducts = (productsData as SessionProductData[]).map(product => {
           const sessionProduct = sessionProductsMap.get(product.id);
+          
+          // If this product exists in the session, use its stock values
+          // Otherwise, use the current product's stock values
           return {
             ...product,
-            // If this product exists in the session, use its stock values
             initial_stock: sessionProduct?.initial_stock ?? product.initial_stock ?? 0,
             current_stock: sessionProduct?.current_stock ?? product.current_stock ?? 0,
           };
         });
+
+        // Update the session's products in the database
+        const { error: updateError } = await supabase
+          .from('sessions')
+          .update({
+            products: mergedProducts
+          })
+          .eq('id', sessionId);
+
+        if (updateError) throw updateError;
         
         const session = {
           ...sessionData,
