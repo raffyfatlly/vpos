@@ -19,7 +19,7 @@ export function SalesHistory({ session }: SalesHistoryProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Transaction ID</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>Date & Time</TableHead>
             <TableHead>Items</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Payment Method</TableHead>
@@ -30,7 +30,7 @@ export function SalesHistory({ session }: SalesHistoryProps) {
             <TableRow key={sale.id}>
               <TableCell>{sale.id}</TableCell>
               <TableCell>
-                {new Date(sale.timestamp).toLocaleDateString()}
+                {new Date(sale.timestamp).toLocaleString()}
               </TableCell>
               <TableCell>{sale.products.length} items</TableCell>
               <TableCell>${sale.total.toFixed(2)}</TableCell>

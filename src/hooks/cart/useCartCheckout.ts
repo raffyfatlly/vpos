@@ -59,7 +59,7 @@ export const useCartCheckout = (
       if (soldItem) {
         return {
           ...product,
-          currentStock: product.currentStock - soldItem.quantity
+          current_stock: product.current_stock - soldItem.quantity
         };
       }
       return product;
