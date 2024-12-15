@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import AppSidebar from "./AppSidebar";
+import { AppSidebar } from "./AppSidebar";
 
 interface LayoutProps {
   children: React.ReactNode;

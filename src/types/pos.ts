@@ -36,6 +36,7 @@ export type Session = {
   id: string;
   name: string;
   date: string;
+  time?: string;
   location: string;
   staff: SessionStaff[];
   products: SessionProduct[];
