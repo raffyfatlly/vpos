@@ -22,11 +22,11 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        // Handle signup
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: {
               username: email,
               role: 'both'
@@ -34,16 +34,13 @@ export default function Login() {
           }
         });
 
-        if (signUpError) throw signUpError;
+        if (error) throw error;
 
-        if (signUpData.user) {
-          toast({
-            title: "Sign up successful",
-            description: "Welcome to the dashboard!",
-          });
-        }
+        toast({
+          title: "Sign up successful",
+          description: "Welcome to the dashboard!",
+        });
       } else {
-        // Handle login
         await login(email, password);
         toast({
           title: "Login successful",
