@@ -1,4 +1,4 @@
-import { Package2, ShoppingCart, BarChart3, LogOut } from "lucide-react";
+import { Package2, ShoppingCart, BarChart3, LogOut, UserCog } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +41,8 @@ export function AppSidebar() {
   // Use type narrowing for type safety
   const items = userRole === "admin" ? adminItems : cashierItems;
   const menuLabel = userRole === "admin" ? "Admin" : "Cashier";
+  const switchToRole: UserRole = userRole === "admin" ? "cashier" : "admin";
+  const switchToPath = switchToRole === "admin" ? "/admin/products" : "/cashier";
 
   return (
     <Sidebar>
@@ -60,6 +62,12 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => navigate(switchToPath)}>
+                  <UserCog className="w-5 h-5" />
+                  <span>Switch to {switchToRole}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton>
                   <LogOut className="w-5 h-5" />
