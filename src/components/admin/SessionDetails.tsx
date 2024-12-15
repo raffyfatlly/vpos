@@ -17,11 +17,44 @@ export function SessionDetails({
 }: SessionDetailsProps) {
   const [session, setSession] = useState<Session>(initialSession);
 
+  // Subscribe to product updates
   useEffect(() => {
-    const hasProductChanges = JSON.stringify(initialSession.products) !== JSON.stringify(session.products);
-    if (hasProductChanges) {
-      setSession(initialSession);
-    }
+    // First, sync with initial session data
+    setSession(initialSession);
+
+    // Then subscribe to product updates
+    const channel = supabase
+      .channel('product_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products',
+        },
+        async () => {
+          // Fetch latest product data
+          const { data: products } = await supabase
+            .from('products')
+            .select('*');
+
+          if (products) {
+            // Update session with latest product data
+            setSession(prevSession => ({
+              ...prevSession,
+              products: products.map(product => ({
+                ...product,
+                session_id: prevSession.id
+              }))
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [initialSession]);
 
   const handleUpdateStock = async (productId: number, newInitialStock: number) => {
@@ -39,24 +72,22 @@ export function SessionDetails({
 
       if (updateError) throw updateError;
 
-      // Update local state
-      setSession(prevSession => {
-        const updatedProducts = prevSession.products.map(product => {
-          if (product.id === productId) {
-            return {
-              ...product,
-              initial_stock: newInitialStock,
-              current_stock: newInitialStock
-            };
-          }
-          return product;
-        });
+      // Fetch the updated product to ensure we have the latest data
+      const { data: updatedProduct, error: fetchError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
 
-        return {
-          ...prevSession,
-          products: updatedProducts
-        };
-      });
+      if (fetchError) throw fetchError;
+
+      // Update local state with the fetched product data
+      setSession(prevSession => ({
+        ...prevSession,
+        products: prevSession.products.map(product => 
+          product.id === productId ? { ...updatedProduct, session_id: prevSession.id } : product
+        )
+      }));
 
       // Call the parent handler
       onUpdateStock(productId, newInitialStock);
