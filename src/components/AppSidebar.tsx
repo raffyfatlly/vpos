@@ -1,4 +1,4 @@
-import { Package2, ShoppingCart, BarChart3, LogOut, UserCog, Menu } from "lucide-react";
+import { Package2, ShoppingCart, BarChart3, LogOut, UserCog, Menu, CalendarDays } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const adminItems = [
+  {
+    title: "Sessions",
+    path: "/admin/sessions",
+    icon: CalendarDays,
+  },
   {
     title: "Products",
     path: "/admin/products",

@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Products from "./pages/admin/Products";
+import Sessions from "./pages/admin/Sessions";
 import POS from "./pages/cashier/POS";
 import Login from "./pages/Login";
 import "./App.css";
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Layout><Index /></Layout>} />
                 <Route path="/admin/products" element={<Layout><Products /></Layout>} />
+                <Route path="/admin/sessions" element={<Layout><Sessions /></Layout>} />
                 <Route path="/cashier" element={<Layout><POS /></Layout>} />
               </Routes>
             </BrowserRouter>
