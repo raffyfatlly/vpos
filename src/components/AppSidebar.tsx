@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
 
+type UserRole = "admin" | "cashier";
+
 const adminItems = [
   {
     title: "Products",
@@ -35,7 +37,7 @@ const cashierItems = [
 export function AppSidebar() {
   const navigate = useNavigate();
   // For now, we'll hardcode the role. Later we'll integrate with Supabase auth
-  const userRole = "cashier";
+  const userRole: UserRole = "cashier";
 
   const items = userRole === "admin" ? adminItems : cashierItems;
 
