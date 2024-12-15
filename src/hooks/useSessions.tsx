@@ -14,12 +14,14 @@ export function useSessions() {
   } = useQuery({
     queryKey: ["sessions"],
     queryFn: async () => {
+      console.log("Fetching sessions from database");
       const { data, error } = await supabase
         .from("sessions")
         .select("*")
         .order("date", { ascending: true });
 
       if (error) throw error;
+      console.log("Fetched sessions:", data);
       return data;
     },
   });
@@ -54,6 +56,7 @@ export function useSessions() {
 
   const updateSession = useMutation({
     mutationFn: async (sessionData: Session) => {
+      console.log("Updating session in database:", sessionData);
       const { data, error } = await supabase
         .from("sessions")
         .update(sessionData)
@@ -65,9 +68,17 @@ export function useSessions() {
       return data;
     },
     onSuccess: (updatedSession) => {
+      // Immediately update the cache with the new data
       queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
         old.map(session => session.id === updatedSession.id ? updatedSession : session)
       );
+      
+      // Prevent automatic background refetch for a short period
+      queryClient.invalidateQueries({
+        queryKey: ["sessions"],
+        refetchType: "none"
+      });
+
       toast({
         title: "Session updated",
         description: "The session has been updated successfully.",
@@ -94,22 +105,14 @@ export function useSessions() {
       return sessionId;
     },
     onMutate: async (sessionId) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["sessions"] });
-
-      // Snapshot the previous value
       const previousSessions = queryClient.getQueryData(["sessions"]);
-
-      // Optimistically update to the new value
       queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
         old.filter(session => session.id !== sessionId)
       );
-
-      // Return a context object with the snapshotted value
       return { previousSessions };
     },
     onError: (err, sessionId, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["sessions"], context?.previousSessions);
       console.error("Error deleting session:", err);
       toast({
@@ -118,14 +121,13 @@ export function useSessions() {
         variant: "destructive",
       });
     },
-    onSuccess: (deletedSessionId) => {
+    onSuccess: () => {
       toast({
         title: "Session deleted",
         description: "The session has been deleted successfully.",
       });
     },
     onSettled: () => {
-      // Always refetch after error or success to ensure cache is in sync
       queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
   });
