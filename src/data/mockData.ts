@@ -46,8 +46,8 @@ export const MOCK_SESSIONS: Session[] = [
     date: "2024-03-16",
     location: "Central Park",
     staff: [
-      { id: "staff1", name: "John Doe", role: "admin", password: "admin123" },
-      { id: "staff2", name: "Jane Smith", role: "cashier", password: "cash123" },
+      { id: "staff1", name: "John Doe", role: "admin" },
+      { id: "staff2", name: "Jane Smith", role: "cashier" },
     ],
     products: MOCK_PRODUCTS.map(product => ({
       ...product,
@@ -75,8 +75,8 @@ export const MOCK_SESSIONS: Session[] = [
     date: "2024-03-17",
     location: "Fashion Mall",
     staff: [
-      { id: "staff1", name: "John Doe", role: "admin", password: "admin123" },
-      { id: "staff3", name: "Mike Johnson", role: "cashier", password: "cash456" },
+      { id: "staff1", name: "John Doe", role: "admin" },
+      { id: "staff3", name: "Mike Johnson", role: "cashier" },
     ],
     products: MOCK_PRODUCTS.map(product => ({
       ...product,

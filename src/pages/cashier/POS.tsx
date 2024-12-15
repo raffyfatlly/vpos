@@ -3,7 +3,7 @@ import { SessionSelector } from "@/components/pos/SessionSelector";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { Cart } from "@/components/pos/Cart";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
-import { Sale, SessionProduct } from "@/types/pos";
+import { Sale, SessionProduct, Session } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,7 +24,6 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
-  // If no session is selected, show the session selector
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
@@ -48,7 +47,6 @@ const POS = () => {
       timestamp: new Date().toISOString(),
     };
 
-    // Fetch the latest session data to ensure we have the most up-to-date stock counts
     const { data: latestSession, error: fetchError } = await supabase
       .from('sessions')
       .select('*')
@@ -64,8 +62,15 @@ const POS = () => {
       return;
     }
 
-    // Update the current session with the latest data
-    setCurrentSession(latestSession);
+    // Convert the raw data to Session type
+    const typedSession: Session = {
+      ...latestSession,
+      staff: latestSession.staff as Session['staff'],
+      products: latestSession.products as Session['products'],
+      sales: latestSession.sales as Session['sales'],
+    };
+
+    setCurrentSession(typedSession);
 
     toast({
       title: "Sale completed",
@@ -79,7 +84,6 @@ const POS = () => {
       
       <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4">
-          {/* Products Section */}
           <div className="lg:col-span-2 space-y-3 sm:space-y-4 order-2 lg:order-1">
             <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
               {currentSession.products && currentSession.products.length > 0 ? (
@@ -98,7 +102,6 @@ const POS = () => {
             </div>
           </div>
 
-          {/* Cart Section - Sticky on mobile */}
           <div className="lg:col-span-1 order-1 lg:order-2 sticky top-[65px] z-10">
             <div className="bg-white rounded-lg shadow-sm">
               <Cart ref={cartRef} onComplete={handleSaleComplete} />
