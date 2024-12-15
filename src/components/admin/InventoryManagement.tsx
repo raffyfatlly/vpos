@@ -15,45 +15,49 @@ import { supabase } from "@/lib/supabase";
 
 interface InventoryManagementProps {
   products: SessionProduct[];
-  onUpdateStock: (productId: number, newCurrentStock: number) => void;
+  onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
 }
 
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
-  const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
+  const [stockUpdates, setStockUpdates] = useState<Record<number, { initial: number; current: number }>>({});
   const { toast } = useToast();
 
   useEffect(() => {
     console.log('Products updated in InventoryManagement:', products);
   }, [products]);
 
-  const handleStockChange = (productId: number, value: string) => {
+  const handleStockChange = (productId: number, type: 'initial' | 'current', value: string) => {
     const newStock = parseInt(value) || 0;
     setStockUpdates(prev => ({
       ...prev,
-      [productId]: newStock
+      [productId]: {
+        ...prev[productId],
+        [type]: newStock
+      }
     }));
   };
 
   const handleUpdateStock = async (productId: number) => {
-    const newStock = stockUpdates[productId];
-    if (typeof newStock === 'number') {
+    const updates = stockUpdates[productId];
+    if (updates) {
       try {
-        console.log('Starting stock update for product:', productId, 'new stock:', newStock);
+        console.log('Starting stock update for product:', productId, 'new stocks:', updates);
 
         const { error: updateError } = await supabase
           .from('products')
           .update({
-            current_stock: newStock
+            initial_stock: updates.initial,
+            current_stock: updates.current
           })
           .eq('id', productId);
 
         if (updateError) throw updateError;
 
-        onUpdateStock(productId, newStock);
+        onUpdateStock(productId, updates.initial, updates.current);
 
         toast({
           title: "Stock Updated",
-          description: "Current stock has been updated successfully.",
+          description: "Stock values have been updated successfully.",
         });
 
         setStockUpdates(prev => {
@@ -82,7 +86,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
               <TableHead className="w-[120px]">Price</TableHead>
               <TableHead className="w-[150px]">Initial Stock</TableHead>
               <TableHead className="w-[150px]">Current Stock</TableHead>
-              <TableHead className="w-[150px]">Update Stock</TableHead>
+              <TableHead className="w-[150px]">Update Initial</TableHead>
+              <TableHead className="w-[150px]">Update Current</TableHead>
               <TableHead className="w-[180px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -98,10 +103,19 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                 <TableCell>
                   <Input
                     type="number"
-                    placeholder="New stock"
+                    placeholder="New initial stock"
                     className="w-32"
-                    onChange={(e) => handleStockChange(product.id, e.target.value)}
-                    value={stockUpdates[product.id] || ''}
+                    onChange={(e) => handleStockChange(product.id, 'initial', e.target.value)}
+                    value={stockUpdates[product.id]?.initial || ''}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    placeholder="New current stock"
+                    className="w-32"
+                    onChange={(e) => handleStockChange(product.id, 'current', e.target.value)}
+                    value={stockUpdates[product.id]?.current || ''}
                   />
                 </TableCell>
                 <TableCell>
