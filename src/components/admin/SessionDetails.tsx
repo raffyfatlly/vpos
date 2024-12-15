@@ -39,13 +39,18 @@ export function SessionDetails({
             .select('*');
 
           if (products) {
-            // Update session with latest product data
+            // Update session with latest product data, preserving initial_stock
             setSession(prevSession => ({
               ...prevSession,
-              products: products.map(product => ({
-                ...product,
-                session_id: prevSession.id
-              }))
+              products: products.map(product => {
+                const existingProduct = prevSession.products.find(p => p.id === product.id);
+                return {
+                  ...product,
+                  session_id: prevSession.id,
+                  // Preserve the initial_stock from the existing product if it exists
+                  initial_stock: existingProduct?.initial_stock ?? product.initial_stock
+                };
+              })
             }));
           }
         }
@@ -85,7 +90,13 @@ export function SessionDetails({
       setSession(prevSession => ({
         ...prevSession,
         products: prevSession.products.map(product => 
-          product.id === productId ? { ...updatedProduct, session_id: prevSession.id } : product
+          product.id === productId 
+            ? { 
+                ...updatedProduct, 
+                session_id: prevSession.id,
+                initial_stock: newInitialStock // Ensure initial_stock is set correctly
+              } 
+            : product
         )
       }));
 
