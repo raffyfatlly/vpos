@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Session, SessionProduct } from "@/types/pos";
-import { MOCK_PRODUCTS } from "@/data/mockData";
+import { supabase } from "@/lib/supabase";
 
 interface SessionFormProps {
   session?: Session;
@@ -16,12 +16,17 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     date: session?.date || "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const sessionId = session?.id || `SESSION-${Date.now()}`;
     
-    // Add all products with initial stock when creating a new session
-    const sessionProducts: SessionProduct[] = MOCK_PRODUCTS.map(product => ({
+    // Fetch all products from the products table
+    const { data: products } = await supabase
+      .from('products')
+      .select('*');
+
+    // Add initial stock to each product when creating a new session
+    const sessionProducts: SessionProduct[] = (products || []).map(product => ({
       ...product,
       initialStock: 50, // Default initial stock
       currentStock: 50, // Initially same as initial stock

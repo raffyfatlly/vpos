@@ -54,8 +54,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     onSubmit({
       id: product?.id || Date.now(),
       price: Number(formData.price),
-      initialStock: product?.initialStock || 0,
-      currentStock: product?.currentStock || 0,
       variations: formData.variations.map(v => ({
         ...v,
         price: Number(v.price)
@@ -63,6 +61,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       name: formData.name,
       category: formData.category,
       image: formData.image,
+      initialStock: 0, // Default value, will be set in session
+      currentStock: 0, // Default value, will be set in session
     });
   };
 

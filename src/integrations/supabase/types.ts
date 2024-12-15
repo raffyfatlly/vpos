@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: number
+          image: string | null
+          name: string
+          price: number
+          variations: Json[] | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: number
+          image?: string | null
+          name: string
+          price: number
+          variations?: Json[] | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: number
+          image?: string | null
+          name?: string
+          price?: number
+          variations?: Json[] | null
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string
@@ -20,6 +50,7 @@ export type Database = {
           sales: Json[] | null
           staff: Json[]
           status: Database["public"]["Enums"]["session_status"]
+          variations: Json[] | null
         }
         Insert: {
           created_at?: string
@@ -31,6 +62,7 @@ export type Database = {
           sales?: Json[] | null
           staff?: Json[]
           status?: Database["public"]["Enums"]["session_status"]
+          variations?: Json[] | null
         }
         Update: {
           created_at?: string
@@ -42,6 +74,7 @@ export type Database = {
           sales?: Json[] | null
           staff?: Json[]
           status?: Database["public"]["Enums"]["session_status"]
+          variations?: Json[] | null
         }
         Relationships: []
       }
