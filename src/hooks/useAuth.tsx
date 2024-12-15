@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthUser, UserRole } from "@/types/pos";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -11,36 +12,29 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUsers: AuthUser[] = [
-  // Original users
   {
     id: "1",
     username: "admin",
-    password: "admin123",
     role: "admin" as UserRole,
   },
   {
     id: "2",
     username: "cashier",
-    password: "cashier123",
     role: "cashier" as UserRole,
   },
   {
     id: "3",
     username: "raffyfatlly",
-    password: "Type3user!",
     role: "both" as UserRole,
   },
-  // New mock users
   {
     id: "4",
     username: "sarah.admin",
-    password: "sarah123",
     role: "admin" as UserRole,
   },
   {
     id: "5",
     username: "john.cashier",
-    password: "john123",
     role: "cashier" as UserRole,
   }
 ];
@@ -50,27 +44,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const email = session.user.email;
+        const mockUser = mockUsers.find(u => u.username === email);
+        if (mockUser) {
+          setUser(mockUser);
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const email = session.user.email;
+        const mockUser = mockUsers.find(u => u.username === email);
+        if (mockUser) {
+          setUser(mockUser);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (username: string, password: string) => {
-    const user = mockUsers.find(
-      (u) => u.username === username && u.password === password
-    );
-    if (user) {
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: username,
+      password: password,
+    });
+
+    if (error) {
       throw new Error("Invalid credentials");
+    }
+
+    const mockUser = mockUsers.find(u => u.username === username);
+    if (mockUser) {
+      setUser(mockUser);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 

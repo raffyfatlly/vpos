@@ -9,6 +9,7 @@ import { useSessions } from "@/hooks/useSessions";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 const Sessions = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -69,26 +70,31 @@ const Sessions = () => {
       products: updatedProducts,
     };
 
-    await updateSession.mutateAsync(updatedSession);
-    setSelectedSession(updatedSession);
-  };
+    try {
+      const { error } = await supabase
+        .from('sessions')
+        .update({
+          products: updatedProducts
+        })
+        .eq('id', selectedSession.id);
 
-  const handleUpdateProduct = async (productId: number, updates: { price?: number; name?: string }) => {
-    if (!selectedSession) return;
+      if (error) throw error;
 
-    const updatedProducts = selectedSession.products.map(product =>
-      product.id === productId
-        ? { ...product, ...updates }
-        : product
-    );
-
-    const updatedSession = {
-      ...selectedSession,
-      products: updatedProducts,
-    };
-
-    await updateSession.mutateAsync(updatedSession);
-    setSelectedSession(updatedSession);
+      await updateSession.mutateAsync(updatedSession);
+      setSelectedSession(updatedSession);
+      
+      toast({
+        title: "Stock Updated",
+        description: "Product stock has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update stock. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -121,7 +127,6 @@ const Sessions = () => {
             <SessionDetails
               session={selectedSession}
               onUpdateStock={handleUpdateStock}
-              onUpdateProduct={handleUpdateProduct}
             />
           </div>
         )}

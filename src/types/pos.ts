@@ -2,6 +2,12 @@ export type PaymentMethod = "cash" | "bayarlah_qr";
 
 export type UserRole = "admin" | "cashier" | "both";
 
+export interface AuthUser {
+  id: string;
+  username: string;
+  role: UserRole;
+}
+
 export type ProductVariation = {
   id: number;
   name: string;
@@ -36,7 +42,6 @@ export type SessionStaff = {
   id: string;
   name: string;
   role: UserRole;
-  password: string;
 };
 
 export type Session = {
