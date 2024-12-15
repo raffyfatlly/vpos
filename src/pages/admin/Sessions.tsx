@@ -71,11 +71,24 @@ const Sessions = () => {
 
     await updateSession.mutateAsync(updatedSession);
     setSelectedSession(updatedSession);
-    
-    toast({
-      title: "Stock Updated",
-      description: "Product stock has been successfully updated.",
-    });
+  };
+
+  const handleUpdateProduct = async (productId: number, updates: { price?: number; name?: string }) => {
+    if (!selectedSession) return;
+
+    const updatedProducts = selectedSession.products.map(product =>
+      product.id === productId
+        ? { ...product, ...updates }
+        : product
+    );
+
+    const updatedSession = {
+      ...selectedSession,
+      products: updatedProducts,
+    };
+
+    await updateSession.mutateAsync(updatedSession);
+    setSelectedSession(updatedSession);
   };
 
   return (
@@ -108,6 +121,7 @@ const Sessions = () => {
             <SessionDetails
               session={selectedSession}
               onUpdateStock={handleUpdateStock}
+              onUpdateProduct={handleUpdateProduct}
             />
           </div>
         )}

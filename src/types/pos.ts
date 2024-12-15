@@ -15,8 +15,8 @@ export type SessionProduct = {
   category: string;
   image?: string;
   variations?: ProductVariation[];
-  initialStock?: number;
-  currentStock?: number;
+  initialStock: number;
+  currentStock: number;
 };
 
 export type Sale = {
@@ -45,18 +45,8 @@ export type Session = {
   date: string;
   location: string;
   staff: SessionStaff[];
-  products: (SessionProduct & {
-    initialStock: number;
-    currentStock: number;
-  })[];
+  products: SessionProduct[];
   status: "active" | "completed";
   sales: Sale[];
   created_at: string;
-};
-
-export type AuthUser = {
-  id: string;
-  username: string;
-  password: string;
-  role: UserRole;
 };
