@@ -88,21 +88,21 @@
     @apply font-display font-semibold tracking-tight;
   }
 
-  /* Updated responsive typography */
+  /* Responsive typography */
   h1 {
-    @apply text-heading-lg md:text-display-lg lg:text-[3rem] leading-tight;
+    @apply text-heading-lg md:text-display lg:text-display-lg leading-tight;
   }
 
   h2 {
-    @apply text-heading md:text-heading-lg lg:text-display;
+    @apply text-heading md:text-heading-lg lg:text-display leading-tight;
   }
 
   h3 {
-    @apply text-title md:text-heading;
+    @apply text-title md:text-heading leading-snug;
   }
 
   h4 {
-    @apply text-body-lg md:text-title;
+    @apply text-body-lg md:text-title leading-snug;
   }
 
   p {
