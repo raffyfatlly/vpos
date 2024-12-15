@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthUser, UserRole } from "@/types/pos";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -46,6 +47,7 @@ const mockUsers: AuthUser[] = [
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    navigate("/login", { replace: true });
   };
 
   return (

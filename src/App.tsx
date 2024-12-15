@@ -19,11 +19,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <SessionProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>
+            <SessionProvider>
+              <Toaster />
+              <Sonner />
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Layout><Index /></Layout>} />
@@ -31,9 +31,9 @@ function App() {
                 <Route path="/admin/sessions" element={<Layout><Sessions /></Layout>} />
                 <Route path="/cashier" element={<Layout><POS /></Layout>} />
               </Routes>
-            </BrowserRouter>
-          </SessionProvider>
-        </AuthProvider>
+            </SessionProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
