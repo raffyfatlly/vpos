@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, ProductVariation } from "@/types/pos";
 import { Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export default function Products() {
   const [products, setProducts] = useState<SessionProduct[]>([]);
@@ -27,7 +27,11 @@ export default function Products() {
         price: Number(product.price),
         category: product.category || '',
         image: product.image || '',
-        variations: product.variations || [],
+        variations: (product.variations || []).map((v: any) => ({
+          id: v.id || Date.now(),
+          name: v.name || '',
+          price: Number(v.price) || 0
+        })) as ProductVariation[],
         initialStock: product.initial_stock || 0,
         currentStock: product.current_stock || 0
       }));
