@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SessionProduct, ProductVariation } from "@/types/pos";
-import { Plus, X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 
 interface ProductFormProps {
-  product?: SessionProduct | null;
+  product?: SessionProduct;
   onSubmit: (productData: SessionProduct) => void;
   onCancel: () => void;
 }
@@ -13,15 +13,13 @@ interface ProductFormProps {
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [formData, setFormData] = useState({
     name: product?.name || "",
-    price: product?.price || 0,
-    initialStock: product?.initialStock || 0,
-    currentStock: product?.currentStock || 0,
+    price: product?.price?.toString() || "",
     category: product?.category || "",
-    image: product?.image || "/placeholder.svg",
-    variations: product?.variations || [],
+    image: product?.image || "",
+    variations: product?.variations || [] as ProductVariation[],
   });
 
-  const addVariation = () => {
+  const handleAddVariation = () => {
     setFormData({
       ...formData,
       variations: [
@@ -31,34 +29,38 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     });
   };
 
-  const removeVariation = (id: number) => {
+  const handleRemoveVariation = (index: number) => {
     setFormData({
       ...formData,
-      variations: formData.variations.filter((v) => v.id !== id),
+      variations: formData.variations.filter((_, i) => i !== index),
     });
   };
 
-  const updateVariation = (id: number, field: keyof ProductVariation, value: string | number) => {
-    setFormData({
-      ...formData,
-      variations: formData.variations.map((v) =>
-        v.id === id ? { ...v, [field]: value } : v
-      ),
-    });
+  const handleVariationChange = (
+    index: number,
+    field: keyof ProductVariation,
+    value: string
+  ) => {
+    const updatedVariations = [...formData.variations];
+    updatedVariations[index] = {
+      ...updatedVariations[index],
+      [field]: field === "price" ? Number(value) : value,
+    };
+    setFormData({ ...formData, variations: updatedVariations });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      ...formData,
       id: product?.id || 0,
       price: Number(formData.price),
-      initialStock: Number(formData.initialStock),
-      currentStock: product ? product.currentStock : Number(formData.initialStock), // Keep existing stock when editing
+      initialStock: 0, // This will be set at session level
+      currentStock: 0, // This will be set at session level
       variations: formData.variations.map(v => ({
         ...v,
         price: Number(v.price)
       })),
+      ...formData,
     });
   };
 
@@ -71,7 +73,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Product Name
+              Name
             </label>
             <Input
               id="name"
@@ -82,9 +84,10 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               required
             />
           </div>
+          
           <div className="space-y-2">
             <label htmlFor="price" className="text-sm font-medium">
-              Base Price (RM)
+              Price
             </label>
             <Input
               id="price"
@@ -92,29 +95,11 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               step="0.01"
               value={formData.price}
               onChange={(e) =>
-                setFormData({ ...formData, price: parseFloat(e.target.value) })
+                setFormData({ ...formData, price: e.target.value })
               }
               required
             />
           </div>
-          
-          {/* Only show stock input when creating a new product */}
-          {!product && (
-            <div className="space-y-2">
-              <label htmlFor="initialStock" className="text-sm font-medium">
-                Initial Stock
-              </label>
-              <Input
-                id="initialStock"
-                type="number"
-                value={formData.initialStock}
-                onChange={(e) =>
-                  setFormData({ ...formData, initialStock: parseInt(e.target.value) })
-                }
-                required
-              />
-            </div>
-          )}
 
           <div className="space-y-2">
             <label htmlFor="category" className="text-sm font-medium">
@@ -129,6 +114,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               required
             />
           </div>
+
           <div className="space-y-2">
             <label htmlFor="image" className="text-sm font-medium">
               Image URL
@@ -145,20 +131,26 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <label className="text-sm font-medium">Variations</label>
-              <Button type="button" variant="outline" size="sm" onClick={addVariation}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddVariation}
+              >
                 <Plus className="h-4 w-4 mr-1" />
                 Add Variation
               </Button>
             </div>
             <div className="space-y-3">
-              {formData.variations.map((variation) => (
+              {formData.variations.map((variation, index) => (
                 <div key={variation.id} className="flex gap-2 items-start">
                   <Input
                     placeholder="Name"
                     value={variation.name}
                     onChange={(e) =>
-                      updateVariation(variation.id, "name", e.target.value)
+                      handleVariationChange(index, "name", e.target.value)
                     }
+                    className="flex-1"
                   />
                   <Input
                     type="number"
@@ -166,7 +158,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                     placeholder="Price"
                     value={variation.price}
                     onChange={(e) =>
-                      updateVariation(variation.id, "price", parseFloat(e.target.value))
+                      handleVariationChange(index, "price", e.target.value)
                     }
                     className="w-24"
                   />
@@ -174,7 +166,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeVariation(variation.id)}
+                    onClick={() => handleRemoveVariation(index)}
                   >
                     <X className="h-4 w-4" />
                   </Button>
