@@ -62,10 +62,14 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           description: "Initial and current stock have been updated successfully.",
         });
 
+        // Clear the input field after successful update
         setInitialStockUpdates(prev => {
           const { [productId]: _, ...rest } = prev;
           return rest;
         });
+
+        // Log the update for debugging
+        console.log('Stock updated:', { productId, newInitialStock, newCurrentStock });
       } catch (error) {
         console.error('Error updating stock:', error);
         toast({
@@ -98,8 +102,8 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.initial_stock}</TableCell>
-                <TableCell>{product.current_stock}</TableCell>
+                <TableCell>{product.initial_stock || 0}</TableCell>
+                <TableCell>{product.current_stock || 0}</TableCell>
                 <TableCell>
                   <Input
                     type="number"
