@@ -24,9 +24,11 @@ const POS = () => {
   // Effect to check session status and listen for product updates
   useEffect(() => {
     if (currentSession) {
-      // Listen for session status changes
-      const sessionChannel = supabase
-        .channel('session_status')
+      console.log('Subscribing to session updates for session:', currentSession.id);
+      
+      // Listen for session-specific updates
+      const channel = supabase
+        .channel(`session_${currentSession.id}`)
         .on(
           'postgres_changes',
           {
@@ -35,25 +37,27 @@ const POS = () => {
             table: 'sessions',
             filter: `id=eq.${currentSession.id}`,
           },
-          (payload: any) => {
+          async (payload: any) => {
             console.log('Session update received:', payload);
-            const updatedSession = payload.new as any;
             
-            if (updatedSession.status === 'completed') {
-              toast({
-                title: "Session completed",
-                description: "This session has been marked as completed. Returning to session selection.",
-              });
-              clearSession();
-            } else {
-              // Update session with new data, including product stock changes
-              setCurrentSession(updatedSession);
-              
-              // Show toast for stock updates
-              if (updatedSession.products) {
+            if (payload.new) {
+              const updatedSession = payload.new;
+              console.log('Updated session data:', updatedSession);
+
+              if (updatedSession.status === 'completed') {
+                toast({
+                  title: "Session completed",
+                  description: "This session has been marked as completed. Returning to session selection.",
+                });
+                clearSession();
+              } else {
+                // Update session with new data, including product stock changes
+                setCurrentSession(updatedSession);
+                
+                // Show toast for stock updates
                 toast({
                   title: "Stock updated",
-                  description: "Product stock has been updated",
+                  description: "Product stock has been updated in this session",
                 });
               }
             }
@@ -61,11 +65,13 @@ const POS = () => {
         )
         .subscribe();
 
+      // Cleanup subscription on unmount
       return () => {
-        supabase.removeChannel(sessionChannel);
+        console.log('Cleaning up session subscription');
+        supabase.removeChannel(channel);
       };
     }
-  }, [currentSession, toast, setCurrentSession, clearSession]);
+  }, [currentSession?.id]); // Only re-subscribe when session ID changes
 
   if (!user) {
     return <Navigate to="/login" replace />;
