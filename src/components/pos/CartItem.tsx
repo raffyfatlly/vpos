@@ -10,6 +10,9 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, onUpdateQuantity, onApplyDiscount }: CartItemProps) {
+  const itemTotal = item.price * item.quantity;
+  const finalPrice = itemTotal - item.discount;
+
   return (
     <tr>
       <td className="font-medium">{item.name}</td>
@@ -35,18 +38,20 @@ export function CartItem({ item, onUpdateQuantity, onApplyDiscount }: CartItemPr
         </div>
       </td>
       <td>
-        <Input
-          type="number"
-          min="0"
-          max="100"
-          value={item.discount || ""}
-          onChange={(e) => onApplyDiscount(item.id, parseInt(e.target.value) || 0)}
-          className="w-20"
-        />
-        %
+        <div className="flex items-center gap-1">
+          <span>RM</span>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={item.discount || ""}
+            onChange={(e) => onApplyDiscount(item.id, parseFloat(e.target.value) || 0)}
+            className="w-20"
+          />
+        </div>
       </td>
       <td>
-        ${((item.price * item.quantity * (100 - item.discount)) / 100).toFixed(2)}
+        RM{finalPrice.toFixed(2)}
       </td>
       <td>
         <Button

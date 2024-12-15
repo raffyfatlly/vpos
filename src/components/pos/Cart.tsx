@@ -53,11 +53,11 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       );
     };
 
-    const applyDiscount = (id: number, discountPercent: number) => {
+    const applyDiscount = (id: number, discountAmount: number) => {
       setItems((current) =>
         current.map((item) =>
           item.id === id
-            ? { ...item, discount: Math.min(100, Math.max(0, discountPercent)) }
+            ? { ...item, discount: Math.max(0, discountAmount) }
             : item
         )
       );
@@ -66,20 +66,13 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
     const getSubtotal = () => {
       return items.reduce((sum, item) => {
         const itemTotal = item.price * item.quantity;
-        const discountAmount = (itemTotal * item.discount) / 100;
-        return sum + (itemTotal - discountAmount);
+        return sum + (itemTotal - item.discount);
       }, 0);
-    };
-
-    const getGlobalDiscountAmount = () => {
-      const subtotal = getSubtotal();
-      return (subtotal * globalDiscount) / 100;
     };
 
     const getTotal = () => {
       const subtotal = getSubtotal();
-      const discountAmount = getGlobalDiscountAmount();
-      return subtotal - discountAmount;
+      return subtotal - globalDiscount;
     };
 
     const handleCheckout = () => {
@@ -103,9 +96,8 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
           discount: item.discount,
         })),
         subtotal: getSubtotal(),
-        discount: getGlobalDiscountAmount() + items.reduce(
-          (sum, item) =>
-            sum + (item.price * item.quantity * item.discount) / 100,
+        discount: globalDiscount + items.reduce(
+          (sum, item) => sum + item.discount,
           0
         ),
         total: getTotal(),
@@ -118,7 +110,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         const change = payment - total;
         toast({
           title: "Sale completed",
-          description: `Change due: $${change.toFixed(2)}`,
+          description: `Change due: RM${change.toFixed(2)}`,
         });
       } else {
         toast({
@@ -143,7 +135,6 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
           subtotal={getSubtotal()}
           globalDiscount={globalDiscount}
           onGlobalDiscountChange={setGlobalDiscount}
-          discountAmount={getGlobalDiscountAmount()}
           total={getTotal()}
           selectedPayment={selectedPayment}
           paymentAmount={paymentAmount}

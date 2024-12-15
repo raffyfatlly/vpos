@@ -7,7 +7,6 @@ interface CartSummaryProps {
   subtotal: number;
   globalDiscount: number;
   onGlobalDiscountChange: (discount: number) => void;
-  discountAmount: number;
   total: number;
   selectedPayment: PaymentMethod;
   paymentAmount: string;
@@ -21,7 +20,6 @@ export function CartSummary({
   subtotal,
   globalDiscount,
   onGlobalDiscountChange,
-  discountAmount,
   total,
   selectedPayment,
   paymentAmount,
@@ -35,25 +33,25 @@ export function CartSummary({
       <div className="space-y-1.5 text-sm">
         <div className="flex justify-between">
           <span>Subtotal:</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>RM{subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between items-center">
           <span>Discount:</span>
           <div className="flex items-center gap-2">
+            <span>RM</span>
             <Input
               type="number"
               min="0"
-              max="100"
+              step="0.01"
               value={globalDiscount}
-              onChange={(e) => onGlobalDiscountChange(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
-              className="w-20 h-8 text-right"
+              onChange={(e) => onGlobalDiscountChange(Math.max(0, parseFloat(e.target.value) || 0))}
+              className="w-24 h-8 text-right"
             />
-            <span>% (${discountAmount.toFixed(2)})</span>
           </div>
         </div>
         <div className="flex justify-between font-semibold">
           <span>Total:</span>
-          <span>${total.toFixed(2)}</span>
+          <span>RM{total.toFixed(2)}</span>
         </div>
       </div>
 
