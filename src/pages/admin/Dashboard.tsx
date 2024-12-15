@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Package2, CalendarDays, TrendingUp, Users } from "lucide-react";
+import { Package2, CalendarDays, TrendingUp, Users, Wallet, QrCode } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { Sale } from "@/types/pos";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -41,28 +42,16 @@ export default function Dashboard() {
     },
   });
 
-  // Calculate total sales from active sessions only
-  const totalSales = sessionsData?.reduce((total, session) => {
-    // Only count sales if session is active
-    if (session.status === 'active') {
-      return total + (session.sales?.reduce((sessionTotal, sale) => 
-        sessionTotal + (sale.total || 0), 0) || 0);
+  // Calculate sales by payment method from active sessions
+  const salesByMethod = sessionsData?.reduce((total, session) => {
+    if (session.status === 'active' && session.sales) {
+      session.sales.forEach((sale: Sale) => {
+        total[sale.paymentMethod] = (total[sale.paymentMethod] || 0) + sale.total;
+        total.total += sale.total;
+      });
     }
     return total;
-  }, 0) || 0;
-
-  // Count products with low stock (less than 10 items)
-  const lowStockCount = productsData?.filter(product => 
-    product.current_stock < 10
-  ).length || 0;
-
-  // Count online staff (this is a placeholder as we don't track online status)
-  const onlineStaffCount = staffData?.length || 0;
-
-  // Count pending sessions (those created but not yet started)
-  const pendingSessions = sessionsData?.filter(session => 
-    session.status === 'active' && session.sales?.length === 0
-  ).length || 0;
+  }, { cash: 0, bayarlah_qr: 0, total: 0 }) || { cash: 0, bayarlah_qr: 0, total: 0 };
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-8">
@@ -80,11 +69,33 @@ export default function Dashboard() {
         <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Total Sales (Active Sessions)</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Sales</span>
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <p className="text-2xl font-semibold">RM {totalSales.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">From active sessions only</p>
+            <p className="text-2xl font-semibold">RM {salesByMethod.total.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">From active sessions</p>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Cash Sales</span>
+              <Wallet className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-2xl font-semibold">RM {salesByMethod.cash.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">Total cash transactions</p>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Bayarlah QR Sales</span>
+              <QrCode className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-2xl font-semibold">RM {salesByMethod.bayarlah_qr.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">Total QR transactions</p>
           </div>
         </Card>
         
@@ -95,29 +106,7 @@ export default function Dashboard() {
               <CalendarDays className="h-4 w-4 text-primary" />
             </div>
             <p className="text-2xl font-semibold">{sessionsData?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">{pendingSessions} pending approval</p>
-          </div>
-        </Card>
-        
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Products</span>
-              <Package2 className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-2xl font-semibold">{productsData?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">{lowStockCount} low in stock</p>
-          </div>
-        </Card>
-        
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background hover:shadow-lg transition-all duration-300">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Staff Members</span>
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-2xl font-semibold">{staffData?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">{onlineStaffCount} registered</p>
+            <p className="text-xs text-muted-foreground">Pending sessions</p>
           </div>
         </Card>
       </div>

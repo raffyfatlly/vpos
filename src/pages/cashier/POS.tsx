@@ -1,242 +1,60 @@
-import { ProductGrid } from "@/components/pos/ProductGrid";
-import { Cart } from "@/components/pos/Cart";
-import { SessionIndicator } from "@/components/pos/SessionIndicator";
-import { Sale, SessionProduct } from "@/types/pos";
-import { useToast } from "@/hooks/use-toast";
-import { useRef, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/contexts/SessionContext";
-import { Navigate } from "react-router-dom";
+import { Cart } from "@/components/pos/Cart";
+import { ProductGrid } from "@/components/pos/ProductGrid";
 import { SessionSelector } from "@/components/pos/SessionSelector";
-import { supabase } from "@/lib/supabase";
+import { SessionIndicator } from "@/components/pos/SessionIndicator";
+import { Card } from "@/components/ui/card";
+import { Sale } from "@/types/pos";
 
-const POS = () => {
-  const { user } = useAuth();
-  const { currentSession, currentStaff, setCurrentSession, clearSession } = useSession();
-  const { toast } = useToast();
-  const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
-  const [sessionProducts, setSessionProducts] = useState<SessionProduct[]>([]);
+export default function POS() {
+  const { currentSession } = useSession();
+  const cartRef = useRef<{ addProduct: Function }>(null);
+  const [salesSummary, setSalesSummary] = useState({
+    cash: 0,
+    bayarlah_qr: 0,
+    total: 0
+  });
 
-  // Effect to clear session on component mount
   useEffect(() => {
-    clearSession();
-  }, []);
-
-  // Effect to load initial session inventory
-  useEffect(() => {
-    const loadSessionInventory = async () => {
-      if (!currentSession?.id) return;
-
-      try {
-        // Fetch session inventory
-        const { data: inventoryData, error: inventoryError } = await supabase
-          .from('session_inventory')
-          .select('*')
-          .eq('session_id', currentSession.id);
-
-        if (inventoryError) throw inventoryError;
-
-        // Update products with inventory data
-        const updatedProducts = currentSession.products.map(product => {
-          const inventory = inventoryData?.find(inv => inv.product_id === product.id);
-          return {
-            ...product,
-            initial_stock: inventory?.initial_stock ?? 0,
-            current_stock: inventory?.current_stock ?? 0
-          };
-        });
-
-        setSessionProducts(updatedProducts);
-        console.log('Updated products with inventory:', updatedProducts);
-      } catch (error) {
-        console.error('Error loading session inventory:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load inventory data",
-          variant: "destructive",
-        });
-      }
-    };
-
-    loadSessionInventory();
-  }, [currentSession?.id]);
-
-  // Effect to check session status and listen for product updates
-  useEffect(() => {
-    if (currentSession) {
-      console.log('Subscribing to session updates for session:', currentSession.id);
-      
-      // Listen for session-specific updates
-      const channel = supabase
-        .channel(`session_${currentSession.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'sessions',
-            filter: `id=eq.${currentSession.id}`,
-          },
-          async (payload: any) => {
-            console.log('Session update received:', payload);
-            
-            if (payload.new) {
-              const updatedSession = payload.new;
-              console.log('Updated session data:', updatedSession);
-
-              if (updatedSession.status === 'completed') {
-                toast({
-                  title: "Session completed",
-                  description: "This session has been marked as completed. Returning to session selection.",
-                });
-                clearSession();
-              } else {
-                // Update session with new data, including product stock changes
-                setCurrentSession(updatedSession);
-                setSessionProducts(updatedSession.products);
-                
-                // Show toast for stock updates
-                toast({
-                  title: "Stock updated",
-                  description: "Product stock has been updated in this session",
-                });
-              }
-            }
-          }
-        )
-        .subscribe();
-
-      // Listen for inventory updates
-      const inventoryChannel = supabase
-        .channel(`inventory_${currentSession.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'session_inventory',
-            filter: `session_id=eq.${currentSession.id}`,
-          },
-          async () => {
-            // Reload session inventory when changes occur
-            const { data: inventoryData, error: inventoryError } = await supabase
-              .from('session_inventory')
-              .select('*')
-              .eq('session_id', currentSession.id);
-
-            if (inventoryError) {
-              console.error('Error fetching updated inventory:', inventoryError);
-              return;
-            }
-
-            const updatedProducts = currentSession.products.map(product => {
-              const inventory = inventoryData?.find(inv => inv.product_id === product.id);
-              return {
-                ...product,
-                initial_stock: inventory?.initial_stock ?? 0,
-                current_stock: inventory?.current_stock ?? 0
-              };
-            });
-
-            setSessionProducts(updatedProducts);
-            console.log('Products updated from inventory change:', updatedProducts);
-          }
-        )
-        .subscribe();
-
-      // Cleanup subscription on unmount
-      return () => {
-        console.log('Cleaning up session subscription');
-        supabase.removeChannel(channel);
-        supabase.removeChannel(inventoryChannel);
-      };
+    if (currentSession?.sales) {
+      const summary = currentSession.sales.reduce((acc, sale: Sale) => {
+        acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+        acc.total += sale.total;
+        return acc;
+      }, { cash: 0, bayarlah_qr: 0, total: 0 });
+      setSalesSummary(summary);
     }
-  }, [currentSession?.id]);
+  }, [currentSession?.sales]);
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.role !== "cashier" && user.role !== "both") {
-    return <Navigate to="/" replace />;
-  }
-
-  if (!currentSession || !currentStaff) {
+  if (!currentSession) {
     return <SessionSelector />;
   }
-
-  if (currentSession.status !== "active") {
-    clearSession();
-    return <SessionSelector />;
-  }
-
-  const handleProductSelect = (product: SessionProduct) => {
-    if (cartRef.current) {
-      cartRef.current.addProduct(product);
-      toast({
-        title: "Product added",
-        description: `Added ${product.name} to cart`,
-      });
-    }
-  };
-
-  const handleSaleComplete = async (sale: {
-    products: {
-      productId: number;
-      quantity: number;
-      price: number;
-      discount: number;
-      variationId?: number;
-    }[];
-    subtotal: number;
-    discount: number;
-    total: number;
-    paymentMethod: "cash" | "bayarlah_qr";
-  }) => {
-    toast({
-      title: "Sale completed",
-      description: `Total: RM${sale.total.toFixed(2)}`,
-    });
-  };
 
   return (
-    <>
+    <div className="h-full flex flex-col">
       <SessionIndicator />
-      <div className="min-h-[calc(100vh-65px)] bg-gradient-to-br from-gray-50 to-white">
-        <div className="w-full p-2 sm:p-4 lg:p-6">
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 max-w-[1920px] mx-auto">
-            {/* Cart Section - Shown first on mobile */}
-            <div className="order-1 lg:order-2 lg:col-span-1">
-              <div className="lg:sticky lg:top-[80px]">
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl backdrop-blur-lg bg-opacity-90 border border-gray-100">
-                  <Cart ref={cartRef} onComplete={handleSaleComplete} />
-                </div>
-              </div>
-            </div>
-
-            {/* Products Grid Section */}
-            <div className="order-2 lg:order-1 lg:col-span-2">
-              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-2 sm:p-4 lg:p-6 backdrop-blur-lg bg-opacity-90 border border-gray-100">
-                {sessionProducts && sessionProducts.length > 0 ? (
-                  <ProductGrid
-                    products={sessionProducts}
-                    onProductSelect={handleProductSelect}
-                    variations={currentSession.variations}
-                  />
-                ) : (
-                  <div className="text-center py-8 sm:py-12">
-                    <p className="text-gray-500">
-                      No products available in this session.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      
+      {/* Sales Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <Card className="p-4 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background">
+          <h3 className="text-sm font-medium text-muted-foreground">Cash Sales</h3>
+          <p className="text-2xl font-semibold">RM {salesSummary.cash.toFixed(2)}</p>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background">
+          <h3 className="text-sm font-medium text-muted-foreground">Bayarlah QR Sales</h3>
+          <p className="text-2xl font-semibold">RM {salesSummary.bayarlah_qr.toFixed(2)}</p>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background">
+          <h3 className="text-sm font-medium text-muted-foreground">Total Sales</h3>
+          <p className="text-2xl font-semibold">RM {salesSummary.total.toFixed(2)}</p>
+        </Card>
       </div>
-    </>
-  );
-};
 
-export default POS;
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-4">
+        <ProductGrid onProductClick={(product) => cartRef.current?.addProduct(product)} />
+        <Cart ref={cartRef} onComplete={() => {}} />
+      </div>
+    </div>
+  );
+}
