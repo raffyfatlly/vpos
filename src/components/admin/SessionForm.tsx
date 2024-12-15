@@ -50,7 +50,8 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       staff: session?.staff || [],
       products: sessionProducts,
       status: session?.status || "active",
-      sales: session?.sales || [],
+      sales: [], // Initialize empty sales array for new sessions
+      created_at: new Date().toISOString(),
     });
   };
 
