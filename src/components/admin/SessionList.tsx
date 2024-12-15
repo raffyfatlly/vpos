@@ -27,21 +27,26 @@ export function SessionList({
     try {
       const newStatus = session.status === "active" ? "completed" : "active";
       
-      const { data, error } = await supabase
-        .from('sessions')
-        .update({ status: newStatus })
-        .eq('id', session.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update the session in the local state through the parent component
+      // Create updated session object first
       const updatedSession: Session = {
         ...session,
-        status: newStatus === "active" ? "active" : "completed"
+        status: newStatus
       };
+
+      // Update local state immediately for responsive UI
       onSelect(updatedSession);
+
+      // Then update the database
+      const { error } = await supabase
+        .from('sessions')
+        .update({ status: newStatus })
+        .eq('id', session.id);
+
+      if (error) {
+        // If database update fails, revert the local state
+        onSelect(session);
+        throw error;
+      }
 
       toast({
         title: "Status Updated",
