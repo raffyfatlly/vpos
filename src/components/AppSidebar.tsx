@@ -9,6 +9,7 @@ import {
   Menu,
   ChevronLeft,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,6 +70,22 @@ export function AppSidebar() {
           <nav className="flex-1 p-2 space-y-1">
             {isAdmin && (
               <>
+                <NavLink
+                  to="/admin/dashboard"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent",
+                      !isOpen && "md:justify-center"
+                    )
+                  }
+                >
+                  <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+                  <span className={cn(
+                    "transition-opacity duration-200",
+                    !isOpen && "md:hidden"
+                  )}>Dashboard</span>
+                </NavLink>
                 <NavLink
                   to="/admin/sessions"
                   className={({ isActive }) =>
