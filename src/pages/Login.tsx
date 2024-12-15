@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
 
@@ -19,17 +21,30 @@ export default function Login() {
     setError(null);
 
     try {
-      await login(email, password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        
+        toast({
+          title: "Sign up successful",
+          description: "Welcome to the dashboard!",
+        });
+      } else {
+        await login(email, password);
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message || "Failed to login. Please try again.");
+      console.error('Auth error:', error);
+      setError(error.message);
       toast({
         title: "Authentication error",
-        description: error.message || "Invalid email or password",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -42,10 +57,10 @@ export default function Login() {
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-foreground mb-1">
-            Welcome back
+            {isSignUp ? "Create an account" : "Welcome back"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Sign in to your account
+            {isSignUp ? "Sign up to get started" : "Sign in to your account"}
           </p>
         </div>
         
@@ -93,8 +108,18 @@ export default function Login() {
             className="w-full"
             disabled={isLoading}
           >
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading ? "Processing..." : (isSignUp ? "Sign up" : "Sign in")}
           </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

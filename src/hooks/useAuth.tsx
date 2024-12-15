@@ -18,29 +18,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   const fetchUserProfile = async (userId: string) => {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      return;
-    }
+      if (error) throw error;
 
-    if (profile) {
-      setUser({
-        id: userId,
-        username: profile.username,
-        role: profile.role as UserRole,
-      });
+      if (profile) {
+        setUser({
+          id: userId,
+          username: profile.username,
+          role: profile.role as UserRole,
+        });
 
-      // Handle role-based navigation
-      if (profile.role === 'admin' || profile.role === 'both') {
+        // Redirect to dashboard for all users
         navigate("/admin/dashboard", { replace: true });
-      } else if (profile.role === 'cashier') {
-        navigate("/cashier", { replace: true });
+      }
+    } catch (error: any) {
+      console.error('Error fetching profile:', error.message);
+      // If profile fetch fails, create a default profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            username: 'User',
+            role: 'both' // Default role for now
+          }
+        ]);
+
+      if (!insertError) {
+        setUser({
+          id: userId,
+          username: 'User',
+          role: 'both'
+        });
+        navigate("/admin/dashboard", { replace: true });
       }
     }
   };
@@ -69,24 +85,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Use a single destructuring to avoid multiple reads of the response
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
+      if (error) throw error;
 
-      if (!data.user) {
-        throw new Error("No user data returned");
-      }
-
-      // The session change will trigger the onAuthStateChange listener
-      // which will fetch the user profile and update the state
+      // Session change will trigger the onAuthStateChange listener
     } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
   };
