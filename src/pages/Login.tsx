@@ -22,17 +22,28 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        // Handle signup
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              username: email,
+              role: 'both'
+            }
+          }
         });
-        if (error) throw error;
-        
-        toast({
-          title: "Sign up successful",
-          description: "Welcome to the dashboard!",
-        });
+
+        if (signUpError) throw signUpError;
+
+        if (signUpData.user) {
+          toast({
+            title: "Sign up successful",
+            description: "Welcome to the dashboard!",
+          });
+        }
       } else {
+        // Handle login
         await login(email, password);
         toast({
           title: "Login successful",
