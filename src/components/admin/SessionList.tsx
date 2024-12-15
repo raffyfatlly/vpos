@@ -24,7 +24,6 @@ export function SessionList({
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
   const { user } = useAuth();
 
-  // Update local sessions when the prop changes
   useEffect(() => {
     setLocalSessions(sessions);
   }, [sessions]);
@@ -87,25 +86,25 @@ export function SessionList({
       {localSessions.map((session) => (
         <div
           key={session.id}
-          className={`group flex items-center justify-between p-4 bg-white rounded-lg border transition-all duration-200 cursor-pointer hover:border-primary/50 hover:shadow-md ${
+          className={`group flex items-start gap-4 p-4 bg-white rounded-lg border transition-all duration-200 cursor-pointer hover:border-primary/50 hover:shadow-md ${
             selectedSession?.id === session.id ? 'border-primary shadow-md' : 'border-border'
           }`}
           onClick={() => onSelect(session)}
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold text-foreground truncate">
+            <div className="flex flex-wrap gap-2 items-center mb-1">
+              <h3 className="text-lg font-semibold text-foreground break-words">
                 {session.location}
               </h3>
-              <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
+              <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary whitespace-nowrap">
                 {session.id}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{session.date}</p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <span className={`px-2 py-1 text-sm font-medium rounded-full ${
+          <div className="flex flex-col items-end gap-3 ml-4">
+            <span className={`px-2 py-1 text-sm font-medium rounded-full whitespace-nowrap ${
               session.status === "active" 
                 ? "bg-green-100 text-green-700" 
                 : "bg-gray-100 text-gray-700"

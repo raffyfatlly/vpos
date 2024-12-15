@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { Session } from "@/types/pos";
 import { SessionForm } from "@/components/admin/SessionForm";
 import { SessionList } from "@/components/admin/SessionList";
@@ -10,6 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { SessionHeader } from "@/components/admin/sessions/SessionHeader";
+import { SessionLayout } from "@/components/admin/sessions/SessionLayout";
+import { SessionGrid } from "@/components/admin/sessions/SessionGrid";
+import { SessionPanel } from "@/components/admin/sessions/SessionPanel";
 
 const Sessions = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -35,9 +37,11 @@ const Sessions = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-muted-foreground">Loading sessions...</div>
-      </div>
+      <SessionLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-muted-foreground">Loading sessions...</div>
+        </div>
+      </SessionLayout>
     );
   }
 
@@ -133,57 +137,38 @@ const Sessions = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-background">
-      <div className="h-full flex flex-col gap-6 max-w-[1600px] mx-auto p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-primary">Sessions</h1>
-          <Button 
-            onClick={() => setIsCreating(true)}
-            className="bg-primary hover:bg-primary/90"
+    <SessionLayout>
+      <SessionHeader onCreateClick={() => setIsCreating(true)} />
+      
+      <SessionGrid>
+        <SessionPanel title="All Sessions">
+          <SessionList
+            sessions={sessions}
+            onSessionUpdate={updateSession.mutateAsync}
+            onSelect={setSelectedSession}
+            selectedSession={selectedSession}
+            onDelete={handleDeleteSession}
+          />
+        </SessionPanel>
+        
+        {selectedSession ? (
+          <SessionPanel 
+            title={selectedSession.location}
+            subtitle={selectedSession.date}
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Session
-          </Button>
-        </div>
-
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-primary/5">
-              <h2 className="text-lg font-semibold text-primary">All Sessions</h2>
-            </div>
-            <div className="p-4 overflow-auto max-h-[calc(100vh-16rem)]">
-              <SessionList
-                sessions={sessions}
-                onSessionUpdate={updateSession.mutateAsync}
-                onSelect={setSelectedSession}
-                selectedSession={selectedSession}
-                onDelete={handleDeleteSession}
-              />
-            </div>
-          </div>
-          
-          {selectedSession ? (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4 border-b bg-primary/5">
-                <h2 className="text-lg font-semibold text-primary">
-                  {selectedSession.location}
-                </h2>
-                <p className="text-sm text-muted-foreground">{selectedSession.date}</p>
-              </div>
-              <div className="p-4 overflow-auto max-h-[calc(100vh-16rem)]">
-                <SessionDetails
-                  session={selectedSession}
-                  onUpdateStock={handleUpdateStock}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm flex items-center justify-center text-muted-foreground">
+            <SessionDetails
+              session={selectedSession}
+              onUpdateStock={handleUpdateStock}
+            />
+          </SessionPanel>
+        ) : (
+          <SessionPanel title="Session Details">
+            <div className="flex items-center justify-center h-full text-muted-foreground">
               Select a session to view details
             </div>
-          )}
-        </div>
-      </div>
+          </SessionPanel>
+        )}
+      </SessionGrid>
 
       {isCreating && (
         <SessionForm
@@ -199,7 +184,7 @@ const Sessions = () => {
           onCancel={() => setEditingSession(null)}
         />
       )}
-    </div>
+    </SessionLayout>
   );
 };
 
