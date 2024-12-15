@@ -25,15 +25,21 @@ export function SessionList({
 
   const handleToggleActive = async (session: Session) => {
     try {
-      // If the session is active, mark it as completed, otherwise mark it as active
       const newStatus = session.status === "active" ? "completed" : "active";
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('sessions')
         .update({ status: newStatus })
-        .eq('id', session.id);
+        .eq('id', session.id)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Update the local state through the parent component
+      if (selectedSession?.id === session.id) {
+        onSelect({ ...session, status: newStatus });
+      }
 
       toast({
         title: "Status Updated",

@@ -43,38 +43,24 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
             className="w-full h-full object-cover opacity-30"
           />
         )}
-        {isLowStock && !isOutOfStock && (
-          <div className="absolute top-2 right-2">
-            <span className="px-2 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-full">
-              Low Stock
-            </span>
-          </div>
-        )}
-        {isOutOfStock && (
-          <div className="absolute top-2 right-2">
-            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-              Out of Stock
-            </span>
-          </div>
-        )}
+        <div className="absolute top-2 right-2">
+          <span className={cn(
+            "px-3 py-1.5 text-sm font-medium rounded-full",
+            isOutOfStock && "bg-gray-100 text-gray-600",
+            isLowStock && !isOutOfStock && "bg-red-50 text-red-600",
+            !isLowStock && !isOutOfStock && "bg-green-50 text-green-600"
+          )}>
+            Stock: {product.current_stock}
+          </span>
+        </div>
       </div>
-      <div className="p-4 w-full space-y-2">
-        <h3 className="font-medium text-base truncate leading-tight text-gray-900">
+      <div className="p-4 w-full space-y-3">
+        <h3 className="font-medium text-lg truncate leading-tight text-gray-900">
           {product.name}
         </h3>
-        <div className="flex justify-between items-center w-full">
-          <p className="font-semibold text-primary text-lg tracking-tight">
-            RM{product.price.toFixed(2)}
-          </p>
-          <div className="text-right">
-            <p className={cn(
-              "text-sm font-medium",
-              isLowStock ? "text-red-600" : "text-gray-500"
-            )}>
-              Stock: {product.current_stock}
-            </p>
-          </div>
-        </div>
+        <p className="font-semibold text-primary text-xl tracking-tight">
+          RM{product.price.toFixed(2)}
+        </p>
       </div>
     </Button>
   );
