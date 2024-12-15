@@ -3,13 +3,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
   Store,
-  Settings,
   Package,
   CalendarDays,
   Menu,
   ChevronLeft,
   LogOut,
   LayoutDashboard,
+  Users,
+  Mail,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -119,7 +121,7 @@ export function AppSidebar() {
                   )}>Products</span>
                 </NavLink>
                 <NavLink
-                  to="/admin/settings"
+                  to="/admin/members"
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
@@ -128,11 +130,43 @@ export function AppSidebar() {
                     )
                   }
                 >
-                  <Settings className="w-4 h-4 flex-shrink-0" />
+                  <Users className="w-4 h-4 flex-shrink-0" />
                   <span className={cn(
                     "transition-opacity duration-200",
                     !isOpen && "md:hidden"
-                  )}>Settings</span>
+                  )}>Members</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/roles"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent",
+                      !isOpen && "md:justify-center"
+                    )
+                  }
+                >
+                  <UserPlus className="w-4 h-4 flex-shrink-0" />
+                  <span className={cn(
+                    "transition-opacity duration-200",
+                    !isOpen && "md:hidden"
+                  )}>Roles</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/email"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent",
+                      !isOpen && "md:justify-center"
+                    )
+                  }
+                >
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className={cn(
+                    "transition-opacity duration-200",
+                    !isOpen && "md:hidden"
+                  )}>Email</span>
                 </NavLink>
               </>
             )}
