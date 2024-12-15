@@ -34,6 +34,8 @@ export function SessionDetails({
           table: 'products',
         },
         (payload) => {
+          console.log('Product update received:', payload);
+          
           // Skip if we're currently performing our own update
           if (isUpdating) return;
 
@@ -48,10 +50,7 @@ export function SessionDetails({
                   ? {
                       ...existingProduct,
                       initial_stock: updatedProduct.initial_stock,
-                      // If no sales, current_stock should match initial_stock
-                      current_stock: prevSession.sales.length === 0 
-                        ? updatedProduct.initial_stock 
-                        : existingProduct.current_stock
+                      current_stock: updatedProduct.current_stock
                     }
                   : existingProduct
               )
