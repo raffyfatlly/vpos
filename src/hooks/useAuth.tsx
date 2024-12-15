@@ -35,6 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: profile.username,
         role: profile.role as UserRole,
       });
+
+      // Handle role-based navigation
+      if (profile.role === 'admin' || profile.role === 'both') {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (profile.role === 'cashier') {
+        navigate("/cashier", { replace: true });
+      }
     }
   };
 
@@ -62,7 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Try to sign in directly first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
