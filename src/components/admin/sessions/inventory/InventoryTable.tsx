@@ -13,18 +13,18 @@ export function InventoryTable({ products, onInitialStockChange }: InventoryTabl
       <div className="hidden md:grid md:grid-cols-3 gap-4 font-medium text-sm text-gray-500 mb-2">
         <div>Product</div>
         <div className="text-center">Initial Stock</div>
-        <div>Current Stock</div>
+        <div className="text-center">Current Stock</div>
       </div>
       
       {/* Product rows */}
       {products.map((product: SessionProduct) => (
         <div key={product.id} className="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-4 py-4 border-t">
-          {/* Product name - Full width on mobile */}
+          {/* Product name */}
           <div className="font-medium md:font-normal">{product.name}</div>
           
-          {/* Stock controls - Side by side on mobile */}
+          {/* Stock controls */}
           <div className="flex items-center justify-between md:justify-center gap-4 mt-2 md:mt-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 md:w-full md:justify-center">
               <span className="text-sm text-gray-500 md:hidden">Initial:</span>
               <Input
                 type="number"
@@ -38,10 +38,15 @@ export function InventoryTable({ products, onInitialStockChange }: InventoryTabl
               />
             </div>
             
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 md:hidden">Current:</span>
+            <div className="flex items-center gap-2 md:hidden">
+              <span className="text-sm text-gray-500">Current:</span>
               <div className="min-w-[40px] text-center">{product.current_stock || 0}</div>
             </div>
+          </div>
+
+          {/* Current stock - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:flex md:justify-center">
+            {product.current_stock || 0}
           </div>
         </div>
       ))}
