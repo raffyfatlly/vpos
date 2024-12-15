@@ -49,7 +49,7 @@ export function SessionDetails({
               
               if (!productExists) return prevSession;
 
-              // Update the product in our session with both initial and current stock
+              // Update both initial_stock and current_stock in our session state
               const updatedProducts = prevSession.products.map(existingProduct => 
                 existingProduct.id === updatedProduct.id
                   ? {
@@ -92,7 +92,7 @@ export function SessionDetails({
 
       if (updateError) throw updateError;
 
-      // Update local state
+      // Update local state immediately
       setSession(prevSession => ({
         ...prevSession,
         products: prevSession.products.map(product => 
@@ -100,7 +100,7 @@ export function SessionDetails({
             ? { 
                 ...product,
                 initial_stock: newInitialStock,
-                current_stock: newInitialStock // Update current_stock in local state as well
+                current_stock: newInitialStock
               } 
             : product
         )
