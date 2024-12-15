@@ -20,7 +20,7 @@ export function SessionDetails({
           value="inventory"
           className="px-8 py-3 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
         >
-          Inventory Management
+          Inventory
         </TabsTrigger>
         <TabsTrigger 
           value="sales"
