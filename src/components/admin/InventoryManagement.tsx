@@ -51,17 +51,17 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
         if (updateError) throw updateError;
 
-        // Find the current session ID from the products array
-        const sessionId = products[0]?.session_id;
-        if (!sessionId) {
-          throw new Error('Session ID not found');
+        // Find the product to get its session_id
+        const product = products.find(p => p.id === productId);
+        if (!product || !product.session_id) {
+          throw new Error('Product or session ID not found');
         }
 
         // Get the current session data
         const { data: sessionData, error: sessionError } = await supabase
           .from('sessions')
           .select('products')
-          .eq('id', sessionId)
+          .eq('id', product.session_id)
           .single();
 
         if (sessionError) throw sessionError;
@@ -77,7 +77,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
         const { error: sessionUpdateError } = await supabase
           .from('sessions')
           .update({ products: updatedProducts })
-          .eq('id', sessionId);
+          .eq('id', product.session_id);
 
         if (sessionUpdateError) throw sessionUpdateError;
 
@@ -97,7 +97,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           return rest;
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error updating stock:', error);
         toast({
           title: "Error",
