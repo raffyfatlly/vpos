@@ -52,12 +52,11 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      // Use the supabase client to get the URL
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/delete-user`, {
+      const response = await fetch(`${process.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer ${process.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ userId }),
       });
