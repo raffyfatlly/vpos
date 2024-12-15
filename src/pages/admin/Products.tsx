@@ -1,84 +1,100 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ProductForm } from "@/components/admin/ProductForm";
 import { MOCK_PRODUCTS } from "@/data/mockData";
 import { SessionProduct } from "@/types/pos";
-import { useToast } from "@/components/ui/use-toast";
+import { Edit, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const Products = () => {
+export default function Products() {
   const [products, setProducts] = useState<SessionProduct[]>(MOCK_PRODUCTS);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<SessionProduct | null>(null);
   const { toast } = useToast();
 
-  const handleUpdateStock = (productId: number, newStock: number) => {
-    setProducts(prevProducts =>
-      prevProducts.map(product =>
-        product.id === productId
-          ? { ...product, currentStock: newStock }
-          : product
-      )
-    );
-    
+  const handleSubmit = (productData: SessionProduct) => {
+    if (editingProduct) {
+      setProducts(products.map(p => p.id === editingProduct.id ? productData : p));
+      toast({
+        title: "Product updated",
+        description: `${productData.name} has been updated successfully.`
+      });
+    } else {
+      setProducts([...products, { ...productData, id: products.length + 1 }]);
+      toast({
+        title: "Product created",
+        description: `${productData.name} has been added successfully.`
+      });
+    }
+    setIsFormOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleDelete = (product: SessionProduct) => {
+    setProducts(products.filter(p => p.id !== product.id));
     toast({
-      title: "Stock Updated",
-      description: "Product stock has been updated successfully.",
+      title: "Product deleted",
+      description: `${product.name} has been deleted successfully.`
     });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Product
-        </Button>
+        <h1 className="text-2xl font-semibold">Products</h1>
+        <Button onClick={() => setIsFormOpen(true)}>Add Product</Button>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
-          <div key={product.id} className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
-              <img
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+          <div key={product.id} className="border rounded-lg p-4 space-y-2">
+            <div className="aspect-square relative bg-accent rounded-md overflow-hidden">
+              {product.image && (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="object-cover w-full h-full"
+                />
+              )}
             </div>
-            <h3 className="text-lg font-semibold">{product.name}</h3>
-            <div className="mt-2 space-y-1 text-gray-600">
-              <p>Price: ${product.price}</p>
-              <p>Category: {product.category}</p>
-              <p>Initial Stock: {product.initialStock}</p>
-              <p>Current Stock: {product.currentStock}</p>
-            </div>
-            <div className="mt-4 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  const newStock = product.currentStock + 1;
-                  handleUpdateStock(product.id, newStock);
-                }}
-              >
-                + Stock
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  const newStock = Math.max(0, product.currentStock - 1);
-                  handleUpdateStock(product.id, newStock);
-                }}
-              >
-                - Stock
-              </Button>
-              <Button variant="destructive" size="sm">Delete</Button>
+            <h3 className="font-semibold">{product.name}</h3>
+            <p className="text-sm text-muted-foreground">RM {product.price.toFixed(2)}</p>
+            <div className="flex justify-between items-center">
+              <p className="text-sm">Stock: {product.currentStock}</p>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setEditingProduct(product);
+                    setIsFormOpen(true);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleDelete(product)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {isFormOpen && (
+        <ProductForm
+          product={editingProduct}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setIsFormOpen(false);
+            setEditingProduct(null);
+          }}
+        />
+      )}
     </div>
   );
-};
-
-export default Products;
+}

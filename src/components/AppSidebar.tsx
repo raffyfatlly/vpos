@@ -71,6 +71,18 @@ export function AppSidebar() {
             {isAdmin && (
               <>
                 <NavLink
+                  to="/admin/dashboard"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent"
+                    )
+                  }
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  Dashboard
+                </NavLink>
+                <NavLink
                   to="/admin/sessions"
                   className={({ isActive }) =>
                     cn(
