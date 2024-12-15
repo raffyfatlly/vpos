@@ -36,10 +36,9 @@ export function SessionList({
 
       if (error) throw error;
 
-      // Update the local state through the parent component
-      if (selectedSession?.id === session.id) {
-        onSelect({ ...session, status: newStatus });
-      }
+      // Update the session in the local state through the parent component
+      const updatedSession = { ...session, status: newStatus };
+      onSelect(updatedSession);
 
       toast({
         title: "Status Updated",
