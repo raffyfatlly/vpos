@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, Calendar } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export function SessionSelector() {
   const { sessions, isLoading } = useSessions();
@@ -31,15 +32,37 @@ export function SessionSelector() {
     (session) => session.status === "active"
   );
 
-  const handleSessionSelect = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session && user) {
+  const handleSessionSelect = async (sessionId: string) => {
+    // Fetch the latest session data directly from Supabase
+    const { data: sessionData, error } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching session:', error);
+      return;
+    }
+
+    if (sessionData && user) {
       // Create a staff entry for the current user if they don't exist in the session
       const staffEntry: SessionStaff = {
         id: user.id,
         name: user.username,
         role: user.role,
       };
+      
+      // Convert the raw session data to the correct type
+      const session: Session = {
+        ...sessionData,
+        staff: sessionData.staff as SessionStaff[],
+        products: sessionData.products || [],
+        sales: sessionData.sales || [],
+        variations: sessionData.variations || [],
+      };
+
+      console.log("Selected session data:", session); // Debug log
       
       setSelectedSessionId(sessionId);
       setCurrentSession(session);

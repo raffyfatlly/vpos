@@ -51,12 +51,7 @@ const POS = () => {
     total: number;
     paymentMethod: "cash" | "bayarlah_qr";
   }) => {
-    const newSale: Sale = {
-      ...sale,
-      id: `SALE-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-    };
-
+    // Fetch latest session data before updating
     const { data: latestSession, error: fetchError } = await supabase
       .from('sessions')
       .select('*')
@@ -90,6 +85,9 @@ const POS = () => {
     });
   };
 
+  // Add console.log to debug session products
+  console.log("Current session products:", currentSession.products);
+
   return (
     <>
       <SessionIndicator />
@@ -101,6 +99,7 @@ const POS = () => {
                 <ProductGrid
                   products={currentSession.products}
                   onProductSelect={handleProductSelect}
+                  variations={currentSession.variations}
                 />
               ) : (
                 <div className="text-center py-8">
