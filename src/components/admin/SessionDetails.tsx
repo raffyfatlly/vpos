@@ -143,19 +143,19 @@ export function SessionDetails({
         <TabsList className="w-full grid grid-cols-3 h-auto gap-2 bg-transparent">
           <TabsTrigger 
             value="inventory" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
           >
             Inventory
           </TabsTrigger>
           <TabsTrigger 
             value="overview" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
           >
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
-            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm whitespace-nowrap min-w-0 flex-shrink"
           >
             History
           </TabsTrigger>
