@@ -20,12 +20,14 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, Calendar } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export function SessionSelector() {
   const { sessions, isLoading } = useSessions();
   const { setCurrentSession, setCurrentStaff } = useSession();
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Filter only active sessions
   const activeSessions = sessions.filter(
@@ -33,40 +35,59 @@ export function SessionSelector() {
   );
 
   const handleSessionSelect = async (sessionId: string) => {
-    // Fetch the latest session data directly from Supabase
-    const { data: sessionData, error } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .single();
+    try {
+      // First, fetch the session data
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
 
-    if (error) {
-      console.error('Error fetching session:', error);
-      return;
-    }
+      if (sessionError) throw sessionError;
 
-    if (sessionData && user) {
-      // Create a staff entry for the current user if they don't exist in the session
-      const staffEntry: SessionStaff = {
-        id: user.id,
-        name: user.username,
-        role: user.role,
-      };
-      
-      // Convert the raw session data to the correct type
-      const session: Session = {
-        ...sessionData,
-        staff: sessionData.staff as SessionStaff[],
-        products: sessionData.products || [],
-        sales: sessionData.sales || [],
-        variations: sessionData.variations || [],
-      };
+      // Then, fetch all products
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*');
 
-      console.log("Selected session data:", session); // Debug log
-      
-      setSelectedSessionId(sessionId);
-      setCurrentSession(session);
-      setCurrentStaff(staffEntry);
+      if (productsError) throw productsError;
+
+      if (sessionData && user) {
+        // Create a staff entry for the current user
+        const staffEntry: SessionStaff = {
+          id: user.id,
+          name: user.username,
+          role: user.role,
+        };
+        
+        // Convert the raw session data to the correct type and include products
+        const session: Session = {
+          ...sessionData,
+          staff: sessionData.staff as SessionStaff[],
+          products: productsData || [], // Use the fetched products
+          sales: sessionData.sales || [],
+          variations: sessionData.variations || [],
+        };
+
+        console.log("Selected session data:", session);
+        console.log("Products loaded:", productsData);
+        
+        setSelectedSessionId(sessionId);
+        setCurrentSession(session);
+        setCurrentStaff(staffEntry);
+
+        toast({
+          title: "Session loaded",
+          description: `Loaded ${productsData.length} products`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error loading session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load session data",
+        variant: "destructive",
+      });
     }
   };
 
