@@ -36,7 +36,6 @@ export function useSessions() {
       return data;
     },
     onSuccess: (newSession) => {
-      // Update the cache with the new session
       queryClient.setQueryData(["sessions"], (old: Session[] = []) => [...old, newSession]);
       toast({
         title: "Session created",
@@ -66,7 +65,6 @@ export function useSessions() {
       return data;
     },
     onSuccess: (updatedSession) => {
-      // Update the cache with the updated session
       queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
         old.map(session => session.id === updatedSession.id ? updatedSession : session)
       );
@@ -96,10 +94,12 @@ export function useSessions() {
       return sessionId;
     },
     onSuccess: (deletedSessionId) => {
-      // Update the cache by removing the deleted session
+      // Immediately update the cache by removing the deleted session
       queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
         old.filter(session => session.id !== deletedSessionId)
       );
+      // Invalidate and refetch to ensure cache is in sync with server
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
       toast({
         title: "Session deleted",
         description: "The session has been deleted successfully.",
