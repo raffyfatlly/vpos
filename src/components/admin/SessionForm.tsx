@@ -11,17 +11,17 @@ interface SessionFormProps {
 
 export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const [formData, setFormData] = useState({
-    name: session?.name || "",
-    date: session?.date || "",
-    time: session?.time || "",
     location: session?.location || "",
+    date: session?.date || "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const sessionId = session?.id || `SESSION-${Date.now()}`;
     onSubmit({
       ...formData,
-      id: session?.id,
+      id: sessionId,
+      name: sessionId,
       staff: session?.staff || [],
       products: session?.products || [],
       status: session?.status || "active",
@@ -36,14 +36,14 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Session Name
+            <label htmlFor="location" className="text-sm font-medium">
+              Location
             </label>
             <Input
-              id="name"
-              value={formData.name}
+              id="location"
+              value={formData.location}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, location: e.target.value })
               }
               required
             />
@@ -58,33 +58,6 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
               value={formData.date}
               onChange={(e) =>
                 setFormData({ ...formData, date: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="time" className="text-sm font-medium">
-              Time
-            </label>
-            <Input
-              id="time"
-              type="time"
-              value={formData.time}
-              onChange={(e) =>
-                setFormData({ ...formData, time: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="location" className="text-sm font-medium">
-              Location
-            </label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
               }
               required
             />

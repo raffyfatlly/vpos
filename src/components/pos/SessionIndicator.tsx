@@ -1,5 +1,5 @@
 import { useSession } from "@/contexts/SessionContext";
-import { Calendar, Clock, MapPin, User } from "lucide-react";
+import { Calendar, MapPin, User } from "lucide-react";
 
 export function SessionIndicator() {
   const { currentSession, currentStaff } = useSession();
@@ -11,23 +11,19 @@ export function SessionIndicator() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-primary">
-              {currentSession.name}
-            </h2>
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>{currentSession.date}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span>{currentSession.time}</span>
-              </div>
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4" />
                 <span>{currentSession.location}</span>
               </div>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                <span>{currentSession.date}</span>
+              </div>
             </div>
+            <h2 className="text-sm font-medium text-primary">
+              ID: {currentSession.id}
+            </h2>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
             <User className="w-4 h-4 text-primary" />

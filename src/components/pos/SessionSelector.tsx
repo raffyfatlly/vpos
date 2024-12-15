@@ -28,19 +28,19 @@ export function SessionSelector() {
             className="border rounded-lg p-6 space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-primary">
-                {session.name}
-              </h3>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{session.date}</span>
-                </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   <span>{session.location}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{session.date}</span>
+                </div>
               </div>
+              <p className="text-sm font-medium text-primary">
+                ID: {session.id}
+              </p>
             </div>
             
             <div className="space-y-2">
