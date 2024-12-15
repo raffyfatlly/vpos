@@ -23,7 +23,6 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Show session selector if no session is selected
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
@@ -39,7 +38,6 @@ const POS = () => {
   };
 
   const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    // Create the complete sale object
     const completeSale = {
       ...saleData,
       id: `SALE-${Date.now()}`,
@@ -60,11 +58,11 @@ const POS = () => {
     <div className="min-h-screen bg-gray-50">
       <SessionIndicator />
       
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Products Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="lg:grid lg:grid-cols-3 gap-4 sm:gap-6 flex flex-col">
+          {/* Products Section - Full width on mobile, 2/3 on desktop */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
+            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
               <ProductGrid
                 products={currentSession.products}
                 onProductSelect={handleProductSelect}
@@ -72,9 +70,9 @@ const POS = () => {
             </div>
           </div>
 
-          {/* Cart Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm sticky top-20">
+          {/* Cart Section - Full width on mobile, 1/3 on desktop */}
+          <div className="lg:col-span-1 order-1 lg:order-2 mb-4 lg:mb-0">
+            <div className="bg-white rounded-lg shadow-sm sticky top-[72px] lg:top-20">
               <Cart ref={cartRef} onComplete={handleSaleComplete} />
             </div>
           </div>

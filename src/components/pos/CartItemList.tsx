@@ -27,15 +27,15 @@ export function CartItemList({
   onSelectVariation,
 }: CartItemListProps) {
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Item</TableHead>
-            <TableHead>Qty</TableHead>
-            <TableHead>Discount</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead className="w-8"></TableHead>
+            <TableHead className="w-[40%]">Item</TableHead>
+            <TableHead className="w-[20%]">Qty</TableHead>
+            <TableHead className="w-[20%]">Disc</TableHead>
+            <TableHead className="w-[15%]">Price</TableHead>
+            <TableHead className="w-[5%]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -8,26 +8,26 @@ export function SessionIndicator() {
 
   return (
     <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="space-y-1">
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{currentSession.location}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{currentSession.date}</span>
               </div>
             </div>
-            <h2 className="text-sm font-medium text-primary">
+            <h2 className="text-xs sm:text-sm font-medium text-primary">
               ID: {currentSession.id}
             </h2>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
-            <User className="w-4 h-4 text-primary" />
-            <span className="font-medium text-sm text-primary">{currentStaff.name}</span>
+          <div className="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-primary/10 rounded-full">
+            <User className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+            <span className="font-medium text-xs sm:text-sm text-primary">{currentStaff.name}</span>
           </div>
         </div>
       </div>
