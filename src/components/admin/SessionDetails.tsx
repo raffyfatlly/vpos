@@ -48,7 +48,10 @@ export function SessionDetails({
                   ? {
                       ...existingProduct,
                       initial_stock: updatedProduct.initial_stock,
-                      current_stock: existingProduct.current_stock // Keep existing current_stock
+                      // If no sales, current_stock should match initial_stock
+                      current_stock: prevSession.sales.length === 0 
+                        ? updatedProduct.initial_stock 
+                        : existingProduct.current_stock
                     }
                   : existingProduct
               )
@@ -69,12 +72,13 @@ export function SessionDetails({
     try {
       setIsUpdating(true);
 
-      // Update only the initial_stock in the database
+      // Update the product in the database
       const { error: updateError } = await supabase
         .from('products')
         .update({
           initial_stock: newInitialStock,
-          // Don't update current_stock anymore
+          // If no sales, set current_stock to match initial_stock
+          ...(session.sales.length === 0 && { current_stock: newInitialStock })
         })
         .eq('id', productId);
 
@@ -88,8 +92,10 @@ export function SessionDetails({
             ? { 
                 ...product,
                 initial_stock: newInitialStock,
-                // Keep the existing current_stock
-                current_stock: product.current_stock
+                // If no sales, current_stock should match initial_stock
+                current_stock: prevSession.sales.length === 0 
+                  ? newInitialStock 
+                  : product.current_stock
               } 
             : product
         )
