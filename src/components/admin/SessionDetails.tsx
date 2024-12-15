@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Session, SessionProduct, SessionInventory } from "@/types/pos";
+import { Session, SessionProduct } from "@/types/pos";
+import { SalesOverview } from "@/components/admin/SalesOverview";
 
 interface SessionDetailsProps {
   session: Session;
@@ -167,6 +168,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   return (
     <div className="space-y-6">
+      <SalesOverview session={session} />
       <div className="rounded-lg border">
         <div className="p-4">
           <h3 className="text-lg font-medium">Session Inventory</h3>
