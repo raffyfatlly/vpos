@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
-
-type UserRole = "admin" | "cashier";
+import { UserRole } from "@/types/pos";
 
 const Index = () => {
   // For now, we'll hardcode the role. Later we'll integrate with Supabase auth

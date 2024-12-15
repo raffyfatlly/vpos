@@ -10,8 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
-
-type UserRole = "admin" | "cashier";
+import { UserRole } from "@/types/pos";
 
 const adminItems = [
   {

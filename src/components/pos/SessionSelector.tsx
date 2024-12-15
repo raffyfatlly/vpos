@@ -1,22 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/contexts/SessionContext";
 import { Session, SessionStaff } from "@/types/pos";
-
-// Temporary mock data until we integrate with backend
-const MOCK_SESSIONS: Session[] = [
-  {
-    id: "1",
-    name: "Weekend Market Popup",
-    date: "2024-03-16",
-    location: "Central Park",
-    staff: [
-      { id: "staff1", name: "John Doe" },
-      { id: "staff2", name: "Jane Smith" },
-    ],
-    products: [],
-    status: "active",
-  },
-];
+import { MOCK_SESSIONS } from "@/data/mockData";
 
 export function SessionSelector() {
   const { setCurrentSession, setCurrentStaff } = useSession();

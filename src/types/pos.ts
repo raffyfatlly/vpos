@@ -1,5 +1,7 @@
 export type PaymentMethod = "cash" | "bayarlah_qr";
 
+export type UserRole = "admin" | "cashier";
+
 export type SessionStaff = {
   id: string;
   name: string;
@@ -12,6 +14,7 @@ export type SessionProduct = {
   initialStock: number;
   currentStock: number;
   category: string;
+  image?: string;
 };
 
 export type Session = {
