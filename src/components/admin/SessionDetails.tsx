@@ -29,7 +29,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
       // Map inventory data to products
       const updatedProducts = products.map(product => {
-        const inventory = inventoryData.find(inv => inv.product_id === product.id);
+        const inventory = inventoryData?.find(inv => inv.product_id === product.id);
         if (inventory) {
           return {
             ...product,
@@ -75,7 +75,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
           // Update products with new inventory data
           const updatedProducts = products.map(product => {
-            const inventory = inventoryData.find(inv => inv.product_id === product.id);
+            const inventory = inventoryData?.find(inv => inv.product_id === product.id);
             if (inventory) {
               return {
                 ...product,
@@ -99,15 +99,44 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
 
   const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
-      // Update session_inventory table for this specific session
-      const { error: updateError } = await supabase
+      // First check if a record exists
+      const { data: existingRecord, error: checkError } = await supabase
         .from('session_inventory')
-        .upsert({
-          session_id: session.id,
-          product_id: productId,
-          initial_stock: newInitialStock,
-          current_stock: newInitialStock // Reset current_stock to match initial_stock
-        });
+        .select('*')
+        .eq('session_id', session.id)
+        .eq('product_id', productId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        throw checkError;
+      }
+
+      let updateError;
+      if (existingRecord) {
+        // Update existing record
+        const { error } = await supabase
+          .from('session_inventory')
+          .update({
+            initial_stock: newInitialStock,
+            current_stock: newInitialStock
+          })
+          .eq('session_id', session.id)
+          .eq('product_id', productId);
+        
+        updateError = error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('session_inventory')
+          .insert({
+            session_id: session.id,
+            product_id: productId,
+            initial_stock: newInitialStock,
+            current_stock: newInitialStock
+          });
+        
+        updateError = error;
+      }
 
       if (updateError) throw updateError;
 
