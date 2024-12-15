@@ -41,10 +41,14 @@ export default {
         primary: {
           DEFAULT: "#9b87f5",
           foreground: "#ffffff",
+          hover: "#8a73f3",
+          light: "#d6bcfa",
+          dark: "#1A1F2C"
         },
         secondary: {
           DEFAULT: "#7E69AB",
           foreground: "#ffffff",
+          hover: "#6E59A5",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -71,6 +75,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        'gradient-purple': 'linear-gradient(to bottom right, #9b87f5, #7E69AB)',
       },
     },
   },
