@@ -60,6 +60,8 @@ export function SessionDetails({
                   : existingProduct
               );
 
+              console.log('Updated products after real-time update:', updatedProducts);
+
               return {
                 ...prevSession,
                 products: updatedProducts
@@ -82,29 +84,32 @@ export function SessionDetails({
       setIsUpdating(true);
 
       // Update the product in the database
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('products')
         .update({
           initial_stock: newInitialStock,
-          current_stock: newInitialStock // Set current_stock equal to initial_stock on update
+          current_stock: newInitialStock
         })
-        .eq('id', productId);
+        .eq('id', productId)
+        .select();
 
       if (updateError) throw updateError;
 
-      // Update local state immediately
-      setSession(prevSession => ({
-        ...prevSession,
-        products: prevSession.products.map(product => 
-          product.id === productId 
-            ? { 
-                ...product,
-                initial_stock: newInitialStock,
-                current_stock: newInitialStock
-              } 
-            : product
-        )
-      }));
+      if (data && data[0]) {
+        // Update local state immediately with the returned data
+        setSession(prevSession => ({
+          ...prevSession,
+          products: prevSession.products.map(product => 
+            product.id === productId 
+              ? { 
+                  ...product,
+                  initial_stock: data[0].initial_stock,
+                  current_stock: data[0].current_stock
+                } 
+              : product
+          )
+        }));
+      }
 
       // Call the parent handler
       onUpdateStock(productId, newInitialStock);
