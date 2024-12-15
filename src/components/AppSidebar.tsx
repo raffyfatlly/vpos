@@ -1,121 +1,115 @@
-import { Package2, ShoppingCart, BarChart3, LogOut, UserCog, Menu, CalendarDays } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
-import { UserRole } from "@/types/pos";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+  LayoutGrid,
+  Store,
+  Settings,
+  Package,
+  CalendarDays,
+  Menu,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const adminItems = [
-  {
-    title: "Sessions",
-    path: "/admin/sessions",
-    icon: CalendarDays,
-  },
-  {
-    title: "Products",
-    path: "/admin/products",
-    icon: Package2,
-  },
-  {
-    title: "Sales Overview",
-    path: "/admin/sales",
-    icon: BarChart3,
-  },
-];
-
-const cashierItems = [
-  {
-    title: "Point of Sale",
-    path: "/cashier",
-    icon: ShoppingCart,
-  },
-];
+import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
-  const navigate = useNavigate();
-  const userRole = "cashier" as UserRole;
+  const { isOpen, toggle } = useSidebar();
+  const { user } = useAuth();
 
-  const items = userRole === "admin" ? adminItems : cashierItems;
-  const menuLabel = userRole === "admin" ? "Admin" : "Cashier";
-  const switchToRole = userRole === "admin" ? "cashier" as UserRole : "admin" as UserRole;
-  const switchToPath = switchToRole === "admin" ? "/admin/products" : "/cashier";
-
-  const MenuContent = () => (
-    <SidebarContent className="flex flex-col h-full">
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-primary">POS System</h1>
-      </div>
-      <SidebarGroup>
-        <SidebarGroupLabel>{menuLabel} Menu</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {items.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton onClick={() => navigate(item.path)}>
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-      <div className="mt-auto">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => navigate(switchToPath)}>
-                  <UserCog className="w-5 h-5" />
-                  <span>Switch to {switchToRole}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <LogOut className="w-5 h-5" />
-                  <span>Logout</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </div>
-    </SidebarContent>
-  );
+  const isAdmin = user?.role === "admin" || user?.role === "both";
+  const isCashier = user?.role === "cashier" || user?.role === "both";
 
   return (
     <>
-      {/* Mobile Menu */}
-      <div className="fixed top-0 left-0 z-50 w-full bg-white border-b md:hidden">
-        <div className="flex items-center justify-between px-4 py-2">
-          <h1 className="text-xl font-bold text-primary">POS System</h1>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0">
-              <MenuContent />
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 md:hidden z-50"
+        onClick={toggle}
+      >
+        <Menu className="h-4 w-4" />
+      </Button>
+      <div
+        className={cn(
+          "fixed top-0 left-0 h-full bg-background border-r z-40 transition-transform duration-300 md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full w-60">
+          <div className="p-6">
+            <h1 className="text-xl font-semibold">POS System</h1>
+          </div>
+          <nav className="flex-1 p-4 space-y-2">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                  isActive && "bg-accent"
+                )
+              }
+            >
+              <LayoutGrid className="w-4 h-4" />
+              Dashboard
+            </NavLink>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar>
-          <MenuContent />
-        </Sidebar>
+            {isCashier && (
+              <NavLink
+                to="/cashier"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                    isActive && "bg-accent"
+                  )
+                }
+              >
+                <Store className="w-4 h-4" />
+                Cashier
+              </NavLink>
+            )}
+
+            {isAdmin && (
+              <>
+                <NavLink
+                  to="/admin/sessions"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent"
+                    )
+                  }
+                >
+                  <CalendarDays className="w-4 h-4" />
+                  Sessions
+                </NavLink>
+                <NavLink
+                  to="/admin/products"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent"
+                    )
+                  }
+                >
+                  <Package className="w-4 h-4" />
+                  Products
+                </NavLink>
+                <NavLink
+                  to="/admin/settings"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                      isActive && "bg-accent"
+                    )
+                  }
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </NavLink>
+              </>
+            )}
+          </nav>
+        </div>
       </div>
     </>
   );

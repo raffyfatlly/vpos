@@ -1,104 +1,104 @@
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Session } from "@/types/pos";
 
 interface SessionFormProps {
   session?: Session;
-  onSubmit: (data: Session) => void;
+  onSubmit: (sessionData: any) => void;
+  onCancel: () => void;
 }
 
-const SessionForm = ({ session, onSubmit }: SessionFormProps) => {
-  const form = useForm<Session>({
-    defaultValues: session || {
-      id: "",
-      name: "",
-      date: "",
-      time: "",
-      location: "",
-      staff: [],
-      products: [],
-      status: "active",
-    },
+export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
+  const [formData, setFormData] = useState({
+    name: session?.name || "",
+    date: session?.date || "",
+    time: session?.time || "",
+    location: session?.location || "",
   });
 
-  const handleSubmit = (data: Session) => {
-    onSubmit(data);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      id: session?.id,
+      staff: session?.staff || [],
+      products: session?.products || [],
+      status: session?.status || "active",
+    });
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Session Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Time</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="e.g., 09:00 AM - 05:00 PM" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full">
-          {session ? "Update Session" : "Create Session"}
-        </Button>
-      </form>
-    </Form>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-background p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-4">
+          {session ? "Edit Session" : "Create Session"}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              Session Name
+            </label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="date" className="text-sm font-medium">
+              Date
+            </label>
+            <Input
+              id="date"
+              type="date"
+              value={formData.date}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="time" className="text-sm font-medium">
+              Time
+            </label>
+            <Input
+              id="time"
+              type="time"
+              value={formData.time}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="location" className="text-sm font-medium">
+              Location
+            </label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              {session ? "Update Session" : "Create Session"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
-};
-
-export default SessionForm;
+}
