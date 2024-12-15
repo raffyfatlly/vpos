@@ -43,9 +43,14 @@ export function SessionDetails({
           if (payload.eventType === 'UPDATE') {
             const updatedProduct = payload.new;
             
-            setSession(prevSession => ({
-              ...prevSession,
-              products: prevSession.products.map(existingProduct => 
+            setSession(prevSession => {
+              // Find if this product exists in our session
+              const productExists = prevSession.products.some(p => p.id === updatedProduct.id);
+              
+              if (!productExists) return prevSession;
+
+              // Update the product in our session
+              const updatedProducts = prevSession.products.map(existingProduct => 
                 existingProduct.id === updatedProduct.id
                   ? {
                       ...existingProduct,
@@ -53,8 +58,13 @@ export function SessionDetails({
                       current_stock: updatedProduct.current_stock
                     }
                   : existingProduct
-              )
-            }));
+              );
+
+              return {
+                ...prevSession,
+                products: updatedProducts
+              };
+            });
           }
         }
       )
@@ -76,8 +86,7 @@ export function SessionDetails({
         .from('products')
         .update({
           initial_stock: newInitialStock,
-          // If no sales, set current_stock to match initial_stock
-          ...(session.sales.length === 0 && { current_stock: newInitialStock })
+          current_stock: newInitialStock // Set current_stock equal to initial_stock on update
         })
         .eq('id', productId);
 
@@ -91,10 +100,7 @@ export function SessionDetails({
             ? { 
                 ...product,
                 initial_stock: newInitialStock,
-                // If no sales, current_stock should match initial_stock
-                current_stock: prevSession.sales.length === 0 
-                  ? newInitialStock 
-                  : product.current_stock
+                current_stock: newInitialStock // Update current_stock in local state as well
               } 
             : product
         )
@@ -104,6 +110,7 @@ export function SessionDetails({
       onUpdateStock(productId, newInitialStock);
     } catch (error) {
       console.error('Error updating stock:', error);
+      throw error;
     } finally {
       setIsUpdating(false);
     }
