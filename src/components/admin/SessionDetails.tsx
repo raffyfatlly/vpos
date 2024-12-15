@@ -39,7 +39,7 @@ export function SessionDetails({
             .select('*');
 
           if (products) {
-            // Update session with latest product data, preserving initial_stock
+            // Update session with latest product data
             setSession(prevSession => ({
               ...prevSession,
               products: prevSession.products.map(existingProduct => {
@@ -49,7 +49,8 @@ export function SessionDetails({
                 return {
                   ...updatedProduct,
                   session_id: prevSession.id,
-                  initial_stock: existingProduct.initial_stock, // Always preserve the existing initial_stock
+                  initial_stock: existingProduct.initial_stock, // Preserve existing initial_stock
+                  current_stock: updatedProduct.current_stock // Use updated current_stock
                 };
               })
             }));
@@ -72,7 +73,7 @@ export function SessionDetails({
         .from('products')
         .update({
           initial_stock: newInitialStock,
-          current_stock: newInitialStock // Set current_stock equal to initial_stock on update
+          current_stock: newInitialStock // Reset current_stock to match new initial_stock
         })
         .eq('id', productId);
 
