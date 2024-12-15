@@ -51,38 +51,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
         if (updateError) throw updateError;
 
-        // Find the product to get its session_id
-        const product = products.find(p => p.id === productId);
-        if (!product || !product.session_id) {
-          throw new Error('Product or session ID not found');
-        }
-
-        // Get the current session data
-        const { data: sessionData, error: sessionError } = await supabase
-          .from('sessions')
-          .select('products')
-          .eq('id', product.session_id)
-          .single();
-
-        if (sessionError) throw sessionError;
-
-        // Update the products array in the session
-        const updatedProducts = sessionData.products.map((p: SessionProduct) =>
-          p.id === productId
-            ? { ...p, initial_stock: newInitialStock, current_stock: newInitialStock }
-            : p
-        );
-
-        // Update the session with the new products array
-        const { error: sessionUpdateError } = await supabase
-          .from('sessions')
-          .update({ products: updatedProducts })
-          .eq('id', product.session_id);
-
-        if (sessionUpdateError) throw sessionUpdateError;
-
-        console.log('Database updates successful');
-
         // Call onUpdateStock with both initial and current stock values
         onUpdateStock(productId, newInitialStock, newInitialStock);
 
