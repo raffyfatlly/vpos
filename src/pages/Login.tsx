@@ -10,7 +10,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,11 +29,26 @@ export default function Login() {
         });
       } else {
         await login(username, password);
+        // Get the user's role from the profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', (await supabase.auth.getUser()).data.user?.id)
+          .single();
+
+        if (profile) {
+          // Redirect based on role
+          if (profile.role === 'admin' || profile.role === 'both') {
+            navigate("/admin/dashboard", { replace: true });
+          } else if (profile.role === 'cashier') {
+            navigate("/cashier", { replace: true });
+          }
+        }
+        
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
-        navigate("/admin/sessions");
       }
     } catch (error: any) {
       toast({

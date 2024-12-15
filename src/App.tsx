@@ -11,6 +11,7 @@ import POS from "./pages/cashier/POS";
 import Products from "./pages/admin/Products";
 import Sessions from "./pages/admin/Sessions";
 import Dashboard from "./pages/admin/Dashboard";
+import Index from "./pages/Index";
 
 // Create a client outside of the component to avoid recreation on each render
 const queryClient = new QueryClient({
@@ -35,7 +36,7 @@ function App() {
                 <Route path="/admin/products" element={<Layout requireRole="admin"><Products /></Layout>} />
                 <Route path="/admin/sessions" element={<Layout requireRole="admin"><Sessions /></Layout>} />
                 <Route path="/cashier" element={<Layout requireRole="cashier"><POS /></Layout>} />
-                <Route path="/" element={<Layout><Dashboard /></Layout>} />
+                <Route path="/" element={<Index />} />
               </Routes>
               <Toaster />
             </SessionProvider>
