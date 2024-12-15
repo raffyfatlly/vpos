@@ -28,7 +28,19 @@ export function InvitationForm({ onInvite }: { onInvite: () => void }) {
     }
 
     try {
-      // Check if invitation already exists
+      // First check if user already exists in auth.users
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(newUserEmail);
+      
+      if (existingUser) {
+        toast({
+          title: "User exists",
+          description: "This email is already registered.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Then check if invitation already exists
       const { data: existingInvitation } = await supabase
         .from('pending_invitations')
         .select('*')
@@ -47,7 +59,7 @@ export function InvitationForm({ onInvite }: { onInvite: () => void }) {
       // Create new invitation
       const { error: invitationError } = await supabase
         .from('pending_invitations')
-        .upsert({
+        .insert({
           email: newUserEmail,
           role: newUserRole,
           used: false
