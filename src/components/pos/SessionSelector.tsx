@@ -33,13 +33,12 @@ export function SessionSelector() {
 
   const handleSessionSelect = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
+    if (session && user) {
       // Create a staff entry for the current user if they don't exist in the session
       const staffEntry: SessionStaff = {
-        id: user?.id || "",
-        name: user?.username || "",
-        role: user?.role || "cashier",
-        password: "", // We don't store the actual password
+        id: user.id,
+        name: user.username,
+        role: user.role,
       };
       
       setSelectedSessionId(sessionId);

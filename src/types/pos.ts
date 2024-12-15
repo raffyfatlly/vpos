@@ -54,4 +54,5 @@ export type Session = {
   status: "active" | "completed";
   sales: Sale[];
   created_at: string;
+  variations?: ProductVariation[];
 };

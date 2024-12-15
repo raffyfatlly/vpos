@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: AuthUser | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -60,11 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: username,
-        password: password,
+        email,
+        password,
       });
 
       if (signInError) {
@@ -75,7 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         throw signInError;
       }
-    } catch (error) {
+
+      // The session change will trigger the onAuthStateChange listener
+      // which will fetch the user profile and update the state
+    } catch (error: any) {
       console.error('Login error:', error);
       throw error;
     }
