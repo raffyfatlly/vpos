@@ -35,6 +35,7 @@ function App() {
                 <Route path="/admin/dashboard" element={<Layout requireRole="admin"><Dashboard /></Layout>} />
                 <Route path="/admin/products" element={<Layout requireRole="admin"><Products /></Layout>} />
                 <Route path="/admin/sessions" element={<Layout requireRole="admin"><Sessions /></Layout>} />
+                <Route path="/admin/members" element={<Layout requireRole="admin"><Members /></Layout>} />
                 <Route path="/cashier" element={<Layout requireRole="cashier"><POS /></Layout>} />
                 <Route path="/" element={<Index />} />
               </Routes>
