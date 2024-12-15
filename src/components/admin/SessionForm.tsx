@@ -25,11 +25,11 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       .from('products')
       .select('*');
 
-    // Add initial stock to each product when creating a new session
+    // Reset stock values for new sessions
     const sessionProducts: SessionProduct[] = (products || []).map(product => ({
       ...product,
-      initialStock: 50, // Default initial stock
-      currentStock: 50, // Initially same as initial stock
+      initial_stock: 0,  // Reset initial stock to 0
+      current_stock: 0,  // Reset current stock to 0
     }));
 
     onSubmit({
