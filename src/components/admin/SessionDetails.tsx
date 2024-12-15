@@ -42,13 +42,14 @@ export function SessionDetails({
             // Update session with latest product data, preserving initial_stock
             setSession(prevSession => ({
               ...prevSession,
-              products: products.map(product => {
-                const existingProduct = prevSession.products.find(p => p.id === product.id);
+              products: prevSession.products.map(existingProduct => {
+                const updatedProduct = products.find(p => p.id === existingProduct.id);
+                if (!updatedProduct) return existingProduct;
+                
                 return {
-                  ...product,
+                  ...updatedProduct,
                   session_id: prevSession.id,
-                  // Preserve the initial_stock from the existing product if it exists
-                  initial_stock: existingProduct?.initial_stock ?? product.initial_stock
+                  initial_stock: existingProduct.initial_stock, // Always preserve the existing initial_stock
                 };
               })
             }));
@@ -77,24 +78,15 @@ export function SessionDetails({
 
       if (updateError) throw updateError;
 
-      // Fetch the updated product to ensure we have the latest data
-      const { data: updatedProduct, error: fetchError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Update local state with the fetched product data
+      // Update local state
       setSession(prevSession => ({
         ...prevSession,
         products: prevSession.products.map(product => 
           product.id === productId 
             ? { 
-                ...updatedProduct, 
-                session_id: prevSession.id,
-                initial_stock: newInitialStock // Ensure initial_stock is set correctly
+                ...product,
+                initial_stock: newInitialStock,
+                current_stock: newInitialStock
               } 
             : product
         )

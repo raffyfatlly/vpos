@@ -16,7 +16,6 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     date: "",
   });
 
-  // Reset form data when the form is opened
   useEffect(() => {
     setFormData({
       location: session?.location || "",
@@ -27,20 +26,21 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate a shorter, more readable session ID
     const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
     const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
     
-    // Fetch all products from the products table
+    // Fetch all products with their current stock levels
     const { data: products } = await supabase
       .from('products')
       .select('*');
 
-    // Always reset stocks to 0 for new sessions
+    // Preserve existing initial_stock values for existing sessions
     const sessionProducts: SessionProduct[] = (products || []).map(product => ({
       ...product,
-      initial_stock: 0,
-      current_stock: 0,
+      session_id: sessionId,
+      // Only set initial_stock to 0 for new products, preserve existing values
+      initial_stock: product.initial_stock ?? 0,
+      current_stock: product.current_stock ?? 0,
     }));
 
     onSubmit({
@@ -50,7 +50,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       staff: session?.staff || [],
       products: sessionProducts,
       status: session?.status || "active",
-      sales: [], // Initialize empty sales array for new sessions
+      sales: [], 
       created_at: new Date().toISOString(),
     });
   };
