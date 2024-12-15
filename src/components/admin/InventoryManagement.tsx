@@ -15,52 +15,48 @@ import { supabase } from "@/lib/supabase";
 
 interface InventoryManagementProps {
   products: SessionProduct[];
-  onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
+  onUpdateStock: (productId: number, newCurrentStock: number) => void;
 }
 
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
-  const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
+  const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
 
   useEffect(() => {
     console.log('Products updated in InventoryManagement:', products);
   }, [products]);
 
-  const handleInitialStockChange = (productId: number, value: string) => {
+  const handleStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
-    setInitialStockUpdates(prev => ({
+    setStockUpdates(prev => ({
       ...prev,
       [productId]: newStock
     }));
   };
 
-  const handleUpdateInitialStock = async (productId: number) => {
-    const newInitialStock = initialStockUpdates[productId];
-    if (typeof newInitialStock === 'number') {
+  const handleUpdateStock = async (productId: number) => {
+    const newStock = stockUpdates[productId];
+    if (typeof newStock === 'number') {
       try {
-        console.log('Starting stock update for product:', productId, 'new initial stock:', newInitialStock);
+        console.log('Starting stock update for product:', productId, 'new stock:', newStock);
 
-        // First, update the products table
         const { error: updateError } = await supabase
           .from('products')
           .update({
-            initial_stock: newInitialStock,
-            current_stock: newInitialStock // Set current_stock equal to initial_stock on update
+            current_stock: newStock
           })
           .eq('id', productId);
 
         if (updateError) throw updateError;
 
-        // Call onUpdateStock with both initial and current stock values
-        onUpdateStock(productId, newInitialStock, newInitialStock);
+        onUpdateStock(productId, newStock);
 
         toast({
           title: "Stock Updated",
-          description: "Initial and current stock have been updated successfully.",
+          description: "Current stock has been updated successfully.",
         });
 
-        // Clear the input field after successful update
-        setInitialStockUpdates(prev => {
+        setStockUpdates(prev => {
           const { [productId]: _, ...rest } = prev;
           return rest;
         });
@@ -86,7 +82,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
               <TableHead className="w-[120px]">Price</TableHead>
               <TableHead className="w-[150px]">Initial Stock</TableHead>
               <TableHead className="w-[150px]">Current Stock</TableHead>
-              <TableHead className="w-[180px]">Update Initial Stock</TableHead>
+              <TableHead className="w-[150px]">Update Stock</TableHead>
               <TableHead className="w-[180px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -102,19 +98,19 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                 <TableCell>
                   <Input
                     type="number"
-                    placeholder="New initial stock"
+                    placeholder="New stock"
                     className="w-32"
-                    onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
-                    value={initialStockUpdates[product.id] || ''}
+                    onChange={(e) => handleStockChange(product.id, e.target.value)}
+                    value={stockUpdates[product.id] || ''}
                   />
                 </TableCell>
                 <TableCell>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleUpdateInitialStock(product.id)}
+                    onClick={() => handleUpdateStock(product.id)}
                   >
-                    Update Initial Stock
+                    Update Stock
                   </Button>
                 </TableCell>
               </TableRow>
