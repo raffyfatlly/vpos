@@ -18,11 +18,11 @@ export default function Login() {
     try {
       await login(email, password);
       
-      // Get the user's role from the profile
+      // Get the user's profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('email', email)
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
       if (profileError) {
