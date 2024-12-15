@@ -62,45 +62,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // First try to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // First check if there's a pending invitation
+      const { data: invitation } = await supabase
+        .from('pending_invitations')
+        .select('*')
+        .eq('email', email)
+        .eq('used', false)
+        .single();
 
-      // If sign in fails with no user found, then try to sign up
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
+      // If there's an invitation and it's not used, try to sign up
+      if (invitation && !invitation.used) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              email_confirm: true
-            }
-          }
         });
 
-        if (signUpError) {
-          toast({
-            title: "Registration failed",
-            description: signUpError.message,
-            variant: "destructive",
-          });
-          throw signUpError;
-        }
-      } else if (signInError) {
-        toast({
-          title: "Login failed",
-          description: signInError.message,
-          variant: "destructive",
+        if (signUpError) throw signUpError;
+      } else {
+        // If no invitation or it's already used, try to sign in
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        throw signInError;
+
+        if (signInError) throw signInError;
       }
 
       // The session change will trigger the onAuthStateChange listener
       // which will fetch the user profile and update the state
     } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        title: "Authentication failed",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
   };
