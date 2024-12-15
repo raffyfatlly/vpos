@@ -7,7 +7,7 @@ export const useCartOperations = (
   toast: any
 ) => {
   const addProduct = (product: SessionProduct) => {
-    if (product.currentStock <= 0) {
+    if (product.current_stock <= 0) {
       toast({
         title: "Out of stock",
         description: "This product is currently out of stock.",
@@ -22,7 +22,7 @@ export const useCartOperations = (
         !item.selectedVariation
       );
 
-      if (existingItem && existingItem.quantity + 1 > product.currentStock) {
+      if (existingItem && existingItem.quantity + 1 > product.current_stock) {
         toast({
           title: "Insufficient stock",
           description: "Cannot add more of this item due to stock limitations.",
@@ -47,7 +47,7 @@ export const useCartOperations = (
       const updatedItems = current.map((item) => {
         if (item.id === id) {
           const newQuantity = Math.max(0, item.quantity + delta);
-          if (delta > 0 && newQuantity > item.currentStock) {
+          if (delta > 0 && newQuantity > item.current_stock) {
             toast({
               title: "Insufficient stock",
               description: "Cannot add more of this item due to stock limitations.",

@@ -32,8 +32,8 @@ export default function Products() {
           name: v.name || '',
           price: Number(v.price) || 0
         })) as ProductVariation[],
-        initialStock: product.initial_stock || 0,
-        currentStock: product.current_stock || 0
+        initial_stock: product.initial_stock || 0,
+        current_stock: product.current_stock || 0
       }));
       
       setProducts(transformedProducts);
@@ -63,8 +63,8 @@ export default function Products() {
             category: productData.category,
             image: productData.image,
             variations: productData.variations,
-            initial_stock: productData.initialStock,
-            current_stock: productData.currentStock
+            initial_stock: productData.initial_stock,
+            current_stock: productData.current_stock
           })
           .eq('id', editingProduct.id);
 
@@ -84,8 +84,8 @@ export default function Products() {
             category: productData.category,
             image: productData.image,
             variations: productData.variations,
-            initial_stock: productData.initialStock,
-            current_stock: productData.currentStock
+            initial_stock: productData.initial_stock,
+            current_stock: productData.current_stock
           }]);
 
         if (error) throw error;
@@ -195,4 +195,4 @@ export default function Products() {
       )}
     </div>
   );
-}
+};
