@@ -74,52 +74,50 @@ export function InventoryManagement({ session }: InventoryManagementProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 min-h-0 overflow-auto">
-        <div className="rounded-lg border border-border/50">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
-              <TableRow className="bg-primary/5 hover:bg-primary/5">
-                <TableHead className="w-[250px]">Product Name</TableHead>
-                <TableHead className="w-[120px]">Price</TableHead>
-                <TableHead className="w-[150px]">Initial Stock</TableHead>
-                <TableHead className="w-[150px]">Current Stock</TableHead>
-                <TableHead className="w-[180px]">Update Initial Stock</TableHead>
-                <TableHead className="w-[180px]">Actions</TableHead>
+      <div className="flex-1 overflow-auto rounded-lg border border-border/50">
+        <Table>
+          <TableHeader className="sticky top-0 bg-background z-10">
+            <TableRow className="bg-primary/5 hover:bg-primary/5">
+              <TableHead className="w-[250px]">Product Name</TableHead>
+              <TableHead className="w-[120px]">Price</TableHead>
+              <TableHead className="w-[150px]">Initial Stock</TableHead>
+              <TableHead className="w-[150px]">Current Stock</TableHead>
+              <TableHead className="w-[180px]">Update Initial Stock</TableHead>
+              <TableHead className="w-[180px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {session.products.map((product) => (
+              <TableRow key={product.id} className="hover:bg-primary/5">
+                <TableCell className="font-medium truncate max-w-[250px]">
+                  {product.name}
+                </TableCell>
+                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.initial_stock}</TableCell>
+                <TableCell>{product.current_stock}</TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    placeholder="New initial stock"
+                    className="w-32"
+                    onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
+                    value={initialStockUpdates[product.id] || ''}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:text-primary whitespace-nowrap"
+                    onClick={() => handleUpdateInitialStock(product.id)}
+                  >
+                    Update Initial Stock
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {session.products.map((product) => (
-                <TableRow key={product.id} className="hover:bg-primary/5">
-                  <TableCell className="font-medium truncate max-w-[250px]">
-                    {product.name}
-                  </TableCell>
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
-                  <TableCell>{product.initial_stock}</TableCell>
-                  <TableCell>{product.current_stock}</TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      placeholder="New initial stock"
-                      className="w-32"
-                      onChange={(e) => handleInitialStockChange(product.id, e.target.value)}
-                      value={initialStockUpdates[product.id] || ''}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-primary/10 hover:text-primary whitespace-nowrap"
-                      onClick={() => handleUpdateInitialStock(product.id)}
-                    >
-                      Update Initial Stock
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
