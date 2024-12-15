@@ -28,7 +28,7 @@ export const useCart = (onComplete: (sale: {
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("bayarlah_qr");
   const [globalDiscount, setGlobalDiscount] = useState(0);
   const { toast } = useToast();
-  const { currentSession, currentStaff } = useSession();
+  const { currentSession, setCurrentSession } = useSession();
 
   const addProduct = (product: SessionProduct) => {
     if (product.currentStock <= 0) {
@@ -120,6 +120,57 @@ export const useCart = (onComplete: (sale: {
     return subtotal - globalDiscount;
   };
 
+  const updateProductStocks = async () => {
+    if (!currentSession) return;
+
+    // Update products in the database
+    for (const item of items) {
+      const { error } = await supabase
+        .from('products')
+        .update({ 
+          current_stock: item.currentStock - item.quantity 
+        })
+        .eq('id', item.id);
+
+      if (error) {
+        console.error('Error updating stock:', error);
+        throw error;
+      }
+    }
+
+    // Update products in the current session
+    const updatedProducts = currentSession.products.map(product => {
+      const soldItem = items.find(item => item.id === product.id);
+      if (soldItem) {
+        return {
+          ...product,
+          currentStock: product.currentStock - soldItem.quantity,
+          current_stock: product.current_stock - soldItem.quantity
+        };
+      }
+      return product;
+    });
+
+    // Update session in database
+    const { error: sessionError } = await supabase
+      .from('sessions')
+      .update({
+        products: updatedProducts
+      })
+      .eq('id', currentSession.id);
+
+    if (sessionError) {
+      console.error('Error updating session:', sessionError);
+      throw sessionError;
+    }
+
+    // Update local session state
+    setCurrentSession({
+      ...currentSession,
+      products: updatedProducts
+    });
+  };
+
   const handleCheckout = async () => {
     const total = getTotal();
     const payment = parseFloat(paymentAmount);
@@ -142,70 +193,50 @@ export const useCart = (onComplete: (sale: {
       return;
     }
 
-    const saleData = {
-      products: items.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.selectedVariation?.price ?? item.price,
-        discount: item.discount,
-        variationId: item.selectedVariation?.id,
-      })),
-      subtotal: getSubtotal(),
-      discount: globalDiscount + items.reduce(
-        (sum, item) => sum + item.discount,
-        0
-      ),
-      total: getTotal(),
-      paymentMethod: selectedPayment,
-    };
+    try {
+      // Update stocks first
+      await updateProductStocks();
 
-    const updatedProducts = currentSession.products.map(product => {
-      const soldItem = items.find(item => item.id === product.id);
-      if (soldItem) {
-        return {
-          ...product,
-          currentStock: product.currentStock - soldItem.quantity
-        };
+      const saleData = {
+        products: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.selectedVariation?.price ?? item.price,
+          discount: item.discount,
+          variationId: item.selectedVariation?.id,
+        })),
+        subtotal: getSubtotal(),
+        discount: globalDiscount,
+        total: getTotal(),
+        paymentMethod: selectedPayment,
+      };
+
+      onComplete(saleData);
+      
+      if (selectedPayment === "cash") {
+        const change = payment - total;
+        toast({
+          title: "Sale completed",
+          description: `Change due: RM${change.toFixed(2)}`,
+        });
+      } else {
+        toast({
+          title: "Sale completed",
+          description: "Payment received via Bayarlah QR",
+        });
       }
-      return product;
-    });
-
-    const { error } = await supabase
-      .from('sessions')
-      .update({
-        products: updatedProducts,
-        sales: [...(currentSession.sales || []), saleData]
-      })
-      .eq('id', currentSession.id);
-
-    if (error) {
-      console.error('Error updating session:', error);
+      
+      setItems([]);
+      setPaymentAmount("");
+      setGlobalDiscount(0);
+    } catch (error) {
+      console.error('Error completing sale:', error);
       toast({
         title: "Error",
         description: "Failed to complete sale. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-
-    onComplete(saleData);
-    
-    if (selectedPayment === "cash") {
-      const change = payment - total;
-      toast({
-        title: "Sale completed",
-        description: `Change due: RM${change.toFixed(2)}`,
-      });
-    } else {
-      toast({
-        title: "Sale completed",
-        description: "Payment received via Bayarlah QR",
-      });
-    }
-    
-    setItems([]);
-    setPaymentAmount("");
-    setGlobalDiscount(0);
   };
 
   return {
