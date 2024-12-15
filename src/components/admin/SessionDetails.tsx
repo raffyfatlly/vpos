@@ -7,7 +7,7 @@ import { SalesHistory } from "./SalesHistory";
 
 interface SessionDetailsProps {
   session: Session;
-  onUpdateStock: (productId: number, newInitialStock: number, newCurrentStock: number) => void;
+  onUpdateStock: (productId: number, newCurrentStock: number) => void;
 }
 
 export function SessionDetails({ 
@@ -16,30 +16,26 @@ export function SessionDetails({
 }: SessionDetailsProps) {
   const [session, setSession] = useState<Session>(initialSession);
 
-  // Only update session state when initialSession changes completely
   useEffect(() => {
     console.log('Session updated in SessionDetails:', initialSession);
-    // Deep compare products to prevent unnecessary updates
     const hasProductChanges = JSON.stringify(initialSession.products) !== JSON.stringify(session.products);
     if (hasProductChanges) {
       setSession(initialSession);
     }
   }, [initialSession]);
 
-  const handleUpdateStock = (productId: number, newInitialStock: number, newCurrentStock: number) => {
-    console.log('Updating stock in SessionDetails:', { productId, newInitialStock, newCurrentStock });
+  const handleUpdateStock = (productId: number, newCurrentStock: number) => {
+    console.log('Updating stock in SessionDetails:', { productId, newCurrentStock });
     
-    // Update local session state first
     setSession(prevSession => {
       const updatedProducts = prevSession.products.map(product => {
         if (product.id === productId) {
           console.log('Updating product:', {
             before: product,
-            after: { ...product, initial_stock: newInitialStock, current_stock: newCurrentStock }
+            after: { ...product, current_stock: newCurrentStock }
           });
           return {
             ...product,
-            initial_stock: newInitialStock,
             current_stock: newCurrentStock
           };
         }
@@ -52,8 +48,7 @@ export function SessionDetails({
       };
     });
 
-    // Call the parent's onUpdateStock callback
-    onUpdateStock(productId, newInitialStock, newCurrentStock);
+    onUpdateStock(productId, newCurrentStock);
   };
 
   return (
