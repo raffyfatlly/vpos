@@ -69,12 +69,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // Use a single destructuring to avoid multiple reads of the response
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message);
+      }
 
       if (!data.user) {
         throw new Error("No user data returned");
