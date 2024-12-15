@@ -18,13 +18,14 @@ export function SessionList({
   const { toast } = useToast();
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
 
-  const handleToggleActive = async (session: Session) => {
+  const handleToggleActive = async (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event propagation
     try {
-      const newStatus = session.status === "active" ? "completed" : "active" as const;
+      const newStatus = session.status === "active" ? "completed" : "active";
       
       // Update local state immediately for UI feedback
       const updatedLocalSessions = localSessions.map(s => 
-        s.id === session.id ? { ...s, status: newStatus } : s
+        s.id === session.id ? { ...s, status: newStatus as "active" | "completed" } : s
       );
       setLocalSessions(updatedLocalSessions);
 
@@ -37,7 +38,7 @@ export function SessionList({
       if (error) throw error;
 
       // Call the parent update handler
-      const updatedSession = { ...session, status: newStatus };
+      const updatedSession = { ...session, status: newStatus as "active" | "completed" };
       onSessionUpdate(updatedSession);
 
       toast({
@@ -66,8 +67,8 @@ export function SessionList({
           onClick={() => onSelect(session)}
         >
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">{session.name}</h3>
-            <p className="text-sm text-muted-foreground">{session.date}</p>
+            <h3 className="text-lg font-semibold mb-1">{session.name}</h3>
+            <p className="text-sm text-muted-foreground mb-0.5">{session.date}</p>
             <p className="text-sm text-muted-foreground">{session.location}</p>
           </div>
           
@@ -80,10 +81,7 @@ export function SessionList({
             
             <Toggle
               pressed={session.status === "completed"}
-              onPressedChange={(e) => {
-                e.stopPropagation();
-                handleToggleActive(session);
-              }}
+              onPressedChange={(pressed) => handleToggleActive(session, { stopPropagation: () => {} } as React.MouseEvent)}
               className="data-[state=on]:bg-green-500"
             >
               {session.status === "active" ? "Mark Complete" : "Reactivate"}

@@ -75,9 +75,7 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
@@ -90,24 +88,25 @@
     @apply font-display font-semibold tracking-tight;
   }
 
+  /* Updated responsive typography */
   h1 {
-    @apply text-display-lg md:text-[4rem] leading-tight;
+    @apply text-heading-lg md:text-display-lg lg:text-[3rem] leading-tight;
   }
 
   h2 {
-    @apply text-heading-lg md:text-display;
+    @apply text-heading md:text-heading-lg lg:text-display;
   }
 
   h3 {
-    @apply text-heading;
+    @apply text-title md:text-heading;
   }
 
   h4 {
-    @apply text-title;
+    @apply text-body-lg md:text-title;
   }
 
   p {
-    @apply text-body-lg text-muted-foreground;
+    @apply text-body md:text-body-lg text-muted-foreground;
   }
 
   button, .button {
