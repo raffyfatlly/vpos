@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { UserRole } from "@/types/pos";
@@ -48,6 +50,30 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
     });
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      // Delete from auth.users (this will cascade to profiles due to FK constraint)
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+
+      if (deleteError) throw deleteError;
+
+      toast({
+        title: "User deleted",
+        description: "The user has been deleted successfully.",
+      });
+
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error deleting user",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -55,6 +81,7 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
           <TableHead className="text-left">Email</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Created At</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -78,6 +105,15 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
             </TableCell>
             <TableCell>
               {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+            </TableCell>
+            <TableCell>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteUser(profile.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
