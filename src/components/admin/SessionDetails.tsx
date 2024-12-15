@@ -14,6 +14,40 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
   const [products, setProducts] = useState(session.products);
   const { toast } = useToast();
 
+  // Fetch initial session inventory data
+  useEffect(() => {
+    const fetchSessionInventory = async () => {
+      const { data: inventoryData, error: inventoryError } = await supabase
+        .from('session_inventory')
+        .select('*')
+        .eq('session_id', session.id);
+
+      if (inventoryError) {
+        console.error('Error fetching session inventory:', inventoryError);
+        return;
+      }
+
+      // Map inventory data to products
+      const updatedProducts = products.map(product => {
+        const inventory = inventoryData.find(inv => inv.product_id === product.id);
+        if (inventory) {
+          return {
+            ...product,
+            initial_stock: inventory.initial_stock,
+            current_stock: inventory.current_stock,
+          };
+        }
+        return product;
+      });
+
+      setProducts(updatedProducts);
+      onUpdateStock(session.id, updatedProducts);
+    };
+
+    fetchSessionInventory();
+  }, [session.id]);
+
+  // Subscribe to real-time updates for this session's inventory
   useEffect(() => {
     const channel = supabase
       .channel(`session_inventory_${session.id}`)
@@ -26,14 +60,16 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
           filter: `session_id=eq.${session.id}`,
         },
         async (payload: any) => {
-          // Fetch updated inventory data
+          console.log('Received session inventory update:', payload);
+          
+          // Fetch updated inventory data for this session
           const { data: inventoryData, error: inventoryError } = await supabase
             .from('session_inventory')
             .select('*')
             .eq('session_id', session.id);
 
           if (inventoryError) {
-            console.error('Error fetching inventory:', inventoryError);
+            console.error('Error fetching updated inventory:', inventoryError);
             return;
           }
 
@@ -59,19 +95,19 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session.id]);
+  }, [session.id, products]);
 
   const handleInitialStockChange = async (productId: number, newInitialStock: number) => {
     try {
-      // Update session_inventory table
+      // Update session_inventory table for this specific session
       const { error: updateError } = await supabase
         .from('session_inventory')
-        .update({
+        .upsert({
+          session_id: session.id,
+          product_id: productId,
           initial_stock: newInitialStock,
           current_stock: newInitialStock // Reset current_stock to match initial_stock
-        })
-        .eq('session_id', session.id)
-        .eq('product_id', productId);
+        });
 
       if (updateError) throw updateError;
 
@@ -94,7 +130,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
         description: "Initial and current stock have been updated successfully.",
       });
     } catch (error: any) {
-      console.error('Error updating stock:', error);
+      console.error('Error updating session stock:', error);
       toast({
         title: "Error",
         description: "Failed to update stock. Please try again.",
@@ -107,7 +143,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
     <div className="space-y-6">
       <div className="rounded-lg border">
         <div className="p-4">
-          <h3 className="text-lg font-medium">Inventory</h3>
+          <h3 className="text-lg font-medium">Session Inventory</h3>
           <div className="mt-4">
             <div className="grid grid-cols-4 gap-4 font-medium text-sm text-gray-500 mb-2">
               <div>Product</div>
