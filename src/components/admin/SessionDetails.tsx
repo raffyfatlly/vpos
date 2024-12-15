@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 interface SessionDetailsProps {
   session: Session;
@@ -38,13 +39,19 @@ export function SessionDetails({
           schema: 'public',
           table: 'products',
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
           console.log('Product update received:', payload);
           
           // Skip if we're currently performing our own update
           if (isUpdating) return;
 
           try {
+            // Ensure payload.new exists and has an id
+            if (!payload.new || typeof payload.new.id === 'undefined') {
+              console.error('Invalid payload received:', payload);
+              return;
+            }
+
             // Fetch the latest product data
             const { data: updatedProduct, error: productError } = await supabase
               .from('products')
@@ -91,7 +98,7 @@ export function SessionDetails({
           table: 'sessions',
           filter: `id=eq.${initialSession.id}`,
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
           console.log('Session update received:', payload);
           
           if (isUpdating) return;
