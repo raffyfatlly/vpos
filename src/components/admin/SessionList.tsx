@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Session } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Toggle } from "@/components/ui/toggle";
 import { useAuth } from "@/hooks/useAuth";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
@@ -24,6 +23,11 @@ export function SessionList({
   const { toast } = useToast();
   const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
   const { user } = useAuth();
+
+  // Update local sessions when the prop changes
+  useEffect(() => {
+    setLocalSessions(sessions);
+  }, [sessions]);
 
   const handleToggleActive = async (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -63,12 +67,12 @@ export function SessionList({
     e.stopPropagation();
     if (window.confirm(`Are you sure you want to delete the session "${session.location}"?`)) {
       try {
+        // Optimistically remove from local state
+        setLocalSessions(prev => prev.filter(s => s.id !== session.id));
         onDelete(session.id);
-        toast({
-          title: "Session deleted",
-          description: "The session has been successfully deleted",
-        });
       } catch (error: any) {
+        // Restore the previous state if there's an error
+        setLocalSessions(sessions);
         toast({
           title: "Error deleting session",
           description: error.message,
