@@ -23,7 +23,7 @@ export const useCartCheckout = (
 
     // Update products in the database
     for (const item of items) {
-      const newStock = item.currentStock - item.quantity;
+      const newStock = item.current_stock - item.quantity;
       
       const { error } = await supabase
         .from('products')
