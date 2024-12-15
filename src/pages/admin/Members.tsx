@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import {
   Table,
   TableBody,
@@ -9,9 +9,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { UserRole } from "@/types/pos";
 
 const Members = () => {
-  const { data: profiles, isLoading } = useQuery({
+  const { toast } = useToast();
+  const { data: profiles, isLoading, refetch } = useQuery({
     queryKey: ["profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -22,6 +32,29 @@ const Members = () => {
       return data;
     },
   });
+
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', userId);
+
+    if (error) {
+      toast({
+        title: "Error updating role",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Role updated",
+      description: "The user's role has been updated successfully.",
+    });
+    
+    refetch();
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -38,7 +71,7 @@ const Members = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Username</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Created At</TableHead>
               </TableRow>
@@ -47,7 +80,21 @@ const Members = () => {
               {profiles?.map((profile) => (
                 <TableRow key={profile.id}>
                   <TableCell>{profile.username}</TableCell>
-                  <TableCell className="capitalize">{profile.role}</TableCell>
+                  <TableCell>
+                    <Select
+                      defaultValue={profile.role}
+                      onValueChange={(value: UserRole) => handleRoleChange(profile.id, value)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="both">Both</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="cashier">Cashier</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                   <TableCell>
                     {new Date(profile.created_at).toLocaleDateString()}
                   </TableCell>
