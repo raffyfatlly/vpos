@@ -29,7 +29,7 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
         <h3 className="font-medium text-sm truncate">{product.name}</h3>
         <div className="flex justify-between items-center w-full text-xs">
           <p className="font-semibold text-primary">
-            ${product.price.toFixed(2)}
+            RM{product.price.toFixed(2)}
           </p>
           <p className="text-muted-foreground">
             Stock: {product.currentStock}
