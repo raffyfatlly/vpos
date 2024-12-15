@@ -15,22 +15,22 @@ export function SessionDetails({
 }: SessionDetailsProps) {
   return (
     <Tabs defaultValue="inventory" className="w-full h-[calc(100vh-12rem)] flex flex-col">
-      <TabsList className="w-full bg-primary/5 mb-4">
+      <TabsList className="w-full bg-primary/5 mb-4 p-1">
         <TabsTrigger 
           value="inventory"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
         >
           Inventory Management
         </TabsTrigger>
         <TabsTrigger 
           value="sales"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
         >
           Sales Overview
         </TabsTrigger>
         <TabsTrigger 
           value="history"
-          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+          className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
         >
           Sales History
         </TabsTrigger>
