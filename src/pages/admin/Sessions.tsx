@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 import { Session } from "@/types/pos";
@@ -6,14 +6,120 @@ import { useToast } from "@/hooks/use-toast";
 import { SessionForm } from "@/components/admin/SessionForm";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { MOCK_SESSIONS } from "@/data/mockData";
+import { supabase } from "@/lib/supabase";
 
 const Sessions = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [sessions, setSessions] = useState<Session[]>(MOCK_SESSIONS);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setSessions(data || []);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load sessions",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateSession = async (sessionData: Session) => {
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .insert([sessionData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSessions([...sessions, data]);
+      toast({
+        title: "Session created",
+        description: "The session has been created successfully.",
+      });
+      setIsCreating(false);
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create session",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditSession = async (sessionData: Session) => {
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update(sessionData)
+        .eq('id', sessionData.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSessions(sessions.map(s => s.id === data.id ? data : s));
+      toast({
+        title: "Session updated",
+        description: "The session has been updated successfully.",
+      });
+      setEditingSession(null);
+    } catch (error) {
+      console.error('Error updating session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update session",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      setSessions(sessions.filter(s => s.id !== sessionId));
+      toast({
+        title: "Session deleted",
+        description: "The session has been deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete session",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Redirect if not logged in or not admin
   if (!user) {
@@ -24,31 +130,13 @@ const Sessions = () => {
     return <Navigate to="/" replace />;
   }
 
-  const handleCreateSession = (sessionData: Session) => {
-    setSessions([...sessions, sessionData]);
-    toast({
-      title: "Session created",
-      description: "The session has been created successfully.",
-    });
-    setIsCreating(false);
-  };
-
-  const handleEditSession = (sessionData: Session) => {
-    setSessions(sessions.map(s => s.id === sessionData.id ? sessionData : s));
-    toast({
-      title: "Session updated",
-      description: "The session has been updated successfully.",
-    });
-    setEditingSession(null);
-  };
-
-  const handleDeleteSession = (sessionId: string) => {
-    setSessions(sessions.filter(s => s.id !== sessionId));
-    toast({
-      title: "Session deleted",
-      description: "The session has been deleted successfully.",
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading sessions...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
