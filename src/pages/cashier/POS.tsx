@@ -3,7 +3,7 @@ import { Cart } from "@/components/pos/Cart";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
 import { Sale, SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSession } from "@/contexts/SessionContext";
 import { Navigate } from "react-router-dom";
@@ -15,11 +15,51 @@ const POS = () => {
   const { currentSession, currentStaff, setCurrentSession, clearSession } = useSession();
   const { toast } = useToast();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
+  const [sessionProducts, setSessionProducts] = useState<SessionProduct[]>([]);
 
   // Effect to clear session on component mount
   useEffect(() => {
     clearSession();
   }, []);
+
+  // Effect to load initial session inventory
+  useEffect(() => {
+    const loadSessionInventory = async () => {
+      if (!currentSession?.id) return;
+
+      try {
+        // Fetch session inventory
+        const { data: inventoryData, error: inventoryError } = await supabase
+          .from('session_inventory')
+          .select('*')
+          .eq('session_id', currentSession.id);
+
+        if (inventoryError) throw inventoryError;
+
+        // Update products with inventory data
+        const updatedProducts = currentSession.products.map(product => {
+          const inventory = inventoryData?.find(inv => inv.product_id === product.id);
+          return {
+            ...product,
+            initial_stock: inventory?.initial_stock ?? 0,
+            current_stock: inventory?.current_stock ?? 0
+          };
+        });
+
+        setSessionProducts(updatedProducts);
+        console.log('Updated products with inventory:', updatedProducts);
+      } catch (error) {
+        console.error('Error loading session inventory:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load inventory data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadSessionInventory();
+  }, [currentSession?.id]);
 
   // Effect to check session status and listen for product updates
   useEffect(() => {
@@ -53,6 +93,7 @@ const POS = () => {
               } else {
                 // Update session with new data, including product stock changes
                 setCurrentSession(updatedSession);
+                setSessionProducts(updatedSession.products);
                 
                 // Show toast for stock updates
                 toast({
@@ -65,13 +106,52 @@ const POS = () => {
         )
         .subscribe();
 
+      // Listen for inventory updates
+      const inventoryChannel = supabase
+        .channel(`inventory_${currentSession.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'session_inventory',
+            filter: `session_id=eq.${currentSession.id}`,
+          },
+          async () => {
+            // Reload session inventory when changes occur
+            const { data: inventoryData, error: inventoryError } = await supabase
+              .from('session_inventory')
+              .select('*')
+              .eq('session_id', currentSession.id);
+
+            if (inventoryError) {
+              console.error('Error fetching updated inventory:', inventoryError);
+              return;
+            }
+
+            const updatedProducts = currentSession.products.map(product => {
+              const inventory = inventoryData?.find(inv => inv.product_id === product.id);
+              return {
+                ...product,
+                initial_stock: inventory?.initial_stock ?? 0,
+                current_stock: inventory?.current_stock ?? 0
+              };
+            });
+
+            setSessionProducts(updatedProducts);
+            console.log('Products updated from inventory change:', updatedProducts);
+          }
+        )
+        .subscribe();
+
       // Cleanup subscription on unmount
       return () => {
         console.log('Cleaning up session subscription');
         supabase.removeChannel(channel);
+        supabase.removeChannel(inventoryChannel);
       };
     }
-  }, [currentSession?.id]); // Only re-subscribe when session ID changes
+  }, [currentSession?.id]);
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -137,9 +217,9 @@ const POS = () => {
             {/* Products Grid Section */}
             <div className="order-2 lg:order-1 lg:col-span-2">
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-2 sm:p-4 lg:p-6 backdrop-blur-lg bg-opacity-90 border border-gray-100">
-                {currentSession.products && currentSession.products.length > 0 ? (
+                {sessionProducts && sessionProducts.length > 0 ? (
                   <ProductGrid
-                    products={currentSession.products}
+                    products={sessionProducts}
                     onProductSelect={handleProductSelect}
                     variations={currentSession.variations}
                   />
