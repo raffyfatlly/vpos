@@ -14,7 +14,7 @@ const POS = () => {
   const { user } = useAuth();
   const { currentSession, currentStaff, setCurrentSession } = useSession();
   const { toast } = useToast();
-  const cartRef = useRef<{ handleCheckout: () => void }>(null);
+  const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -27,6 +27,16 @@ const POS = () => {
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
+
+  const handleProductSelect = (product: SessionProduct) => {
+    if (cartRef.current) {
+      cartRef.current.addProduct(product);
+      toast({
+        title: "Product added",
+        description: `Added ${product.name} to cart`,
+      });
+    }
+  };
 
   const handleSaleComplete = async (sale: {
     products: {
@@ -78,10 +88,6 @@ const POS = () => {
       title: "Sale completed",
       description: `Total: RM${sale.total.toFixed(2)}`,
     });
-
-    if (cartRef.current) {
-      cartRef.current.handleCheckout();
-    }
   };
 
   return (
@@ -94,7 +100,7 @@ const POS = () => {
               {currentSession.products && currentSession.products.length > 0 ? (
                 <ProductGrid
                   products={currentSession.products}
-                  variations={currentSession.variations}
+                  onProductSelect={handleProductSelect}
                 />
               ) : (
                 <div className="text-center py-8">

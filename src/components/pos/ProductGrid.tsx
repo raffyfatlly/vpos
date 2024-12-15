@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, ProductVariation } from "@/types/pos";
 import { ProductCard } from "./ProductCard";
 import { useState } from "react";
 
 interface ProductGridProps {
   products: SessionProduct[];
-  onProductSelect: (product: SessionProduct) => void;
+  onProductSelect?: (product: SessionProduct) => void;
+  variations?: ProductVariation[];
 }
 
-export function ProductGrid({ products, onProductSelect }: ProductGridProps) {
+export function ProductGrid({ products, onProductSelect, variations }: ProductGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = products.filter(product =>
