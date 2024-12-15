@@ -52,6 +52,7 @@ export const MOCK_SESSIONS: Session[] = [
     ],
     products: MOCK_PRODUCTS,
     status: "active",
+    created_at: new Date().toISOString(),
     sales: [
       {
         id: "sale1",
@@ -77,6 +78,7 @@ export const MOCK_SESSIONS: Session[] = [
     ],
     products: MOCK_PRODUCTS,
     status: "active",
+    created_at: new Date().toISOString(),
     sales: []
   }
 ];
