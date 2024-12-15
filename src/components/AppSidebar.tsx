@@ -35,10 +35,8 @@ const cashierItems = [
 
 export function AppSidebar() {
   const navigate = useNavigate();
-  // For now, we'll hardcode the role. Later we'll integrate with Supabase auth
   const userRole: UserRole = "cashier";
 
-  // Use type narrowing for type safety
   const items = userRole === "admin" ? adminItems : cashierItems;
   const menuLabel = userRole === "admin" ? "Admin" : "Cashier";
   const switchToRole: UserRole = userRole === "admin" ? "cashier" : "admin";
