@@ -22,7 +22,6 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
   const [initialStockUpdates, setInitialStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
 
-  // Debug log when products prop changes
   useEffect(() => {
     console.log('Products updated in InventoryManagement:', products);
   }, [products]);
@@ -52,7 +51,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
         console.log('Calculated new current stock:', newCurrentStock);
 
-        // Update both initial and current stock in the database
+        // Update both initial and current stock in the products table
         const { error: updateError } = await supabase
           .from('products')
           .update({
@@ -63,7 +62,21 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
         if (updateError) throw updateError;
 
-        console.log('Database update successful');
+        // Update the session's products array
+        const { error: sessionError } = await supabase
+          .from('sessions')
+          .update({
+            products: products.map(p => 
+              p.id === productId 
+                ? { ...p, initial_stock: newInitialStock, current_stock: newCurrentStock }
+                : p
+            )
+          })
+          .eq('id', products[0]?.id);
+
+        if (sessionError) throw sessionError;
+
+        console.log('Database updates successful');
 
         // Call onUpdateStock with both initial and current stock values
         onUpdateStock(productId, newInitialStock, newCurrentStock);
