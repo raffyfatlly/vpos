@@ -29,7 +29,6 @@ interface Profile {
 export function MembersList({ profiles }: { profiles: Profile[] }) {
   const { toast } = useToast();
 
-  // Filter out the specific email
   const filteredProfiles = profiles.filter(
     (profile) => profile.username !== 'sales@vanillicious.com'
   );
@@ -78,7 +77,6 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
         description: "The user has been deleted successfully.",
       });
 
-      // Refresh the page to update the list
       window.location.reload();
     } catch (error: any) {
       console.error('Error deleting user:', error);
@@ -91,49 +89,57 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="text-left">Email</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Created At</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredProfiles?.map((profile) => (
-          <TableRow key={profile.id}>
-            <TableCell className="text-left">{profile.username}</TableCell>
-            <TableCell>
-              <Select
-                defaultValue={profile.role || undefined}
-                onValueChange={(value: UserRole) => handleRoleChange(profile.id, value)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">Both</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="cashier">Cashier</SelectItem>
-                </SelectContent>
-              </Select>
-            </TableCell>
-            <TableCell>
-              {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteUser(profile.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <div className="min-w-full inline-block align-middle">
+        <div className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-left whitespace-nowrap px-2 sm:px-4">Email</TableHead>
+                <TableHead className="whitespace-nowrap px-2 sm:px-4">Role</TableHead>
+                <TableHead className="hidden sm:table-cell whitespace-nowrap px-2 sm:px-4">Created At</TableHead>
+                <TableHead className="whitespace-nowrap px-2 sm:px-4">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProfiles?.map((profile) => (
+                <TableRow key={profile.id}>
+                  <TableCell className="text-left px-2 sm:px-4 max-w-[120px] sm:max-w-none truncate">
+                    {profile.username}
+                  </TableCell>
+                  <TableCell className="px-2 sm:px-4">
+                    <Select
+                      defaultValue={profile.role || undefined}
+                      onValueChange={(value: UserRole) => handleRoleChange(profile.id, value)}
+                    >
+                      <SelectTrigger className="w-[90px] sm:w-[120px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="both">Both</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="cashier">Cashier</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell px-2 sm:px-4">
+                    {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                  </TableCell>
+                  <TableCell className="px-2 sm:px-4">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteUser(profile.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </div>
   );
 }
