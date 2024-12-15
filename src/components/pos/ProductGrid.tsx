@@ -18,8 +18,8 @@ export function ProductGrid({ products, onProductSelect }: ProductGridProps) {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 sm:gap-4 items-center">
+    <div className="space-y-3">
+      <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input 
@@ -31,7 +31,7 @@ export function ProductGrid({ products, onProductSelect }: ProductGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
         {filteredProducts.map((product) => (
           <ProductCard
             key={product.id}

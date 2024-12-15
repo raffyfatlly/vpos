@@ -56,13 +56,15 @@ const POS = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SessionIndicator />
+      <div className="sticky top-0 z-20 bg-white border-b shadow-sm">
+        <SessionIndicator />
+      </div>
       
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-        <div className="lg:grid lg:grid-cols-3 gap-4 sm:gap-6 flex flex-col">
-          {/* Products Section - Full width on mobile, 2/3 on desktop */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
-            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4">
+          {/* Products Section */}
+          <div className="lg:col-span-2 space-y-3 sm:space-y-4 order-2 lg:order-1">
+            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
               <ProductGrid
                 products={currentSession.products}
                 onProductSelect={handleProductSelect}
@@ -70,9 +72,9 @@ const POS = () => {
             </div>
           </div>
 
-          {/* Cart Section - Full width on mobile, 1/3 on desktop */}
-          <div className="lg:col-span-1 order-1 lg:order-2 mb-4 lg:mb-0">
-            <div className="bg-white rounded-lg shadow-sm sticky top-[72px] lg:top-20">
+          {/* Cart Section - Sticky on mobile */}
+          <div className="lg:col-span-1 order-1 lg:order-2 sticky top-[120px] z-10">
+            <div className="bg-white rounded-lg shadow-sm">
               <Cart ref={cartRef} onComplete={handleSaleComplete} />
             </div>
           </div>
