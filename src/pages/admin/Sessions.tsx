@@ -42,18 +42,52 @@ const Sessions = () => {
   }
 
   const handleCreateSession = async (sessionData: Session) => {
-    await createSession.mutateAsync(sessionData);
-    setIsCreating(false);
+    try {
+      const newSession = await createSession.mutateAsync(sessionData);
+      setIsCreating(false);
+      // Set the newly created session as the selected session
+      setSelectedSession(newSession);
+      toast({
+        title: "Success",
+        description: "Session created successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditSession = async (sessionData: Session) => {
-    await updateSession.mutateAsync(sessionData);
-    setEditingSession(null);
+    try {
+      await updateSession.mutateAsync(sessionData);
+      setEditingSession(null);
+      toast({
+        title: "Success",
+        description: "Session updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteSession = async (sessionId: string) => {
-    await deleteSession.mutateAsync(sessionId);
-    setSelectedSession(null);
+    try {
+      await deleteSession.mutateAsync(sessionId);
+      setSelectedSession(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUpdateStock = async (productId: number, newStock: number) => {
@@ -85,9 +119,9 @@ const Sessions = () => {
       
       toast({
         title: "Stock Updated",
-        description: "Product stock has been updated successfully.",
+        description: "Product stock has been updated successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating stock:', error);
       toast({
         title: "Error",

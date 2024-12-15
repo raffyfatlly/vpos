@@ -35,8 +35,9 @@ export function useSessions() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    onSuccess: (newSession) => {
+      // Update the cache with the new session
+      queryClient.setQueryData(["sessions"], (old: Session[] = []) => [...old, newSession]);
       toast({
         title: "Session created",
         description: "The session has been created successfully.",
@@ -64,8 +65,11 @@ export function useSessions() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    onSuccess: (updatedSession) => {
+      // Update the cache with the updated session
+      queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
+        old.map(session => session.id === updatedSession.id ? updatedSession : session)
+      );
       toast({
         title: "Session updated",
         description: "The session has been updated successfully.",
@@ -89,9 +93,13 @@ export function useSessions() {
         .eq("id", sessionId);
 
       if (error) throw error;
+      return sessionId;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    onSuccess: (deletedSessionId) => {
+      // Update the cache by removing the deleted session
+      queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
+        old.filter(session => session.id !== deletedSessionId)
+      );
       toast({
         title: "Session deleted",
         description: "The session has been deleted successfully.",
