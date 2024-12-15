@@ -52,18 +52,22 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+      // Use the supabase client to get the URL
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/delete-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
         },
         body: JSON.stringify({ userId }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
 
-      if (!response.ok) throw new Error(data.error);
+      const data = await response.json();
 
       toast({
         title: "User deleted",
