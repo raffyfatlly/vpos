@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Products from "./pages/admin/Products";
 import POS from "./pages/cashier/POS";
+import Login from "./pages/Login";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -22,13 +23,12 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/admin/products" element={<Products />} />
-                  <Route path="/cashier" element={<POS />} />
-                </Routes>
-              </Layout>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Layout><Index /></Layout>} />
+                <Route path="/admin/products" element={<Layout><Products /></Layout>} />
+                <Route path="/cashier" element={<Layout><POS /></Layout>} />
+              </Routes>
             </BrowserRouter>
           </SessionProvider>
         </AuthProvider>
