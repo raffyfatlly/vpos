@@ -56,7 +56,14 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
+  // Always show session selector if no active session
   if (!currentSession || !currentStaff) {
+    return <SessionSelector />;
+  }
+
+  // Only show POS interface if session is active
+  if (currentSession.status !== "active") {
+    setCurrentSession(null);
     return <SessionSelector />;
   }
 
@@ -116,9 +123,6 @@ const POS = () => {
       description: `Total: RM${sale.total.toFixed(2)}`,
     });
   };
-
-  // Add console.log to debug session products
-  console.log("Current session products:", currentSession.products);
 
   return (
     <>
