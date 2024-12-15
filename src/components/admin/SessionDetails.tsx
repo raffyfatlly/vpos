@@ -71,7 +71,7 @@ export function SessionDetails({
           ? { 
               ...product,
               initial_stock: newInitialStock,
-              current_stock: newInitialStock
+              current_stock: newInitialStock // Set current_stock equal to initial_stock
             }
           : product
       );
