@@ -1,4 +1,4 @@
-import { Package2, ShoppingCart, BarChart3, LogOut, UserCog } from "lucide-react";
+import { Package2, ShoppingCart, BarChart3, LogOut, UserCog, Menu } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
 import { UserRole } from "@/types/pos";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const adminItems = [
   {
@@ -42,48 +44,74 @@ export function AppSidebar() {
   const switchToRole = userRole === "admin" ? "cashier" as UserRole : "admin" as UserRole;
   const switchToPath = switchToRole === "admin" ? "/admin/products" : "/cashier";
 
-  return (
-    <Sidebar>
-      <SidebarContent className="flex flex-col h-full">
-        <div className="px-4 py-6">
-          <h1 className="text-2xl font-bold text-primary">POS System</h1>
-        </div>
+  const MenuContent = () => (
+    <SidebarContent className="flex flex-col h-full">
+      <div className="px-4 py-6">
+        <h1 className="text-2xl font-bold text-primary">POS System</h1>
+      </div>
+      <SidebarGroup>
+        <SidebarGroupLabel>{menuLabel} Menu</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {items.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton onClick={() => navigate(item.path)}>
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+      <div className="mt-auto">
         <SidebarGroup>
-          <SidebarGroupLabel>{menuLabel} Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton onClick={() => navigate(item.path)}>
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => navigate(switchToPath)}>
+                  <UserCog className="w-5 h-5" />
+                  <span>Switch to {switchToRole}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <LogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <div className="mt-auto">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate(switchToPath)}>
-                    <UserCog className="w-5 h-5" />
-                    <span>Switch to {switchToRole}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+      </div>
+    </SidebarContent>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu */}
+      <div className="fixed top-0 left-0 z-50 w-full bg-white border-b md:hidden">
+        <div className="flex items-center justify-between px-4 py-2">
+          <h1 className="text-xl font-bold text-primary">POS System</h1>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0">
+              <MenuContent />
+            </SheetContent>
+          </Sheet>
         </div>
-      </SidebarContent>
-    </Sidebar>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar>
+          <MenuContent />
+        </Sidebar>
+      </div>
+    </>
   );
 }
