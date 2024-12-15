@@ -5,6 +5,7 @@ import { CartItemList } from "./CartItemList";
 import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/contexts/SessionContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface CartProps {
   onComplete: Parameters<typeof useCart>[0];
@@ -12,7 +13,8 @@ interface CartProps {
 
 export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }, CartProps>(
   ({ onComplete }, ref) => {
-    const { currentSession } = useSession();
+    const { currentSession, setCurrentSession } = useSession();
+    const { toast } = useToast();
     const {
       items,
       paymentAmount,
@@ -39,6 +41,8 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
     useEffect(() => {
       if (!currentSession) return;
 
+      console.log("Setting up session subscription in Cart for session:", currentSession.id);
+      
       const channel = supabase
         .channel(`session_${currentSession.id}`)
         .on(
@@ -50,17 +54,30 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
             filter: `id=eq.${currentSession.id}`,
           },
           (payload: any) => {
+            console.log("Received session update in Cart:", payload);
+            
             if (payload.new && payload.new.products) {
+              console.log("Updating session products in Cart:", payload.new.products);
               updateSessionProducts(payload.new.products);
+              setCurrentSession({
+                ...currentSession,
+                products: payload.new.products
+              });
+              
+              toast({
+                title: "Stock Updated",
+                description: "Product stock has been updated",
+              });
             }
           }
         )
         .subscribe();
 
       return () => {
+        console.log("Cleaning up session subscription in Cart");
         supabase.removeChannel(channel);
       };
-    }, [currentSession]);
+    }, [currentSession?.id]);
 
     return (
       <div className="p-4 sm:p-6 space-y-6">
