@@ -62,12 +62,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // First try to sign up the user if they don't exist
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          // This will automatically confirm the email
+          data: {
+            email_confirm: true
+          }
+        }
+      });
+
+      // If sign up fails (user likely exists), try to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signInError) {
+      // If both operations failed, show the error
+      if (signUpError && signInError) {
         toast({
           title: "Login failed",
           description: signInError.message,
