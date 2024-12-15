@@ -29,6 +29,11 @@ interface Profile {
 export function MembersList({ profiles }: { profiles: Profile[] }) {
   const { toast } = useToast();
 
+  // Filter out the specific email
+  const filteredProfiles = profiles.filter(
+    (profile) => profile.username !== 'sales@vanillicious.com'
+  );
+
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     const { error } = await supabase
       .from('profiles')
@@ -96,7 +101,7 @@ export function MembersList({ profiles }: { profiles: Profile[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {profiles?.map((profile) => (
+        {filteredProfiles?.map((profile) => (
           <TableRow key={profile.id}>
             <TableCell className="text-left">{profile.username}</TableCell>
             <TableCell>
