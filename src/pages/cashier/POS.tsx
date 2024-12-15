@@ -1,7 +1,7 @@
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { Cart } from "@/components/pos/Cart";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
-import { Sale, SessionProduct, Session, ProductVariation } from "@/types/pos";
+import { Sale, SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,9 +12,14 @@ import { supabase } from "@/lib/supabase";
 
 const POS = () => {
   const { user } = useAuth();
-  const { currentSession, currentStaff, setCurrentSession } = useSession();
+  const { currentSession, currentStaff, setCurrentSession, clearSession } = useSession();
   const { toast } = useToast();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
+
+  // Effect to clear session on component mount
+  useEffect(() => {
+    clearSession();
+  }, []);
 
   // Effect to check session status
   useEffect(() => {
@@ -30,13 +35,13 @@ const POS = () => {
             filter: `id=eq.${currentSession.id}`,
           },
           (payload) => {
-            const updatedSession = payload.new as Session;
+            const updatedSession = payload.new as any;
             if (updatedSession.status === 'completed') {
               toast({
                 title: "Session completed",
                 description: "This session has been marked as completed. Returning to session selection.",
               });
-              setCurrentSession(null);
+              clearSession();
             }
           }
         )
@@ -46,7 +51,7 @@ const POS = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [currentSession, setCurrentSession, toast]);
+  }, [currentSession, toast]);
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -63,7 +68,7 @@ const POS = () => {
 
   // Only show POS interface if session is active
   if (currentSession.status !== "active") {
-    setCurrentSession(null);
+    clearSession();
     return <SessionSelector />;
   }
 
@@ -90,34 +95,6 @@ const POS = () => {
     total: number;
     paymentMethod: "cash" | "bayarlah_qr";
   }) => {
-    // Fetch latest session data before updating
-    const { data: latestSession, error: fetchError } = await supabase
-      .from('sessions')
-      .select('*')
-      .eq('id', currentSession.id)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching latest session:', fetchError);
-      toast({
-        title: "Error",
-        description: "Failed to complete sale. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Convert the raw data to Session type with proper type assertions
-    const typedSession: Session = {
-      ...latestSession,
-      staff: latestSession.staff as Session['staff'],
-      products: latestSession.products as SessionProduct[],
-      sales: latestSession.sales as Sale[],
-      variations: latestSession.variations as ProductVariation[] | undefined,
-    };
-
-    setCurrentSession(typedSession);
-
     toast({
       title: "Sale completed",
       description: `Total: RM${sale.total.toFixed(2)}`,
