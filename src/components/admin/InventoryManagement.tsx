@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface InventoryManagementProps {
@@ -22,6 +22,15 @@ const MAX_INTEGER = 2147483647; // PostgreSQL integer maximum value
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
+
+  // Initialize stockUpdates with current initial_stock values
+  useEffect(() => {
+    const initialValues: Record<number, number> = {};
+    products.forEach(product => {
+      initialValues[product.id] = product.initial_stock;
+    });
+    setStockUpdates(initialValues);
+  }, [products]);
 
   const handleStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
@@ -107,7 +116,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                     placeholder="New initial stock"
                     className="w-32"
                     onChange={(e) => handleStockChange(product.id, e.target.value)}
-                    value={stockUpdates[product.id] || ''}
+                    value={stockUpdates[product.id] || product.initial_stock}
                     max={MAX_INTEGER}
                   />
                 </TableCell>
