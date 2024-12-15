@@ -2,11 +2,10 @@ export type PaymentMethod = "cash" | "bayarlah_qr";
 
 export type UserRole = "admin" | "cashier" | "both";
 
-export type SessionStaff = {
-  id: string;
+export type ProductVariation = {
+  id: number;
   name: string;
-  role: UserRole;
-  password: string;
+  price: number;
 };
 
 export type SessionProduct = {
@@ -17,6 +16,7 @@ export type SessionProduct = {
   currentStock: number;
   category: string;
   image?: string;
+  variations?: ProductVariation[];
 };
 
 export type Sale = {
@@ -49,4 +49,11 @@ export type AuthUser = {
   username: string;
   password: string;
   role: UserRole;
+};
+
+export type SessionStaff = {
+  id: string;
+  name: string;
+  role: UserRole;
+  password: string;
 };

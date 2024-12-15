@@ -1,17 +1,24 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { SessionProduct, PaymentMethod } from "@/types/pos";
+import { SessionProduct, PaymentMethod, ProductVariation } from "@/types/pos";
 import { CartSummary } from "./CartSummary";
 import { CartItemList } from "./CartItemList";
 
 interface CartItem extends SessionProduct {
   quantity: number;
   discount: number;
+  selectedVariation?: ProductVariation;
 }
 
 interface CartProps {
   onComplete: (sale: {
-    products: { productId: number; quantity: number; price: number; discount: number }[];
+    products: { 
+      productId: number; 
+      quantity: number; 
+      price: number; 
+      discount: number;
+      variationId?: number;
+    }[];
     subtotal: number;
     discount: number;
     total: number;
@@ -30,10 +37,13 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
     useImperativeHandle(ref, () => ({
       addProduct: (product: SessionProduct) => {
         setItems((current) => {
-          const existingItem = current.find((item) => item.id === product.id);
+          const existingItem = current.find((item) => 
+            item.id === product.id && 
+            !item.selectedVariation
+          );
           if (existingItem) {
             return current.map((item) =>
-              item.id === product.id
+              item.id === product.id && !item.selectedVariation
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             );
@@ -63,9 +73,20 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       );
     };
 
+    const selectVariation = (id: number, variation: ProductVariation | undefined) => {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === id
+            ? { ...item, selectedVariation: variation }
+            : item
+        )
+      );
+    };
+
     const getSubtotal = () => {
       return items.reduce((sum, item) => {
-        const itemTotal = item.price * item.quantity;
+        const itemPrice = item.selectedVariation?.price ?? item.price;
+        const itemTotal = itemPrice * item.quantity;
         return sum + (itemTotal - item.discount);
       }, 0);
     };
@@ -92,8 +113,9 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         products: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
-          price: item.price,
+          price: item.selectedVariation?.price ?? item.price,
           discount: item.discount,
+          variationId: item.selectedVariation?.id,
         })),
         subtotal: getSubtotal(),
         discount: globalDiscount + items.reduce(
@@ -130,6 +152,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
           items={items}
           onUpdateQuantity={updateQuantity}
           onApplyDiscount={applyDiscount}
+          onSelectVariation={selectVariation}
         />
         <CartSummary
           subtotal={getSubtotal()}

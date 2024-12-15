@@ -1,21 +1,60 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Minus, X } from "lucide-react";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, ProductVariation } from "@/types/pos";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CartItemProps {
-  item: SessionProduct & { quantity: number; discount: number };
+  item: SessionProduct & { 
+    quantity: number; 
+    discount: number;
+    selectedVariation?: ProductVariation;
+  };
   onUpdateQuantity: (id: number, delta: number) => void;
   onApplyDiscount: (id: number, discount: number) => void;
+  onSelectVariation: (id: number, variation: ProductVariation | undefined) => void;
 }
 
-export function CartItem({ item, onUpdateQuantity, onApplyDiscount }: CartItemProps) {
-  const itemTotal = item.price * item.quantity;
+export function CartItem({ 
+  item, 
+  onUpdateQuantity, 
+  onApplyDiscount,
+  onSelectVariation 
+}: CartItemProps) {
+  const itemPrice = item.selectedVariation?.price ?? item.price;
+  const itemTotal = itemPrice * item.quantity;
   const finalPrice = itemTotal - item.discount;
 
   return (
     <tr>
-      <td className="font-medium">{item.name}</td>
+      <td className="font-medium">
+        <div className="space-y-1">
+          <div>{item.name}</div>
+          {item.variations && item.variations.length > 0 && (
+            <Select
+              value={item.selectedVariation?.id?.toString()}
+              onValueChange={(value) => {
+                const variation = item.variations?.find(
+                  (v) => v.id.toString() === value
+                );
+                onSelectVariation(item.id, variation);
+              }}
+            >
+              <SelectTrigger className="h-8 w-full">
+                <SelectValue placeholder="Select variation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Base (RM{item.price.toFixed(2)})</SelectItem>
+                {item.variations.map((variation) => (
+                  <SelectItem key={variation.id} value={variation.id.toString()}>
+                    {variation.name} (RM{variation.price.toFixed(2)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </td>
       <td>
         <div className="flex items-center gap-1">
           <Button
