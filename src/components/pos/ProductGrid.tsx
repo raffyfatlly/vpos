@@ -19,7 +19,7 @@ export function ProductGrid({ products, onProductSelect, variations }: ProductGr
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-lg py-2 border-b">
         <div className="flex gap-2 items-center max-w-md mx-auto px-2">
           <div className="relative flex-1">
@@ -34,7 +34,7 @@ export function ProductGrid({ products, onProductSelect, variations }: ProductGr
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4 px-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
         {filteredProducts.map((product) => (
           <ProductCard
             key={product.id}
