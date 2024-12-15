@@ -16,6 +16,7 @@ export function SessionDetails({
   onUpdateStock,
 }: SessionDetailsProps) {
   const [session, setSession] = useState<Session>(initialSession);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Subscribe to product updates
   useEffect(() => {
@@ -33,11 +34,13 @@ export function SessionDetails({
           table: 'products',
         },
         (payload) => {
-          // Only update if this is not our own update
+          // Skip if we're currently performing our own update
+          if (isUpdating) return;
+
+          // Only update if this is an UPDATE event
           if (payload.eventType === 'UPDATE') {
             const updatedProduct = payload.new;
             
-            // Update session with the changed product
             setSession(prevSession => ({
               ...prevSession,
               products: prevSession.products.map(existingProduct => 
@@ -45,8 +48,7 @@ export function SessionDetails({
                   ? {
                       ...existingProduct,
                       current_stock: updatedProduct.current_stock,
-                      // Keep the existing initial_stock
-                      initial_stock: existingProduct.initial_stock
+                      initial_stock: existingProduct.initial_stock // Keep existing initial_stock
                     }
                   : existingProduct
               )
@@ -59,12 +61,14 @@ export function SessionDetails({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [initialSession]);
+  }, [initialSession, isUpdating]);
 
   const handleUpdateStock = async (productId: number, newInitialStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
     
     try {
+      setIsUpdating(true);
+
       // Update the product in the database
       const { error: updateError } = await supabase
         .from('products')
@@ -94,6 +98,8 @@ export function SessionDetails({
       onUpdateStock(productId, newInitialStock);
     } catch (error) {
       console.error('Error updating stock:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
