@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { SessionProduct, ProductVariation } from "@/types/pos";
-import { Edit, Trash2 } from "lucide-react";
+import { SessionProduct } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { ProductCard } from "@/components/admin/products/ProductCard";
 
 export default function Products() {
   const [products, setProducts] = useState<SessionProduct[]>([]);
@@ -20,21 +20,16 @@ export default function Products() {
       
       if (error) throw error;
       
-      // Transform the data to match SessionProduct type
       const transformedProducts: SessionProduct[] = (data || []).map(product => ({
         id: product.id,
         name: product.name,
         price: Number(product.price),
         category: product.category || '',
         image: product.image || '',
-        variations: (product.variations || []).map((v: any) => ({
-          id: v.id || Date.now(),
-          name: v.name || '',
-          price: Number(v.price) || 0
-        })) as ProductVariation[],
+        variations: product.variations || [],
         initial_stock: product.initial_stock || 0,
         current_stock: product.current_stock || 0,
-        session_id: product.session_id || '' // Add session_id with fallback
+        session_id: product.session_id || ''
       }));
       
       setProducts(transformedProducts);
@@ -55,7 +50,6 @@ export default function Products() {
   const handleSubmit = async (productData: SessionProduct) => {
     try {
       if (editingProduct) {
-        // Update existing product
         const { error } = await supabase
           .from('products')
           .update({
@@ -64,9 +58,6 @@ export default function Products() {
             category: productData.category,
             image: productData.image,
             variations: productData.variations,
-            initial_stock: productData.initial_stock,
-            current_stock: productData.current_stock,
-            session_id: productData.session_id // Include session_id in update
           })
           .eq('id', editingProduct.id);
 
@@ -77,7 +68,6 @@ export default function Products() {
           description: `${productData.name} has been updated successfully.`
         });
       } else {
-        // Create new product
         const { error } = await supabase
           .from('products')
           .insert([{
@@ -86,9 +76,6 @@ export default function Products() {
             category: productData.category,
             image: productData.image,
             variations: productData.variations,
-            initial_stock: productData.initial_stock,
-            current_stock: productData.current_stock,
-            session_id: productData.session_id // Include session_id in insert
           }]);
 
         if (error) throw error;
@@ -99,7 +86,6 @@ export default function Products() {
         });
       }
 
-      // Refresh products list
       fetchProducts();
       setIsFormOpen(false);
       setEditingProduct(null);
@@ -127,7 +113,6 @@ export default function Products() {
         description: `${product.name} has been deleted successfully.`
       });
 
-      // Refresh products list
       fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -148,41 +133,15 @@ export default function Products() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
-          <div key={product.id} className="border rounded-lg p-4 space-y-2">
-            <div className="aspect-square relative bg-accent rounded-md overflow-hidden">
-              {product.image && (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="object-cover w-full h-full"
-                />
-              )}
-            </div>
-            <h3 className="font-semibold">{product.name}</h3>
-            <p className="text-sm text-muted-foreground">RM {product.price.toFixed(2)}</p>
-            <div className="flex justify-between items-center">
-              <p className="text-sm">Category: {product.category}</p>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    setEditingProduct(product);
-                    setIsFormOpen(true);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleDelete(product)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ProductCard
+            key={product.id}
+            product={product}
+            onEdit={(product) => {
+              setEditingProduct(product);
+              setIsFormOpen(true);
+            }}
+            onDelete={handleDelete}
+          />
         ))}
       </div>
 
@@ -198,4 +157,4 @@ export default function Products() {
       )}
     </div>
   );
-};
+}
