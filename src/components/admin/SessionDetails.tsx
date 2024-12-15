@@ -127,7 +127,7 @@ export function SessionDetails({
   };
 
   return (
-    <div className="flex flex-col w-full gap-4">
+    <div className="flex flex-col w-full gap-4 max-w-full overflow-hidden px-0 sm:px-4">
       {isMobile && onBack && (
         <Button
           variant="ghost"
@@ -141,23 +141,34 @@ export function SessionDetails({
       
       <Tabs defaultValue="inventory" className="w-full">
         <TabsList className="w-full grid grid-cols-3 h-auto gap-2 bg-transparent">
-          <TabsTrigger value="inventory" className="data-[state=active]:bg-primary/10">
+          <TabsTrigger 
+            value="inventory" 
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+          >
             Inventory
           </TabsTrigger>
-          <TabsTrigger value="overview" className="data-[state=active]:bg-primary/10">
+          <TabsTrigger 
+            value="overview" 
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+          >
             Overview
           </TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-primary/10">
+          <TabsTrigger 
+            value="history" 
+            className="data-[state=active]:bg-primary/10 px-2 py-1.5 text-sm"
+          >
             History
           </TabsTrigger>
         </TabsList>
 
-        <div className="mt-4">
-          <TabsContent value="inventory" className="m-0">
-            <InventoryManagement 
-              products={session.products} 
-              onUpdateStock={handleUpdateStock}
-            />
+        <div className="mt-4 w-full max-w-full overflow-hidden">
+          <TabsContent value="inventory" className="m-0 w-full">
+            <div className="overflow-x-auto">
+              <InventoryManagement 
+                products={session.products} 
+                onUpdateStock={handleUpdateStock}
+              />
+            </div>
           </TabsContent>
           <TabsContent value="overview" className="m-0">
             <SalesOverview session={session} />

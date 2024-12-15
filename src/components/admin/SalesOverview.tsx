@@ -11,14 +11,14 @@ export function SalesOverview({ session }: SalesOverviewProps) {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="card-gradient">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+      <Card className="card-gradient w-full">
         <CardContent className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Sales</h3>
           <p className="text-2xl font-semibold">${calculateTotalSales().toFixed(2)}</p>
         </CardContent>
       </Card>
-      <Card className="card-gradient">
+      <Card className="card-gradient w-full">
         <CardContent className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Transactions</h3>
           <p className="text-2xl font-semibold">{session.sales?.length || 0}</p>
