@@ -31,7 +31,7 @@ export default function Login() {
         await login(username, password);
         toast({
           title: "Login successful",
-          description: "Welcome back!",
+          description: "Welcome to Vanillicious!",
         });
         navigate("/admin/sessions");
       }
@@ -45,16 +45,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-amber-50 to-orange-50">
+      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isSignUp ? "Create an account" : "Sign in to your account"}
+          <h1 className="text-4xl font-bold text-orange-600 mb-2">Vanillicious</h1>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+            {isSignUp ? "Create an account" : "Welcome back!"}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="text-sm text-gray-600">
             {isSignUp
-              ? "Sign up to get started"
-              : "Enter your credentials to access the system"}
+              ? "Sign up to start your sweet journey"
+              : "Sign in to manage your ice cream business"}
           </p>
         </div>
         
@@ -89,7 +90,7 @@ export default function Login() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
             {isSignUp ? "Sign up" : "Sign in"}
           </Button>
 
@@ -97,7 +98,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-blue-600 hover:text-blue-500"
+              className="text-sm text-orange-600 hover:text-orange-500"
             >
               {isSignUp
                 ? "Already have an account? Sign in"

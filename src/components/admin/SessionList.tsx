@@ -1,139 +1,82 @@
+import { useState } from "react";
 import { Session } from "@/types/pos";
-import { Button } from "@/components/ui/button";
-import { Edit2, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { Toggle } from "@/components/ui/toggle";
 
-interface SessionListProps {
-  sessions: Session[];
-  onEdit: (session: Session) => void;
-  onDelete: (sessionId: string) => void;
-  onSelect: (session: Session) => void;
-  selectedSession: Session | null;
-}
-
-export function SessionList({
-  sessions,
-  onEdit,
-  onDelete,
-  onSelect,
-  selectedSession,
-}: SessionListProps) {
+export default function SessionList({ sessions, onSessionUpdate }: { 
+  sessions: Session[]; 
+  onSessionUpdate: (updatedSession: Session) => void;
+}) {
   const { toast } = useToast();
+  const [localSessions, setLocalSessions] = useState<Session[]>(sessions);
 
   const handleToggleActive = async (session: Session) => {
     try {
-      const newStatus = session.status === "active" ? "completed" : "active" as const;
+      const newStatus = (session.status === "active" ? "completed" : "active") as const;
       
-      // Create updated session object
-      const updatedSession: Session = {
-        ...session,
-        status: newStatus
-      };
+      // Update local state immediately for UI feedback
+      const updatedLocalSessions = localSessions.map(s => 
+        s.id === session.id ? { ...s, status: newStatus } : s
+      );
+      setLocalSessions(updatedLocalSessions);
 
-      // Update local state immediately
-      onSelect(updatedSession);
-
-      // Update the database
+      // Update in database
       const { error } = await supabase
         .from('sessions')
         .update({ status: newStatus })
         .eq('id', session.id);
 
-      if (error) {
-        // If database update fails, revert the local state
-        onSelect(session);
-        throw error;
-      }
+      if (error) throw error;
+
+      // Call the parent update handler
+      onSessionUpdate({ ...session, status: newStatus });
 
       toast({
-        title: "Status Updated",
-        description: `Session is now ${newStatus}`,
+        title: "Status updated",
+        description: `Session marked as ${newStatus}`,
       });
-    } catch (error) {
-      console.error('Error updating session status:', error);
+    } catch (error: any) {
+      // Revert local state on error
+      setLocalSessions(localSessions);
       toast({
-        title: "Error",
-        description: "Failed to update session status",
+        title: "Error updating status",
+        description: error.message,
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="border rounded-xl shadow-lg bg-white overflow-hidden">
-      {sessions.length === 0 ? (
-        <div className="p-6">
-          <p className="text-muted-foreground text-center">No sessions found.</p>
-        </div>
-      ) : (
-        <div className="divide-y">
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className={cn(
-                "p-6 flex items-center justify-between hover:bg-gray-50/50 cursor-pointer transition-all duration-200",
-                selectedSession?.id === session.id && "bg-gray-50"
-              )}
-              onClick={() => onSelect(session)}
+    <div className="space-y-4">
+      {localSessions.map((session) => (
+        <div
+          key={session.id}
+          className="flex items-center justify-between p-4 bg-white rounded-lg shadow transition-all duration-200"
+        >
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold">{session.name}</h3>
+            <p className="text-sm text-muted-foreground">{session.date}</p>
+            <p className="text-sm text-muted-foreground">{session.location}</p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <span className={`text-sm font-medium ${
+              session.status === "active" ? "text-green-600" : "text-gray-600"
+            }`}>
+              {session.status}
+            </span>
+            
+            <Toggle
+              pressed={session.status === "completed"}
+              onPressedChange={() => handleToggleActive(session)}
+              className="data-[state=on]:bg-green-500"
             >
-              <div className="space-y-2">
-                <div className="font-display text-lg font-semibold tracking-tight">
-                  {session.location}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {session.date}
-                </div>
-                <div className="text-xs text-muted-foreground font-medium">
-                  ID: {session.id}
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={session.status === "active"}
-                    onCheckedChange={() => handleToggleActive(session)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="data-[state=checked]:bg-green-500 transition-all duration-200"
-                  />
-                  <span className={cn(
-                    "text-sm font-medium transition-all duration-200",
-                    session.status === "active" ? "text-green-600" : "text-muted-foreground"
-                  )}>
-                    {session.status === "active" ? "Active" : "Completed"}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(session);
-                    }}
-                    className="hover:bg-gray-100"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(session.id);
-                    }}
-                    className="hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
+              {session.status === "active" ? "Mark Complete" : "Reactivate"}
+            </Toggle>
+          </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }
