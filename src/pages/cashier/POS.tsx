@@ -23,6 +23,7 @@ const POS = () => {
     return <Navigate to="/" replace />;
   }
 
+  // Show session selector if no session is selected
   if (!currentSession || !currentStaff) {
     return <SessionSelector />;
   }
@@ -38,12 +39,16 @@ const POS = () => {
   };
 
   const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
-    console.log("Sale completed:", {
+    // Create the complete sale object
+    const completeSale = {
       ...saleData,
+      id: `SALE-${Date.now()}`,
       sessionId: currentSession.id,
       staffId: currentStaff.id,
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    console.log("Sale completed:", completeSale);
 
     toast({
       title: "Sale completed",

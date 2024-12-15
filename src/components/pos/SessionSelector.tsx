@@ -1,84 +1,124 @@
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useSession } from "@/contexts/SessionContext";
+import { useSessions } from "@/hooks/useSessions";
 import { Session, SessionStaff } from "@/types/pos";
-import { MOCK_SESSIONS } from "@/data/mockData";
-import { Calendar, MapPin, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
+import { MapPin, Calendar } from "lucide-react";
 
 export function SessionSelector() {
+  const { sessions, isLoading } = useSessions();
   const { setCurrentSession, setCurrentStaff } = useSession();
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
+  const { user } = useAuth();
 
-  const handleSessionSelect = (session: Session, staff: SessionStaff) => {
-    setCurrentSession(session);
-    setCurrentStaff(staff);
+  // Filter only active sessions
+  const activeSessions = sessions.filter(
+    (session) => session.status === "active"
+  );
+
+  const handleSessionSelect = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      // Create a staff entry for the current user if they don't exist in the session
+      const staffEntry: SessionStaff = {
+        id: user?.id || "",
+        name: user?.username || "",
+        role: user?.role || "cashier",
+        password: "", // We don't store the actual password
+      };
+      
+      setSelectedSessionId(sessionId);
+      setCurrentSession(session);
+      setCurrentStaff(staffEntry);
+    }
   };
 
-  // Filter sessions to only show today's sessions
-  const today = new Date().toISOString().split('T')[0];
-  console.log('Today:', today); // Debug log
-  console.log('Available sessions:', MOCK_SESSIONS); // Debug log
-  const todaySessions = MOCK_SESSIONS.filter(session => {
-    console.log('Comparing session date:', session.date, 'with today:', today); // Debug log
-    return session.date === today;
-  });
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground">Loading sessions...</p>
+      </div>
+    );
+  }
+
+  if (activeSessions.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>No Active Sessions</CardTitle>
+            <CardDescription>
+              There are no active sessions available. Please contact an administrator to create a new session.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold text-primary">Select Session</h2>
-        <p className="text-muted-foreground">
-          Choose the session and staff member to begin
-        </p>
-      </div>
-      
-      {todaySessions.length === 0 ? (
-        <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-          <p className="text-muted-foreground">No sessions available for today ({today}).</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2">
-          {todaySessions.map((session) => (
-            <div
-              key={session.id}
-              className="border rounded-lg p-6 space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+    <div className="flex items-center justify-center min-h-screen bg-gray-50/50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Select a Session</CardTitle>
+          <CardDescription>
+            Choose an active session to begin
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Select
+            value={selectedSessionId}
+            onValueChange={handleSessionSelect}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a session" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeSessions.map((session) => (
+                <SelectItem key={session.id} value={session.id}>
+                  <div className="flex flex-col gap-1">
+                    <div className="font-medium">{session.location}</div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>{session.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>{session.date}</span>
+                      </div>
+                    </div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {selectedSessionId && (
+            <Button
+              className="w-full"
+              onClick={() => handleSessionSelect(selectedSessionId)}
             >
-              <div className="space-y-2">
-                <div className="space-y-1 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>{session.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{session.date}</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-primary">
-                  ID: {session.id}
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <User className="w-4 h-4" />
-                  <span>Select Staff:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {session.staff.map((staff) => (
-                    <Button
-                      key={staff.id}
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleSessionSelect(session, staff)}
-                    >
-                      {staff.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              Start Session
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
