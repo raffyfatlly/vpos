@@ -34,14 +34,25 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       .from('products')
       .select('*');
 
-    // Preserve existing initial_stock values for existing sessions
+    // Map products to session products, ensuring current_stock equals initial_stock
     const sessionProducts: SessionProduct[] = (products || []).map(product => ({
       ...product,
       session_id: sessionId,
-      // Only set initial_stock to 0 for new products, preserve existing values
       initial_stock: product.initial_stock ?? 0,
-      current_stock: product.current_stock ?? 0,
+      current_stock: product.initial_stock ?? 0, // Set current_stock equal to initial_stock
     }));
+
+    // Update products in the database to ensure current_stock matches initial_stock
+    for (const product of sessionProducts) {
+      const { error } = await supabase
+        .from('products')
+        .update({ current_stock: product.initial_stock })
+        .eq('id', product.id);
+
+      if (error) {
+        console.error('Error updating product stock:', error);
+      }
+    }
 
     onSubmit({
       ...formData,
