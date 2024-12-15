@@ -18,7 +18,7 @@ interface InventoryManagementProps {
   onUpdateStock: (productId: number, newInitialStock: number) => void;
 }
 
-const MAX_INTEGER = 2147483647; // PostgreSQL integer maximum value
+const MAX_INTEGER = 2147483647;
 
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
@@ -83,21 +83,21 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
 
   if (isMobile) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 px-2">
         {products.map((product) => (
           <div 
             key={product.id}
             className="bg-card p-4 rounded-lg border space-y-3"
           >
-            <div className="font-medium">{product.name}</div>
+            <div className="font-medium break-words">{product.name}</div>
             <div className="text-sm text-muted-foreground">
               Price: ${product.price.toFixed(2)}
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>Initial Stock: {product.initial_stock}</div>
-              <div>Current Stock: {product.current_stock}</div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="break-words">Initial: {product.initial_stock}</div>
+              <div className="break-words">Current: {product.current_stock}</div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <Input
                 type="number"
                 className="w-full"
@@ -135,7 +135,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id}>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium break-words">
                   {product.name}
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>

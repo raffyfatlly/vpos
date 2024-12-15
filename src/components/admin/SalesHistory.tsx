@@ -19,21 +19,21 @@ export function SalesHistory({ session }: SalesHistoryProps) {
 
   if (isMobile) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 px-2">
         {session.sales && session.sales.length > 0 ? (
           session.sales.map((sale) => (
             <div key={sale.id} className="bg-card p-4 rounded-lg border space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">ID: {sale.id}</span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-medium break-words">ID: {sale.id}</span>
+                <span className="text-sm text-muted-foreground ml-2 break-words">
                   {new Date(sale.timestamp).toLocaleDateString()}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>Items: {sale.products.length}</div>
-                <div>Total: ${sale.total.toFixed(2)}</div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="break-words">Items: {sale.products.length}</div>
+                <div className="break-words">Total: ${sale.total.toFixed(2)}</div>
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground break-words">
                 Payment: {sale.paymentMethod}
               </div>
             </div>
@@ -66,13 +66,13 @@ export function SalesHistory({ session }: SalesHistoryProps) {
                 <TableBody>
                   {session.sales.map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell className="font-medium">{sale.id}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium break-words">{sale.id}</TableCell>
+                      <TableCell className="break-words">
                         {new Date(sale.timestamp).toLocaleDateString()}
                       </TableCell>
                       <TableCell>{sale.products.length}</TableCell>
                       <TableCell>${sale.total.toFixed(2)}</TableCell>
-                      <TableCell>{sale.paymentMethod}</TableCell>
+                      <TableCell className="break-words">{sale.paymentMethod}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
