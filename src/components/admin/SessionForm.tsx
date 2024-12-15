@@ -28,19 +28,33 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       .from('products')
       .select('*');
 
-    // Ensure all products start with zero stock for new sessions
-    const sessionProducts: SessionProduct[] = (products || []).map(product => ({
-      ...product,
-      initial_stock: 0,
-      current_stock: 0,
-    }));
+    // For new sessions, reset all product stocks to 0
+    // For existing sessions, keep their current values
+    const sessionProducts: SessionProduct[] = (products || []).map(product => {
+      if (session) {
+        // If editing existing session, keep the current product data
+        const existingProduct = session.products.find(p => p.id === product.id);
+        return existingProduct || {
+          ...product,
+          initial_stock: 0,
+          current_stock: 0,
+        };
+      } else {
+        // For new sessions, reset stocks to 0
+        return {
+          ...product,
+          initial_stock: 0,
+          current_stock: 0,
+        };
+      }
+    });
 
     onSubmit({
       ...formData,
       id: sessionId,
       name: sessionId,
       staff: session?.staff || [],
-      products: session ? session.products : sessionProducts,
+      products: sessionProducts,
       status: session?.status || "active",
       sales: session?.sales || [],
     });
