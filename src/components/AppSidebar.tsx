@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
-  LayoutGrid,
   Store,
   Settings,
   Package,
@@ -40,34 +39,6 @@ export function AppSidebar() {
             <h1 className="text-xl font-semibold">POS System</h1>
           </div>
           <nav className="flex-1 p-4 space-y-2">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
-                  isActive && "bg-accent"
-                )
-              }
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Dashboard
-            </NavLink>
-
-            {isCashier && (
-              <NavLink
-                to="/cashier"
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
-                    isActive && "bg-accent"
-                  )
-                }
-              >
-                <Store className="w-4 h-4" />
-                Cashier
-              </NavLink>
-            )}
-
             {isAdmin && (
               <>
                 <NavLink
@@ -107,6 +78,21 @@ export function AppSidebar() {
                   Settings
                 </NavLink>
               </>
+            )}
+
+            {isCashier && (
+              <NavLink
+                to="/cashier"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors",
+                    isActive && "bg-accent"
+                  )
+                }
+              >
+                <Store className="w-4 h-4" />
+                POS
+              </NavLink>
             )}
           </nav>
         </div>

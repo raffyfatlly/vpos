@@ -9,8 +9,9 @@ const Index = () => {
     return <Navigate to="/login" replace />;
   }
   
-  // For users with both roles, default to admin view
-  const redirectPath = user.role === "cashier" ? "/cashier" : "/admin/products";
+  // For users with admin or both roles, redirect to admin products
+  // For cashiers, redirect to session selection
+  const redirectPath = user.role === "cashier" ? "/admin/sessions" : "/admin/products";
   
   return <Navigate to={redirectPath} replace />;
 };

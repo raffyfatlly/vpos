@@ -20,7 +20,9 @@ export default function Login() {
         title: "Login successful",
         description: "Welcome back!",
       });
-      navigate("/cashier");
+      // Redirect to sessions page for cashiers, products page for admins
+      const redirectPath = username === "cashier" ? "/admin/sessions" : "/admin/products";
+      navigate(redirectPath);
     } catch (error) {
       toast({
         title: "Login failed",
