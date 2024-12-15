@@ -17,6 +17,7 @@ export type Database = {
           location: string
           name: string
           products: Json[]
+          sales: Json[] | null
           staff: Json[]
           status: Database["public"]["Enums"]["session_status"]
         }
@@ -27,6 +28,7 @@ export type Database = {
           location: string
           name: string
           products?: Json[]
+          sales?: Json[] | null
           staff?: Json[]
           status?: Database["public"]["Enums"]["session_status"]
         }
@@ -37,6 +39,7 @@ export type Database = {
           location?: string
           name?: string
           products?: Json[]
+          sales?: Json[] | null
           staff?: Json[]
           status?: Database["public"]["Enums"]["session_status"]
         }

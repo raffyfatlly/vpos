@@ -8,9 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const POS = () => {
-  const { currentSession, currentStaff } = useSession();
+  const { currentSession, currentStaff, setCurrentSession } = useSession();
   const { toast } = useToast();
   const { user } = useAuth();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
@@ -38,7 +39,7 @@ const POS = () => {
     }
   };
 
-  const handleSaleComplete = (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
+  const handleSaleComplete = async (saleData: Omit<Sale, "id" | "sessionId" | "staffId" | "timestamp">) => {
     const completeSale = {
       ...saleData,
       id: `SALE-${Date.now()}`,
@@ -47,7 +48,24 @@ const POS = () => {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("Sale completed:", completeSale);
+    // Fetch the latest session data to ensure we have the most up-to-date stock counts
+    const { data: latestSession, error: fetchError } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('id', currentSession.id)
+      .single();
+
+    if (fetchError || !latestSession) {
+      toast({
+        title: "Error",
+        description: "Failed to complete sale. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update the current session with the latest data
+    setCurrentSession(latestSession);
 
     toast({
       title: "Sale completed",
