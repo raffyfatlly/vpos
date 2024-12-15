@@ -35,9 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: profile.username,
         role: profile.role as UserRole,
       });
-      
-      // Log the profile for debugging
-      console.log('Fetched profile:', profile);
     }
   };
 
@@ -65,26 +62,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // First try to sign up the user if they don't exist
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          // This will automatically confirm the email
-          data: {
-            email_confirm: true
-          }
-        }
-      });
-
-      // If sign up fails (user likely exists), try to sign in
+      // First try to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // If both operations failed, show the error
-      if (signUpError && signInError) {
+      // If sign in fails with no user found, then try to sign up
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              email_confirm: true
+            }
+          }
+        });
+
+        if (signUpError) {
+          toast({
+            title: "Registration failed",
+            description: signUpError.message,
+            variant: "destructive",
+          });
+          throw signUpError;
+        }
+      } else if (signInError) {
         toast({
           title: "Login failed",
           description: signInError.message,

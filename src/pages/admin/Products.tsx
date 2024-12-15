@@ -12,11 +12,6 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<SessionProduct | null>(null);
   const { toast } = useToast();
 
-  // Fetch products from Supabase on component mount
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
@@ -25,7 +20,19 @@ export default function Products() {
       
       if (error) throw error;
       
-      setProducts(data || []);
+      // Transform the data to match SessionProduct type
+      const transformedProducts: SessionProduct[] = (data || []).map(product => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        category: product.category || '',
+        image: product.image || '',
+        variations: product.variations || [],
+        initialStock: product.initial_stock || 0,
+        currentStock: product.current_stock || 0
+      }));
+      
+      setProducts(transformedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -35,6 +42,10 @@ export default function Products() {
       });
     }
   };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleSubmit = async (productData: SessionProduct) => {
     try {
@@ -47,7 +58,9 @@ export default function Products() {
             price: productData.price,
             category: productData.category,
             image: productData.image,
-            variations: productData.variations
+            variations: productData.variations,
+            initial_stock: productData.initialStock,
+            current_stock: productData.currentStock
           })
           .eq('id', editingProduct.id);
 
@@ -66,7 +79,9 @@ export default function Products() {
             price: productData.price,
             category: productData.category,
             image: productData.image,
-            variations: productData.variations
+            variations: productData.variations,
+            initial_stock: productData.initialStock,
+            current_stock: productData.currentStock
           }]);
 
         if (error) throw error;

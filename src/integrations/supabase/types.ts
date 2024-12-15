@@ -13,8 +13,10 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          current_stock: number | null
           id: number
           image: string | null
+          initial_stock: number | null
           name: string
           price: number
           variations: Json[] | null
@@ -22,8 +24,10 @@ export type Database = {
         Insert: {
           category?: string | null
           created_at?: string
+          current_stock?: number | null
           id?: number
           image?: string | null
+          initial_stock?: number | null
           name: string
           price: number
           variations?: Json[] | null
@@ -31,8 +35,10 @@ export type Database = {
         Update: {
           category?: string | null
           created_at?: string
+          current_stock?: number | null
           id?: number
           image?: string | null
+          initial_stock?: number | null
           name?: string
           price?: number
           variations?: Json[] | null
