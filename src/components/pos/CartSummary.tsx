@@ -5,7 +5,9 @@ import { DollarSign } from "lucide-react";
 
 interface CartSummaryProps {
   subtotal: number;
-  tax: number;
+  globalDiscount: number;
+  onGlobalDiscountChange: (discount: number) => void;
+  discountAmount: number;
   total: number;
   selectedPayment: PaymentMethod;
   paymentAmount: string;
@@ -17,7 +19,9 @@ interface CartSummaryProps {
 
 export function CartSummary({
   subtotal,
-  tax,
+  globalDiscount,
+  onGlobalDiscountChange,
+  discountAmount,
   total,
   selectedPayment,
   paymentAmount,
@@ -33,9 +37,19 @@ export function CartSummary({
           <span>Subtotal:</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Tax (8%):</span>
-          <span>${tax.toFixed(2)}</span>
+        <div className="flex justify-between items-center">
+          <span>Discount:</span>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              value={globalDiscount}
+              onChange={(e) => onGlobalDiscountChange(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
+              className="w-20 h-8 text-right"
+            />
+            <span>% (${discountAmount.toFixed(2)})</span>
+          </div>
         </div>
         <div className="flex justify-between font-semibold">
           <span>Total:</span>

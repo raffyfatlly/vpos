@@ -24,6 +24,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
     const [items, setItems] = useState<CartItem[]>([]);
     const [paymentAmount, setPaymentAmount] = useState("");
     const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("bayarlah_qr");
+    const [globalDiscount, setGlobalDiscount] = useState(0);
     const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
@@ -70,8 +71,16 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       }, 0);
     };
 
-    const getTax = () => getSubtotal() * 0.08;
-    const getTotal = () => getSubtotal() + getTax();
+    const getGlobalDiscountAmount = () => {
+      const subtotal = getSubtotal();
+      return (subtotal * globalDiscount) / 100;
+    };
+
+    const getTotal = () => {
+      const subtotal = getSubtotal();
+      const discountAmount = getGlobalDiscountAmount();
+      return subtotal - discountAmount;
+    };
 
     const handleCheckout = () => {
       const total = getTotal();
@@ -94,7 +103,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
           discount: item.discount,
         })),
         subtotal: getSubtotal(),
-        discount: items.reduce(
+        discount: getGlobalDiscountAmount() + items.reduce(
           (sum, item) =>
             sum + (item.price * item.quantity * item.discount) / 100,
           0
@@ -120,6 +129,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       
       setItems([]);
       setPaymentAmount("");
+      setGlobalDiscount(0);
     };
 
     return (
@@ -131,7 +141,9 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         />
         <CartSummary
           subtotal={getSubtotal()}
-          tax={getTax()}
+          globalDiscount={globalDiscount}
+          onGlobalDiscountChange={setGlobalDiscount}
+          discountAmount={getGlobalDiscountAmount()}
           total={getTotal()}
           selectedPayment={selectedPayment}
           paymentAmount={paymentAmount}
