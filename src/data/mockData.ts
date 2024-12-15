@@ -6,28 +6,36 @@ export const MOCK_PRODUCTS: SessionProduct[] = [
     name: "T-Shirt Classic",
     price: 29.99,
     category: "Apparel",
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
+    initialStock: 0,
+    currentStock: 0
   },
   {
     id: 2,
     name: "Hoodie Premium",
     price: 59.99,
     category: "Apparel",
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
+    initialStock: 0,
+    currentStock: 0
   },
   {
     id: 3,
     name: "Cap Original",
     price: 24.99,
     category: "Accessories",
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
+    initialStock: 0,
+    currentStock: 0
   },
   {
     id: 4,
     name: "Sticker Pack",
     price: 9.99,
     category: "Merchandise",
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
+    initialStock: 0,
+    currentStock: 0
   }
 ];
 

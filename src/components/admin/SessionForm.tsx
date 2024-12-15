@@ -21,7 +21,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     const sessionId = session?.id || `SESSION-${Date.now()}`;
     
     // Add all products with initial stock when creating a new session
-    const sessionProducts = MOCK_PRODUCTS.map(product => ({
+    const sessionProducts: SessionProduct[] = MOCK_PRODUCTS.map(product => ({
       ...product,
       initialStock: 50, // Default initial stock
       currentStock: 50, // Initially same as initial stock
@@ -34,6 +34,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       staff: session?.staff || [],
       products: session ? session.products : sessionProducts,
       status: session?.status || "active",
+      sales: session?.sales || [],
     });
   };
 

@@ -13,7 +13,7 @@ interface ProductFormProps {
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [formData, setFormData] = useState({
     name: product?.name || "",
-    price: product?.price?.toString() || "",
+    price: product?.price ? product.price.toString() : "",
     category: product?.category || "",
     image: product?.image || "",
     variations: product?.variations || [] as ProductVariation[],
@@ -52,15 +52,17 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      id: product?.id || 0,
+      id: product?.id || Date.now(),
       price: Number(formData.price),
-      initialStock: 0, // This will be set at session level
-      currentStock: 0, // This will be set at session level
+      initialStock: product?.initialStock || 0,
+      currentStock: product?.currentStock || 0,
       variations: formData.variations.map(v => ({
         ...v,
         price: Number(v.price)
       })),
-      ...formData,
+      name: formData.name,
+      category: formData.category,
+      image: formData.image,
     });
   };
 
