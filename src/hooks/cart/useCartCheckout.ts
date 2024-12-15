@@ -21,7 +21,7 @@ export const useCartCheckout = (
   const updateProductStocks = async () => {
     if (!currentSession) return;
 
-    // Update session_inventory in the database
+    // First update session_inventory
     for (const item of items) {
       const { error: inventoryError } = await supabase
         .from('session_inventory')
@@ -36,6 +36,26 @@ export const useCartCheckout = (
         throw inventoryError;
       }
     }
+
+    // Get updated inventory data
+    const { data: updatedInventory, error: fetchError } = await supabase
+      .from('session_inventory')
+      .select('*')
+      .eq('session_id', currentSession.id);
+
+    if (fetchError) {
+      console.error('Error fetching updated inventory:', fetchError);
+      throw fetchError;
+    }
+
+    // Update session products with new stock levels
+    const updatedProducts = currentSession.products.map(product => {
+      const inventory = updatedInventory?.find(inv => inv.product_id === product.id);
+      return {
+        ...product,
+        current_stock: inventory?.current_stock ?? product.current_stock
+      };
+    });
 
     // Create sale data
     const saleData: SaleData = {
@@ -53,18 +73,6 @@ export const useCartCheckout = (
       paymentMethod: selectedPayment,
       timestamp: new Date().toISOString()
     };
-
-    // Update session products with new stock levels
-    const updatedProducts = currentSession.products.map(product => {
-      const soldItem = items.find(item => item.id === product.id);
-      if (soldItem) {
-        return {
-          ...product,
-          current_stock: product.current_stock - soldItem.quantity
-        };
-      }
-      return product;
-    });
 
     // Update session in database with new products and sale
     const { error: sessionError } = await supabase
