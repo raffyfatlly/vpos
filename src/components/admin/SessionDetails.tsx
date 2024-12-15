@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Session } from "@/types/pos";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalesOverview } from "./SalesOverview";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { InventoryTable } from "./sessions/inventory/InventoryTable";
 import { useInventoryUpdates } from "./sessions/inventory/useInventoryUpdates";
+import { useToast } from "@/hooks/use-toast";
 
 interface SessionDetailsProps {
   session: Session;
@@ -24,6 +25,51 @@ export function SessionDetails({
   const [session, setSession] = useState<Session>(initialSession);
   const { isUpdating, setIsUpdating } = useInventoryUpdates(initialSession, setSession);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  // Update local session when initial session changes
+  useEffect(() => {
+    setSession(initialSession);
+  }, [initialSession]);
+
+  // Subscribe to real-time product updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('session_product_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products',
+        },
+        async (payload) => {
+          console.log('Product update received in SessionDetails:', payload);
+          
+          if (payload.new && 'id' in payload.new) {
+            const updatedProduct = payload.new;
+            
+            setSession(prevSession => ({
+              ...prevSession,
+              products: prevSession.products.map(product =>
+                product.id === updatedProduct.id
+                  ? {
+                      ...product,
+                      initial_stock: updatedProduct.initial_stock,
+                      current_stock: updatedProduct.current_stock
+                    }
+                  : product
+              )
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleUpdateStock = async (productId: number, newInitialStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
@@ -43,6 +89,7 @@ export function SessionDetails({
       if (updateError) throw updateError;
 
       if (data && data[0]) {
+        // Update local session state immediately
         setSession(prevSession => ({
           ...prevSession,
           products: prevSession.products.map(product => 
@@ -55,11 +102,21 @@ export function SessionDetails({
               : product
           )
         }));
+
+        toast({
+          title: "Stock Updated",
+          description: "Stock has been updated successfully.",
+        });
       }
 
       onUpdateStock(productId, newInitialStock);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating stock:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update stock.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsUpdating(false);
