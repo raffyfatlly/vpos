@@ -5,11 +5,11 @@ import { ProductGrid } from "@/components/pos/ProductGrid";
 import { SessionSelector } from "@/components/pos/SessionSelector";
 import { SessionIndicator } from "@/components/pos/SessionIndicator";
 import { Card } from "@/components/ui/card";
-import { Sale } from "@/types/pos";
+import { Sale, SessionProduct } from "@/types/pos";
 
 export default function POS() {
   const { currentSession } = useSession();
-  const cartRef = useRef<{ addProduct: Function }>(null);
+  const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
   const [salesSummary, setSalesSummary] = useState({
     cash: 0,
     bayarlah_qr: 0,
@@ -52,7 +52,10 @@ export default function POS() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-4">
-        <ProductGrid onProductClick={(product) => cartRef.current?.addProduct(product)} />
+        <ProductGrid 
+          products={currentSession.products} 
+          onProductClick={(product) => cartRef.current?.addProduct(product)} 
+        />
         <Cart ref={cartRef} onComplete={() => {}} />
       </div>
     </div>

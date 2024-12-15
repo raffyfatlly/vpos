@@ -8,10 +8,11 @@ import { useState } from "react";
 interface ProductGridProps {
   products: SessionProduct[];
   onProductSelect?: (product: SessionProduct) => void;
+  onProductClick?: (product: SessionProduct) => void;
   variations?: ProductVariation[];
 }
 
-export function ProductGrid({ products, onProductSelect, variations }: ProductGridProps) {
+export function ProductGrid({ products, onProductSelect, onProductClick, variations }: ProductGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = products.filter(product =>
@@ -39,7 +40,7 @@ export function ProductGrid({ products, onProductSelect, variations }: ProductGr
           <ProductCard
             key={product.id}
             product={product}
-            onSelect={onProductSelect}
+            onSelect={onProductClick || onProductSelect}
           />
         ))}
         {filteredProducts.length === 0 && (
