@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Session, SessionProduct } from "@/types/pos";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface SessionFormProps {
   session?: Session;
@@ -15,6 +16,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     location: "",
     date: "",
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     setFormData({
@@ -29,41 +31,57 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
     const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
     
-    // Fetch all products with their current stock levels
-    const { data: products } = await supabase
-      .from('products')
-      .select('*');
-
-    // Map products to session products, ensuring current_stock equals initial_stock
-    const sessionProducts: SessionProduct[] = (products || []).map(product => ({
-      ...product,
-      session_id: sessionId,
-      initial_stock: product.initial_stock ?? 0,
-      current_stock: product.initial_stock ?? 0, // Set current_stock equal to initial_stock
-    }));
-
-    // Update products in the database to ensure current_stock matches initial_stock
-    for (const product of sessionProducts) {
-      const { error } = await supabase
+    try {
+      // Fetch all products with their current stock levels
+      const { data: products, error: productsError } = await supabase
         .from('products')
-        .update({ current_stock: product.initial_stock })
-        .eq('id', product.id);
+        .select('*')
+        .order('name');
 
-      if (error) {
-        console.error('Error updating product stock:', error);
-      }
+      if (productsError) throw productsError;
+
+      console.log('Fetched products for session:', products);
+
+      // Initialize all products with their current stock values
+      const sessionProducts: SessionProduct[] = (products || []).map(product => ({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        category: product.category,
+        image: product.image,
+        variations: product.variations || [],
+        session_id: sessionId,
+        initial_stock: product.initial_stock ?? 0,
+        current_stock: product.current_stock ?? 0,
+      }));
+
+      const sessionData = {
+        ...formData,
+        id: sessionId,
+        name: sessionId,
+        staff: session?.staff || [],
+        products: sessionProducts,
+        status: session?.status || "active",
+        sales: [], 
+        created_at: new Date().toISOString(),
+      };
+
+      console.log('Creating session with data:', sessionData);
+
+      onSubmit(sessionData);
+      
+      toast({
+        title: "Session Created",
+        description: `Created with ${sessionProducts.length} products`,
+      });
+    } catch (error: any) {
+      console.error('Error creating session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create session. Please try again.",
+        variant: "destructive",
+      });
     }
-
-    onSubmit({
-      ...formData,
-      id: sessionId,
-      name: sessionId,
-      staff: session?.staff || [],
-      products: sessionProducts,
-      status: session?.status || "active",
-      sales: [], 
-      created_at: new Date().toISOString(),
-    });
   };
 
   return (
