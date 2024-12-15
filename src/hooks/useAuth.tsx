@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { AuthUser, UserRole } from "@/types/pos";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -11,47 +12,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const mockUsers: AuthUser[] = [
-  {
-    id: "1",
-    username: "admin",
-    role: "admin" as UserRole,
-  },
-  {
-    id: "2",
-    username: "cashier",
-    role: "cashier" as UserRole,
-  },
-  {
-    id: "3",
-    username: "raffyfatlly",
-    role: "both" as UserRole,
-  },
-  {
-    id: "4",
-    username: "sarah.admin",
-    role: "admin" as UserRole,
-  },
-  {
-    id: "5",
-    username: "john.cashier",
-    role: "cashier" as UserRole,
-  }
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        const email = session.user.email;
-        const mockUser = mockUsers.find(u => u.username === email);
-        if (mockUser) {
-          setUser(mockUser);
-        }
+        fetchUserProfile(session.user.id);
       }
     });
 
@@ -60,11 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        const email = session.user.email;
-        const mockUser = mockUsers.find(u => u.username === email);
-        if (mockUser) {
-          setUser(mockUser);
-        }
+        fetchUserProfile(session.user.id);
       } else {
         setUser(null);
       }
@@ -73,24 +39,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: username,
-      password: password,
-    });
+  const fetchUserProfile = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
     if (error) {
-      throw new Error("Invalid credentials");
+      console.error('Error fetching user profile:', error);
+      return;
     }
 
-    const mockUser = mockUsers.find(u => u.username === username);
-    if (mockUser) {
-      setUser(mockUser);
+    if (profile) {
+      setUser({
+        id: userId,
+        username: profile.username,
+        role: profile.role as UserRole,
+      });
+    }
+  };
+
+  const login = async (username: string, password: string) => {
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: username,
+        password: password,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Login failed",
+          description: signInError.message,
+          variant: "destructive",
+        });
+        throw signInError;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+      return;
+    }
     setUser(null);
     navigate("/login", { replace: true });
   };
