@@ -41,7 +41,7 @@ export function CartItemList({
         <TableBody>
           {items.map((item) => (
             <CartItem
-              key={item.id + (item.selectedVariation?.id || '')}
+              key={`${item.id}-${item.selectedVariation?.id || ''}`}
               item={item}
               onUpdateQuantity={onUpdateQuantity}
               onApplyDiscount={onApplyDiscount}

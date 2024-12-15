@@ -12,6 +12,10 @@ export function SessionSelector() {
     setCurrentStaff(staff);
   };
 
+  // Filter sessions to only show today's sessions
+  const today = new Date().toISOString().split('T')[0];
+  const todaySessions = MOCK_SESSIONS.filter(session => session.date === today);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center space-y-2">
@@ -21,49 +25,55 @@ export function SessionSelector() {
         </p>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        {MOCK_SESSIONS.map((session) => (
-          <div
-            key={session.id}
-            className="border rounded-lg p-6 space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="space-y-2">
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{session.location}</span>
+      {todaySessions.length === 0 ? (
+        <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+          <p className="text-muted-foreground">No sessions available for today.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          {todaySessions.map((session) => (
+            <div
+              key={session.id}
+              className="border rounded-lg p-6 space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="space-y-2">
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{session.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{session.date}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{session.date}</span>
+                <p className="text-sm font-medium text-primary">
+                  ID: {session.id}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <User className="w-4 h-4" />
+                  <span>Select Staff:</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {session.staff.map((staff) => (
+                    <Button
+                      key={staff.id}
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleSessionSelect(session, staff)}
+                    >
+                      {staff.name}
+                    </Button>
+                  ))}
                 </div>
               </div>
-              <p className="text-sm font-medium text-primary">
-                ID: {session.id}
-              </p>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <User className="w-4 h-4" />
-                <span>Select Staff:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {session.staff.map((staff) => (
-                  <Button
-                    key={staff.id}
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleSessionSelect(session, staff)}
-                  >
-                    {staff.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
