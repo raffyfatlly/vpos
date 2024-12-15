@@ -119,7 +119,7 @@ export type Database = {
       }
     }
     Enums: {
-      session_status: "active" | "completed"
+      session_status: "active" | "completed" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
