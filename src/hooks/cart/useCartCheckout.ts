@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useSession } from "@/contexts/SessionContext";
 import { CartItem, SaleData } from "./types";
 import { v4 as uuidv4 } from "uuid";
@@ -27,7 +27,9 @@ export const useCartCheckout = (
       
       const { error } = await supabase
         .from('products')
-        .update({ current_stock: newStock })
+        .update({
+          current_stock: item.current_stock - item.quantity
+        })
         .eq('id', item.id);
 
       if (error) {

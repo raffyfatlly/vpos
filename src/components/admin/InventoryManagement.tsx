@@ -9,9 +9,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 
 interface InventoryManagementProps {
   products: SessionProduct[];
@@ -21,10 +20,6 @@ interface InventoryManagementProps {
 export function InventoryManagement({ products, onUpdateStock }: InventoryManagementProps) {
   const [stockUpdates, setStockUpdates] = useState<Record<number, number>>({});
   const { toast } = useToast();
-
-  useEffect(() => {
-    console.log('Products updated in InventoryManagement:', products);
-  }, [products]);
 
   const handleStockChange = (productId: number, value: string) => {
     const newStock = parseInt(value) || 0;
@@ -38,29 +33,17 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
     const newInitialStock = stockUpdates[productId];
     if (newInitialStock !== undefined) {
       try {
-        console.log('Starting stock update for product:', productId, 'new initial stock:', newInitialStock);
-
-        const { error: updateError } = await supabase
-          .from('products')
-          .update({
-            initial_stock: newInitialStock
-          })
-          .eq('id', productId);
-
-        if (updateError) throw updateError;
-
-        onUpdateStock(productId, newInitialStock);
+        await onUpdateStock(productId, newInitialStock);
 
         toast({
           title: "Stock Updated",
-          description: "Initial stock value has been updated successfully.",
+          description: "Stock value has been updated successfully.",
         });
 
         setStockUpdates(prev => {
           const { [productId]: _, ...rest } = prev;
           return rest;
         });
-
       } catch (error: any) {
         console.error('Error updating stock:', error);
         toast({
@@ -82,7 +65,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
               <TableHead className="w-[120px]">Price</TableHead>
               <TableHead className="w-[150px]">Initial Stock</TableHead>
               <TableHead className="w-[150px]">Current Stock</TableHead>
-              <TableHead className="w-[150px]">Update Initial</TableHead>
+              <TableHead className="w-[150px]">Update Stock</TableHead>
               <TableHead className="w-[180px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -98,7 +81,7 @@ export function InventoryManagement({ products, onUpdateStock }: InventoryManage
                 <TableCell>
                   <Input
                     type="number"
-                    placeholder="New initial stock"
+                    placeholder="New stock value"
                     className="w-32"
                     onChange={(e) => handleStockChange(product.id, e.target.value)}
                     value={stockUpdates[product.id] || ''}

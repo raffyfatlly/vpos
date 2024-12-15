@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryManagement } from "./InventoryManagement";
 import { SalesOverview } from "./SalesOverview";
 import { SalesHistory } from "./SalesHistory";
+import { supabase } from "@/lib/supabase";
 
 interface SessionDetailsProps {
   session: Session;
@@ -17,38 +18,51 @@ export function SessionDetails({
   const [session, setSession] = useState<Session>(initialSession);
 
   useEffect(() => {
-    console.log('Session updated in SessionDetails:', initialSession);
     const hasProductChanges = JSON.stringify(initialSession.products) !== JSON.stringify(session.products);
     if (hasProductChanges) {
       setSession(initialSession);
     }
   }, [initialSession]);
 
-  const handleUpdateStock = (productId: number, newInitialStock: number) => {
+  const handleUpdateStock = async (productId: number, newInitialStock: number) => {
     console.log('Updating stock in SessionDetails:', { productId, newInitialStock });
     
-    setSession(prevSession => {
-      const updatedProducts = prevSession.products.map(product => {
-        if (product.id === productId) {
-          console.log('Updating product:', {
-            before: product,
-            after: { ...product, initial_stock: newInitialStock }
-          });
-          return {
-            ...product,
-            initial_stock: newInitialStock
-          };
-        }
-        return product;
+    try {
+      // Update the product in the database
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({
+          initial_stock: newInitialStock,
+          current_stock: newInitialStock // Set current_stock equal to initial_stock on update
+        })
+        .eq('id', productId);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setSession(prevSession => {
+        const updatedProducts = prevSession.products.map(product => {
+          if (product.id === productId) {
+            return {
+              ...product,
+              initial_stock: newInitialStock,
+              current_stock: newInitialStock
+            };
+          }
+          return product;
+        });
+
+        return {
+          ...prevSession,
+          products: updatedProducts
+        };
       });
 
-      return {
-        ...prevSession,
-        products: updatedProducts
-      };
-    });
-
-    onUpdateStock(productId, newInitialStock);
+      // Call the parent handler
+      onUpdateStock(productId, newInitialStock);
+    } catch (error) {
+      console.error('Error updating stock:', error);
+    }
   };
 
   return (
