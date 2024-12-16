@@ -32,14 +32,38 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       handleCheckout,
       updateSessionProducts,
     } = useCart((sale) => {
-      // Update the session with the new sale
+      // Update the session with the new sale, ensuring the total is a number
       if (currentSession) {
+        const saleWithNumericTotal = {
+          ...sale,
+          total: Number(sale.total)
+        };
+        
         const updatedSession = {
           ...currentSession,
-          sales: [...(currentSession.sales || []), sale]
+          sales: [...(currentSession.sales || []), saleWithNumericTotal]
         };
+        
+        // Update local state
         setCurrentSession(updatedSession);
+        
+        // Update Supabase
+        supabase
+          .from('sessions')
+          .update({ sales: updatedSession.sales })
+          .eq('id', currentSession.id)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error updating session sales:', error);
+              toast({
+                title: "Error",
+                description: "Failed to update session sales",
+                variant: "destructive",
+              });
+            }
+          });
       }
+      
       // Call the original onComplete handler
       onComplete(sale);
     });

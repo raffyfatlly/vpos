@@ -4,8 +4,9 @@ export function SessionIndicator() {
   const { currentSession } = useSession();
 
   const totalSales = currentSession?.sales?.reduce((total, sale) => {
-    // Get the total directly from the sale object
-    return total + Number(sale.total);
+    // Ensure we're working with numbers
+    const saleTotal = typeof sale.total === 'number' ? sale.total : Number(sale.total);
+    return total + (isNaN(saleTotal) ? 0 : saleTotal);
   }, 0) || 0;
 
   if (!currentSession) return null;
