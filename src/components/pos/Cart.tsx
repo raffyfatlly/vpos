@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useEffect } from "react";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, Session } from "@/types/pos";
 import { CartSummary } from "./CartSummary";
 import { CartItemList } from "./CartItemList";
 import { useCart } from "@/hooks/useCart";
@@ -100,10 +100,12 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
               updateSessionProducts(payload.new.products);
               
               // Update only the products in the session
-              setCurrentSession(prev => ({
-                ...prev,
-                products: payload.new.products
-              }));
+              if (currentSession) {
+                setCurrentSession({
+                  ...currentSession,
+                  products: payload.new.products
+                });
+              }
               
               toast({
                 title: "Stock Updated",
