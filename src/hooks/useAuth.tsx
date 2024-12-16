@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (event === 'SIGNED_IN' && session) {
         await fetchUserProfile(session.user.id);
-      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         navigate("/login", { replace: true });
       } else if (event === 'TOKEN_REFRESHED') {
