@@ -32,54 +32,60 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       handleCheckout,
       updateSessionProducts,
     } = useCart((sale) => {
-      // Update the session with the new sale, ensuring the total is a number
-      if (currentSession) {
-        const saleWithNumericTotal = {
-          ...sale,
-          total: Number(sale.total)
-        };
-        
-        const updatedSession = {
-          ...currentSession,
-          sales: [...(currentSession.sales || []), saleWithNumericTotal]
-        };
-        
-        // Update local state
-        setCurrentSession(updatedSession);
-        
-        // Update Supabase
-        supabase
-          .from('sessions')
-          .update({ sales: updatedSession.sales })
-          .eq('id', currentSession.id)
-          .then(({ error }) => {
-            if (error) {
-              console.error('Error updating session sales:', error);
-              toast({
-                title: "Error",
-                description: "Failed to update session sales",
-                variant: "destructive",
-              });
-            }
-          });
-      }
+      if (!currentSession) return;
+
+      // Ensure we're working with numeric totals
+      const saleWithNumericTotal = {
+        ...sale,
+        total: Number(sale.total)
+      };
+
+      // Calculate the new total sales
+      const existingSales = currentSession.sales || [];
+      const updatedSales = [...existingSales, saleWithNumericTotal];
       
+      const updatedSession = {
+        ...currentSession,
+        sales: updatedSales
+      };
+
+      // Update local state first
+      setCurrentSession(updatedSession);
+
+      // Then update Supabase
+      supabase
+        .from('sessions')
+        .update({ 
+          sales: updatedSales 
+        })
+        .eq('id', currentSession.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error updating session sales:', error);
+            toast({
+              title: "Error",
+              description: "Failed to update session sales",
+              variant: "destructive",
+            });
+          }
+        });
+
       // Call the original onComplete handler
-      onComplete(sale);
+      onComplete(saleWithNumericTotal);
     });
 
     useImperativeHandle(ref, () => ({
       addProduct,
     }));
 
-    // Listen for session-specific product updates
+    // Listen for session-specific product updates only
     useEffect(() => {
       if (!currentSession) return;
 
-      console.log("Setting up session subscription in Cart for session:", currentSession.id);
+      console.log("Setting up product updates subscription in Cart for session:", currentSession.id);
       
       const channel = supabase
-        .channel(`session_${currentSession.id}`)
+        .channel(`session_products_${currentSession.id}`)
         .on(
           'postgres_changes',
           {
@@ -94,6 +100,8 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
             if (payload.new && payload.new.products) {
               console.log("Updating session products in Cart:", payload.new.products);
               updateSessionProducts(payload.new.products);
+              
+              // Only update products, preserve sales
               setCurrentSession({
                 ...currentSession,
                 products: payload.new.products
@@ -109,7 +117,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         .subscribe();
 
       return () => {
-        console.log("Cleaning up session subscription in Cart");
+        console.log("Cleaning up product updates subscription in Cart");
         supabase.removeChannel(channel);
       };
     }, [currentSession?.id]);
