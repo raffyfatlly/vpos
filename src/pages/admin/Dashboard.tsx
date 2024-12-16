@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Package2, CalendarDays, TrendingUp, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
   // Fetch active sessions
-  const { data: sessionsData } = useQuery({
+  const { data: sessionsData, refetch: refetchSessions } = useQuery({
     queryKey: ['sessions'],
     queryFn: async () => {
       const { data: sessions } = await supabase
@@ -18,6 +19,29 @@ export default function Dashboard() {
       return sessions || [];
     },
   });
+
+  // Subscribe to session updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:sessions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sessions'
+        },
+        () => {
+          console.log('Session update detected, refetching data...');
+          refetchSessions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetchSessions]);
 
   // Fetch all products
   const { data: productsData } = useQuery({
