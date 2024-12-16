@@ -40,19 +40,11 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         total: Number(sale.total)
       };
 
-      // Calculate the new total sales
+      // Get existing sales and add the new one
       const existingSales = currentSession.sales || [];
       const updatedSales = [...existingSales, saleWithNumericTotal];
       
-      const updatedSession = {
-        ...currentSession,
-        sales: updatedSales
-      };
-
-      // Update local state first
-      setCurrentSession(updatedSession);
-
-      // Then update Supabase
+      // Update Supabase with the accumulated sales
       supabase
         .from('sessions')
         .update({ 
@@ -67,6 +59,12 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
               description: "Failed to update session sales",
               variant: "destructive",
             });
+          } else {
+            // Only update local state if the database update was successful
+            setCurrentSession({
+              ...currentSession,
+              sales: updatedSales
+            });
           }
         });
 
@@ -78,7 +76,7 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       addProduct,
     }));
 
-    // Listen for session-specific product updates only
+    // Listen for product updates only
     useEffect(() => {
       if (!currentSession) return;
 
@@ -101,11 +99,11 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
               console.log("Updating session products in Cart:", payload.new.products);
               updateSessionProducts(payload.new.products);
               
-              // Only update products, preserve sales
-              setCurrentSession({
-                ...currentSession,
+              // Update only the products in the session
+              setCurrentSession(prev => ({
+                ...prev,
                 products: payload.new.products
-              });
+              }));
               
               toast({
                 title: "Stock Updated",
