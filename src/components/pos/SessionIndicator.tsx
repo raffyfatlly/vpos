@@ -4,7 +4,8 @@ export function SessionIndicator() {
   const { currentSession } = useSession();
 
   const totalSales = currentSession?.sales?.reduce((total, sale) => {
-    return total + (sale.total || 0);
+    // Ensure we're converting the sale total to a number
+    return total + (Number(sale.total) || 0);
   }, 0) || 0;
 
   if (!currentSession) return null;
