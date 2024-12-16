@@ -12,12 +12,65 @@ interface SessionDetailsProps {
 
 export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) {
   const [products, setProducts] = useState(session.products);
+  const [currentSession, setCurrentSession] = useState(session);
   const { toast } = useToast();
 
   const formatDate = (dateString: string) => {
     const [year, month, day] = dateString.split('-');
     return `${day}-${month}-${year}`;
   };
+
+  // Fetch initial session data
+  useEffect(() => {
+    const fetchSessionData = async () => {
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('id', session.id)
+        .single();
+
+      if (sessionError) {
+        console.error('Error fetching session data:', sessionError);
+        return;
+      }
+
+      if (sessionData) {
+        setCurrentSession(sessionData);
+      }
+    };
+
+    fetchSessionData();
+  }, [session.id]);
+
+  // Listen for session updates including sales
+  useEffect(() => {
+    console.log("Setting up session updates subscription");
+    
+    const channel = supabase
+      .channel(`session_${session.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sessions',
+          filter: `id=eq.${session.id}`,
+        },
+        (payload: any) => {
+          console.log('Received session update:', payload);
+          
+          if (payload.new) {
+            setCurrentSession(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log("Cleaning up session updates subscription");
+      supabase.removeChannel(channel);
+    };
+  }, [session.id]);
 
   useEffect(() => {
     const fetchSessionInventory = async () => {
@@ -169,7 +222,7 @@ export function SessionDetails({ session, onUpdateStock }: SessionDetailsProps) 
       <div className="text-sm text-muted-foreground mb-4">
         Session Date: {formatDate(session.date)}
       </div>
-      <SalesOverview session={session} />
+      <SalesOverview session={currentSession} />
       <div className="rounded-lg border">
         <div className="p-4">
           <h3 className="text-lg font-medium">Session Inventory</h3>
