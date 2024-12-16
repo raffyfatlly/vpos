@@ -10,17 +10,29 @@ import { Navigate } from "react-router-dom";
 import { SessionSelector } from "@/components/pos/SessionSelector";
 import { supabase } from "@/lib/supabase";
 
-const POS = () => {
-  const { user } = useAuth();
-  const { currentSession, currentStaff, setCurrentSession, clearSession } = useSession();
+// Separate component for the main POS content to reduce file size
+const POSContent = () => {
+  const { currentSession, setCurrentSession } = useSession();
   const { toast } = useToast();
   const cartRef = useRef<{ addProduct: (product: SessionProduct) => void }>(null);
   const [sessionProducts, setSessionProducts] = useState<SessionProduct[]>([]);
 
-  // Effect to clear session on component mount
-  useEffect(() => {
-    clearSession();
-  }, []);
+  const handleProductSelect = (product: SessionProduct) => {
+    if (cartRef.current) {
+      cartRef.current.addProduct(product);
+      toast({
+        title: "Product added",
+        description: `Added ${product.name} to cart`,
+      });
+    }
+  };
+
+  const handleSaleComplete = async (sale: Sale) => {
+    toast({
+      title: "Sale completed",
+      description: `Total: RM${sale.total.toFixed(2)}`,
+    });
+  };
 
   // Effect to load initial session inventory
   useEffect(() => {
@@ -28,7 +40,6 @@ const POS = () => {
       if (!currentSession?.id) return;
 
       try {
-        // Fetch session inventory
         const { data: inventoryData, error: inventoryError } = await supabase
           .from('session_inventory')
           .select('*')
@@ -36,7 +47,6 @@ const POS = () => {
 
         if (inventoryError) throw inventoryError;
 
-        // Update products with inventory data
         const updatedProducts = currentSession.products.map(product => {
           const inventory = inventoryData?.find(inv => inv.product_id === product.id);
           return {
@@ -61,143 +71,102 @@ const POS = () => {
     loadSessionInventory();
   }, [currentSession?.id]);
 
-  // Effect to check session status and listen for product updates
+  // Effect to handle real-time updates
   useEffect(() => {
-    if (currentSession) {
-      console.log('Subscribing to session updates for session:', currentSession.id);
-      
-      // Listen for session-specific updates
-      const channel = supabase
-        .channel(`session_${currentSession.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'sessions',
-            filter: `id=eq.${currentSession.id}`,
-          },
-          async (payload: any) => {
-            console.log('Session update received:', payload);
+    if (!currentSession) return;
+
+    console.log('Setting up real-time subscriptions for session:', currentSession.id);
+    
+    // Listen for session updates including sales
+    const channel = supabase
+      .channel(`session_${currentSession.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sessions',
+          filter: `id=eq.${currentSession.id}`,
+        },
+        async (payload: any) => {
+          console.log('Received session update:', payload);
+          
+          if (payload.new) {
+            const updatedSession = payload.new;
             
-            if (payload.new) {
-              const updatedSession = payload.new;
-              console.log('Updated session data:', updatedSession);
-
-              if (updatedSession.status === 'completed') {
-                toast({
-                  title: "Session completed",
-                  description: "This session has been marked as completed. Returning to session selection.",
-                });
-                clearSession();
-              } else {
-                // Update session with new data, including product stock changes
-                setCurrentSession(updatedSession);
-                setSessionProducts(updatedSession.products);
-                
-                // Show toast for stock updates
-                toast({
-                  title: "Stock updated",
-                  description: "Product stock has been updated in this session",
-                });
-              }
-            }
-          }
-        )
-        .subscribe();
-
-      // Listen for inventory updates
-      const inventoryChannel = supabase
-        .channel(`inventory_${currentSession.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'session_inventory',
-            filter: `session_id=eq.${currentSession.id}`,
-          },
-          async () => {
-            // Reload session inventory when changes occur
-            const { data: inventoryData, error: inventoryError } = await supabase
-              .from('session_inventory')
-              .select('*')
-              .eq('session_id', currentSession.id);
-
-            if (inventoryError) {
-              console.error('Error fetching updated inventory:', inventoryError);
+            // Check if status changed to completed
+            if (updatedSession.status === 'completed') {
+              toast({
+                title: "Session completed",
+                description: "This session has been marked as completed. Returning to session selection.",
+              });
+              setCurrentSession(null);
               return;
             }
 
-            const updatedProducts = currentSession.products.map(product => {
-              const inventory = inventoryData?.find(inv => inv.product_id === product.id);
-              return {
-                ...product,
-                initial_stock: inventory?.initial_stock ?? 0,
-                current_stock: inventory?.current_stock ?? 0
-              };
-            });
+            // Update session with new data, preserving the sales array
+            setCurrentSession(prev => ({
+              ...prev!,
+              ...updatedSession,
+              // Ensure sales array is preserved and updated
+              sales: updatedSession.sales || prev?.sales || []
+            }));
 
-            setSessionProducts(updatedProducts);
-            console.log('Products updated from inventory change:', updatedProducts);
+            // If products were updated, update the local products state
+            if (updatedSession.products) {
+              setSessionProducts(updatedSession.products);
+              toast({
+                title: "Stock updated",
+                description: "Product stock has been updated",
+              });
+            }
           }
-        )
-        .subscribe();
+        }
+      )
+      .subscribe();
 
-      // Cleanup subscription on unmount
-      return () => {
-        console.log('Cleaning up session subscription');
-        supabase.removeChannel(channel);
-        supabase.removeChannel(inventoryChannel);
-      };
-    }
+    // Listen for inventory updates
+    const inventoryChannel = supabase
+      .channel(`inventory_${currentSession.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'session_inventory',
+          filter: `session_id=eq.${currentSession.id}`,
+        },
+        async () => {
+          const { data: inventoryData, error: inventoryError } = await supabase
+            .from('session_inventory')
+            .select('*')
+            .eq('session_id', currentSession.id);
+
+          if (inventoryError) {
+            console.error('Error fetching updated inventory:', inventoryError);
+            return;
+          }
+
+          const updatedProducts = currentSession.products.map(product => {
+            const inventory = inventoryData?.find(inv => inv.product_id === product.id);
+            return {
+              ...product,
+              initial_stock: inventory?.initial_stock ?? 0,
+              current_stock: inventory?.current_stock ?? 0
+            };
+          });
+
+          setSessionProducts(updatedProducts);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscriptions');
+      supabase.removeChannel(channel);
+      supabase.removeChannel(inventoryChannel);
+    };
   }, [currentSession?.id]);
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.role !== "cashier" && user.role !== "both") {
-    return <Navigate to="/" replace />;
-  }
-
-  if (!currentSession || !currentStaff) {
-    return <SessionSelector />;
-  }
-
-  if (currentSession.status !== "active") {
-    clearSession();
-    return <SessionSelector />;
-  }
-
-  const handleProductSelect = (product: SessionProduct) => {
-    if (cartRef.current) {
-      cartRef.current.addProduct(product);
-      toast({
-        title: "Product added",
-        description: `Added ${product.name} to cart`,
-      });
-    }
-  };
-
-  const handleSaleComplete = async (sale: {
-    products: {
-      productId: number;
-      quantity: number;
-      price: number;
-      discount: number;
-      variationId?: number;
-    }[];
-    subtotal: number;
-    discount: number;
-    total: number;
-    paymentMethod: "cash" | "bayarlah_qr";
-  }) => {
-    toast({
-      title: "Sale completed",
-      description: `Total: RM${sale.total.toFixed(2)}`,
-    });
-  };
 
   return (
     <>
@@ -205,7 +174,6 @@ const POS = () => {
       <div className="min-h-[calc(100vh-65px)] bg-gradient-to-br from-gray-50 to-white">
         <div className="w-full p-2 sm:p-4 lg:p-6">
           <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 max-w-[1920px] mx-auto">
-            {/* Cart Section - Shown first on mobile */}
             <div className="order-1 lg:order-2 lg:col-span-1">
               <div className="lg:sticky lg:top-[80px]">
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl backdrop-blur-lg bg-opacity-90 border border-gray-100">
@@ -214,7 +182,6 @@ const POS = () => {
               </div>
             </div>
 
-            {/* Products Grid Section */}
             <div className="order-2 lg:order-1 lg:col-span-2">
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-2 sm:p-4 lg:p-6 backdrop-blur-lg bg-opacity-90 border border-gray-100">
                 {sessionProducts && sessionProducts.length > 0 ? (
@@ -237,6 +204,36 @@ const POS = () => {
       </div>
     </>
   );
+};
+
+// Main POS component
+const POS = () => {
+  const { user } = useAuth();
+  const { currentSession, currentStaff, clearSession } = useSession();
+
+  // Effect to clear session on component mount
+  useEffect(() => {
+    clearSession();
+  }, []);
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.role !== "cashier" && user.role !== "both") {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!currentSession || !currentStaff) {
+    return <SessionSelector />;
+  }
+
+  if (currentSession.status !== "active") {
+    clearSession();
+    return <SessionSelector />;
+  }
+
+  return <POSContent />;
 };
 
 export default POS;
