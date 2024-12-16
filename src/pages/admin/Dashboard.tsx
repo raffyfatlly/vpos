@@ -41,12 +41,11 @@ export default function Dashboard() {
     },
   });
 
-  // Calculate total sales from active sessions only
+  // Calculate total sales from active sessions
   const totalSales = sessionsData?.reduce((total, session) => {
-    // Only count sales if session is active
-    if (session.status === 'active') {
-      return total + (session.sales?.reduce((sessionTotal, sale) => 
-        sessionTotal + (sale.total || 0), 0) || 0);
+    if (session.status === 'active' && session.sales) {
+      const sessionTotal = session.sales.reduce((acc, sale) => acc + (Number(sale.total) || 0), 0);
+      return total + sessionTotal;
     }
     return total;
   }, 0) || 0;
@@ -61,7 +60,7 @@ export default function Dashboard() {
 
   // Count pending sessions (those created but not yet started)
   const pendingSessions = sessionsData?.filter(session => 
-    session.status === 'active' && session.sales?.length === 0
+    session.status === 'active' && (!session.sales || session.sales.length === 0)
   ).length || 0;
 
   return (
