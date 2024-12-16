@@ -31,7 +31,18 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
       getTotal,
       handleCheckout,
       updateSessionProducts,
-    } = useCart(onComplete);
+    } = useCart((sale) => {
+      // Update the session with the new sale
+      if (currentSession) {
+        const updatedSession = {
+          ...currentSession,
+          sales: [...(currentSession.sales || []), sale]
+        };
+        setCurrentSession(updatedSession);
+      }
+      // Call the original onComplete handler
+      onComplete(sale);
+    });
 
     useImperativeHandle(ref, () => ({
       addProduct,
