@@ -40,36 +40,6 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
         total: Number(sale.total)
       };
 
-      // Get existing sales and add the new one
-      const existingSales = currentSession.sales || [];
-      const updatedSales = [...existingSales, saleWithNumericTotal];
-      
-      // Update Supabase with the accumulated sales
-      supabase
-        .from('sessions')
-        .update({ 
-          sales: updatedSales 
-        })
-        .eq('id', currentSession.id)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error updating session sales:', error);
-            toast({
-              title: "Error",
-              description: "Failed to update session sales",
-              variant: "destructive",
-            });
-          } else {
-            // Only update local state if the database update was successful
-            const updatedSession: Session = {
-              ...currentSession,
-              sales: updatedSales
-            };
-            setCurrentSession(updatedSession);
-          }
-        });
-
-      // Call the original onComplete handler
       onComplete(saleWithNumericTotal);
     });
 
@@ -101,11 +71,10 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
               updateSessionProducts(payload.new.products);
               
               // Update only the products in the session
-              const updatedSession: Session = {
+              setCurrentSession({
                 ...currentSession,
                 products: payload.new.products
-              };
-              setCurrentSession(updatedSession);
+              });
               
               toast({
                 title: "Stock Updated",

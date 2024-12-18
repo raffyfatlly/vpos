@@ -28,10 +28,50 @@ export const POSContent = () => {
   };
 
   const handleSaleComplete = async (sale: Sale) => {
-    toast({
-      title: "Sale completed",
-      description: `Total: RM${sale.total.toFixed(2)}`,
-    });
+    if (!currentSession) return;
+
+    try {
+      // Get the current session data to ensure we have the latest sales
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sessions')
+        .select('sales')
+        .eq('id', currentSession.id)
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Prepare the updated sales array
+      const currentSales = sessionData.sales || [];
+      const updatedSales = [...currentSales, sale];
+
+      // Update the session with new sales data
+      const { error: updateError } = await supabase
+        .from('sessions')
+        .update({ 
+          sales: updatedSales 
+        })
+        .eq('id', currentSession.id);
+
+      if (updateError) throw updateError;
+
+      // Update local session state
+      setCurrentSession({
+        ...currentSession,
+        sales: updatedSales
+      });
+
+      toast({
+        title: "Sale completed",
+        description: `Total: RM${sale.total.toFixed(2)}`,
+      });
+    } catch (error) {
+      console.error('Error updating sales:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete sale",
+        variant: "destructive",
+      });
+    }
   };
 
   // Effect to load initial session inventory
