@@ -31,6 +31,15 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     }
   }, [session]);
 
+  const generateUniqueId = () => {
+    const timestamp = new Date().toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/[T.]/g, '')
+      .slice(0, 14);
+    const random = Math.random().toString(36).substring(2, 8);
+    return `S${timestamp}${random}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -39,8 +48,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       const [year, month, day] = formData.date.split('-');
       const formattedDate = `${day}-${month}-${year}`;
       
-      const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-      const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
+      const sessionId = session?.id || generateUniqueId();
 
       // First, fetch all products
       const { data: products, error: productsError } = await supabase

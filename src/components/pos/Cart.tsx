@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useEffect } from "react";
-import { SessionProduct } from "@/types/pos";
+import { SessionProduct, Session } from "@/types/pos";
 import { CartSummary } from "./CartSummary";
 import { CartItemList } from "./CartItemList";
 import { useCart } from "@/hooks/useCart";
@@ -61,10 +61,11 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
             });
           } else {
             // Only update local state if the database update was successful
-            setCurrentSession({
+            const updatedSession: Session = {
               ...currentSession,
               sales: updatedSales
-            });
+            };
+            setCurrentSession(updatedSession);
           }
         });
 
@@ -100,10 +101,11 @@ export const Cart = forwardRef<{ addProduct: (product: SessionProduct) => void }
               updateSessionProducts(payload.new.products);
               
               // Update only the products in the session
-              setCurrentSession(prev => ({
-                ...prev,
+              const updatedSession: Session = {
+                ...currentSession,
                 products: payload.new.products
-              }));
+              };
+              setCurrentSession(updatedSession);
               
               toast({
                 title: "Stock Updated",
