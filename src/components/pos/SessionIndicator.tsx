@@ -1,7 +1,45 @@
+import { useEffect } from "react";
 import { useSession } from "@/contexts/SessionContext";
+import { supabase } from "@/lib/supabase";
+import { Session } from "@/types/pos";
 
 export function SessionIndicator() {
-  const { currentSession } = useSession();
+  const { currentSession, setCurrentSession } = useSession();
+
+  useEffect(() => {
+    if (!currentSession) return;
+
+    console.log("Setting up sales updates subscription in SessionIndicator");
+    
+    const channel = supabase
+      .channel(`session_sales_${currentSession.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sessions',
+          filter: `id=eq.${currentSession.id}`,
+        },
+        (payload: any) => {
+          console.log("Received session update in SessionIndicator:", payload);
+          
+          if (payload.new && payload.new.sales) {
+            const updatedSession: Session = {
+              ...currentSession,
+              sales: payload.new.sales
+            };
+            setCurrentSession(updatedSession);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log("Cleaning up sales updates subscription in SessionIndicator");
+      supabase.removeChannel(channel);
+    };
+  }, [currentSession?.id]);
 
   const totalSales = currentSession?.sales?.reduce((total, sale) => {
     // Ensure we're working with numbers
