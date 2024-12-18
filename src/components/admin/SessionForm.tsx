@@ -34,22 +34,21 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert date from yyyy-mm-dd to dd-mm-yyyy for storage
-    const [year, month, day] = formData.date.split('-');
-    const formattedDate = `${day}-${month}-${year}`;
-    
-    const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
-    
     try {
+      // Convert date from yyyy-mm-dd to dd-mm-yyyy for storage
+      const [year, month, day] = formData.date.split('-');
+      const formattedDate = `${day}-${month}-${year}`;
+      
+      const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+      const sessionId = session?.id || `S${timestamp}-${Math.floor(Math.random() * 1000)}`;
+
+      // First, fetch all products
       const { data: products, error: productsError } = await supabase
         .from('products')
         .select('*')
         .order('name');
 
       if (productsError) throw productsError;
-
-      console.log('Fetched products for session:', products);
 
       // Initialize session products with zero stock
       const sessionProducts = products.map(product => ({
@@ -64,18 +63,27 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         current_stock: 0,
       }));
 
+      // Create the session data
       const sessionData = {
-        ...formData,
-        date: formattedDate, // Use the formatted date
         id: sessionId,
         name: sessionId,
+        date: formattedDate,
+        location: formData.location,
         staff: session?.staff || [],
         products: sessionProducts,
-        status: session?.status || "active",
-        sales: [], 
+        status: "active",
+        sales: [],
         created_at: new Date().toISOString(),
       };
 
+      // Insert into sessions table
+      const { error: sessionError } = await supabase
+        .from('sessions')
+        .insert([sessionData]);
+
+      if (sessionError) throw sessionError;
+
+      // Create inventory entries for each product
       const inventoryData = sessionProducts.map(product => ({
         session_id: sessionId,
         product_id: product.id,
@@ -89,13 +97,11 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
 
       if (inventoryError) throw inventoryError;
 
-      console.log('Creating session with data:', sessionData);
-
       onSubmit(sessionData);
       
       toast({
         title: "Session Created",
-        description: `Created with ${sessionProducts.length} products`,
+        description: `Created session with ${sessionProducts.length} products`,
       });
 
     } catch (error: any) {
