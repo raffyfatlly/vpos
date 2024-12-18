@@ -32,12 +32,13 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   }, [session]);
 
   const generateUniqueId = () => {
-    const timestamp = new Date().toISOString()
+    const now = new Date();
+    const timestamp = now.toISOString()
       .replace(/[-:]/g, '')
       .replace(/[T.]/g, '')
       .slice(0, 14);
-    const random = Math.random().toString(36).substring(2, 8);
-    return `S${timestamp}${random}`;
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `S${timestamp}-${random}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +50,7 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       const formattedDate = `${day}-${month}-${year}`;
       
       const sessionId = session?.id || generateUniqueId();
+      console.log('Generated session ID:', sessionId);
 
       // First, fetch all products
       const { data: products, error: productsError } = await supabase
@@ -84,12 +86,17 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         created_at: new Date().toISOString(),
       };
 
+      console.log('Creating session with data:', sessionData);
+
       // Insert into sessions table
       const { error: sessionError } = await supabase
         .from('sessions')
         .insert([sessionData]);
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Session creation error:', sessionError);
+        throw sessionError;
+      }
 
       // Create inventory entries for each product
       const inventoryData = sessionProducts.map(product => ({
@@ -103,13 +110,16 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
         .from('session_inventory')
         .insert(inventoryData);
 
-      if (inventoryError) throw inventoryError;
+      if (inventoryError) {
+        console.error('Inventory creation error:', inventoryError);
+        throw inventoryError;
+      }
 
       onSubmit(sessionData);
       
       toast({
         title: "Session Created",
-        description: `Created session with ${sessionProducts.length} products`,
+        description: `Created session ${sessionId} with ${sessionProducts.length} products`,
       });
 
     } catch (error: any) {
