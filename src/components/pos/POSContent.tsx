@@ -31,18 +31,28 @@ export const POSContent = () => {
     if (!currentSession) return;
 
     try {
+      console.log("Starting sale completion process...");
+      
       // Get the current session data to ensure we have the latest sales
       const { data: sessionData, error: sessionError } = await supabase
         .from('sessions')
-        .select('sales')
+        .select('*')
         .eq('id', currentSession.id)
         .single();
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Error fetching current session:', sessionError);
+        throw sessionError;
+      }
+
+      console.log("Current session data:", sessionData);
 
       // Prepare the updated sales array
       const currentSales = sessionData.sales || [];
       const updatedSales = [...currentSales, sale];
+
+      console.log("Updating session with new sale:", sale);
+      console.log("Total sales after update:", updatedSales.length);
 
       // Update the session with new sales data
       const { error: updateError } = await supabase
@@ -52,11 +62,19 @@ export const POSContent = () => {
         })
         .eq('id', currentSession.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating session sales:', updateError);
+        throw updateError;
+      }
 
-      // Update local session state
+      // Update local session state with the complete session data
       setCurrentSession({
-        ...currentSession,
+        ...sessionData,
+        sales: updatedSales
+      });
+
+      console.log("Sale completed successfully. Updated session:", {
+        ...sessionData,
         sales: updatedSales
       });
 
@@ -65,28 +83,45 @@ export const POSContent = () => {
         description: `Total: RM${sale.total.toFixed(2)}`,
       });
     } catch (error) {
-      console.error('Error updating sales:', error);
+      console.error('Error completing sale:', error);
       toast({
         title: "Error",
-        description: "Failed to complete sale",
+        description: "Failed to complete sale. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  // Effect to load initial session inventory
+  // Effect to load initial session inventory and sales data
   useEffect(() => {
-    const loadSessionInventory = async () => {
+    const loadSessionData = async () => {
       if (!currentSession?.id) return;
 
       try {
+        // Fetch complete session data including sales
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('id', currentSession.id)
+          .single();
+
+        if (sessionError) {
+          console.error('Error loading session data:', sessionError);
+          throw sessionError;
+        }
+
+        // Fetch inventory data
         const { data: inventoryData, error: inventoryError } = await supabase
           .from('session_inventory')
           .select('*')
           .eq('session_id', currentSession.id);
 
-        if (inventoryError) throw inventoryError;
+        if (inventoryError) {
+          console.error('Error loading session inventory:', inventoryError);
+          throw inventoryError;
+        }
 
+        // Update products with inventory data
         const updatedProducts = currentSession.products.map(product => {
           const inventory = inventoryData?.find(inv => inv.product_id === product.id);
           return {
@@ -97,18 +132,26 @@ export const POSContent = () => {
         });
 
         setSessionProducts(updatedProducts);
+        
+        // Update current session with complete data
+        setCurrentSession({
+          ...sessionData,
+          products: updatedProducts
+        });
+
+        console.log('Session data loaded:', sessionData);
         console.log('Updated products with inventory:', updatedProducts);
       } catch (error) {
-        console.error('Error loading session inventory:', error);
+        console.error('Error loading session data:', error);
         toast({
           title: "Error",
-          description: "Failed to load inventory data",
+          description: "Failed to load session data",
           variant: "destructive",
         });
       }
     };
 
-    loadSessionInventory();
+    loadSessionData();
   }, [currentSession?.id]);
 
   return (
