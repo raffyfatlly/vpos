@@ -1,7 +1,7 @@
 import { Session } from "@/types/pos";
-import { SessionForm } from "@/components/admin/SessionForm";
+import { SessionFormModal } from "@/components/admin/sessions/form/SessionFormModal";
 import { SessionList } from "@/components/admin/SessionList";
-import { SessionDetails } from "@/components/admin/SessionDetails";
+import { SessionDetailsView } from "@/components/admin/sessions/details/SessionDetailsView";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SessionHeader } from "@/components/admin/sessions/SessionHeader";
@@ -80,20 +80,12 @@ const Sessions = () => {
             height="large"
           >
             {selectedSession ? (
-              <>
-                {isMobile && (
-                  <button
-                    onClick={() => setSelectedSession(null)}
-                    className="mb-4 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    ← Back to Sessions
-                  </button>
-                )}
-                <SessionDetails
-                  session={selectedSession}
-                  onUpdateStock={handleUpdateStock}
-                />
-              </>
+              <SessionDetailsView
+                session={selectedSession}
+                onUpdateStock={handleUpdateStock}
+                onBack={() => setSelectedSession(null)}
+                isMobile={isMobile}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 Select a session to view details
@@ -104,14 +96,14 @@ const Sessions = () => {
       </SessionGrid>
 
       {isCreating && (
-        <SessionForm
+        <SessionFormModal
           onSubmit={handleCreateSession}
           onCancel={() => setIsCreating(false)}
         />
       )}
 
       {editingSession && (
-        <SessionForm
+        <SessionFormModal
           session={editingSession}
           onSubmit={handleEditSession}
           onCancel={() => setEditingSession(null)}

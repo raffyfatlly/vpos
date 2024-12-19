@@ -83,7 +83,7 @@ export type Database = {
       }
       session_inventory: {
         Row: {
-          created_at: string
+          created_at: string | null
           current_stock: number | null
           id: number
           initial_stock: number | null
@@ -91,7 +91,7 @@ export type Database = {
           session_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           current_stock?: number | null
           id?: number
           initial_stock?: number | null
@@ -99,7 +99,7 @@ export type Database = {
           session_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           current_stock?: number | null
           id?: number
           initial_stock?: number | null
@@ -123,42 +123,78 @@ export type Database = {
           },
         ]
       }
-      sessions: {
+      session_sales: {
         Row: {
-          created_at: string
-          date: string
+          created_at: string | null
           id: string
-          location: string
-          name: string
-          products: Json[]
-          sales: Json[] | null
-          staff: Json[]
-          status: Database["public"]["Enums"]["session_status"]
-          variations: Json[] | null
+          price_at_time: number
+          product_id: number | null
+          quantity: number
+          session_id: string | null
+          total: number
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
+          id: string
+          price_at_time: number
+          product_id?: number | null
+          quantity: number
+          session_id?: string | null
+          total: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          price_at_time?: number
+          product_id?: number | null
+          quantity?: number
+          session_id?: string | null
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_sales_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string | null
           date: string
           id: string
           location: string
           name: string
-          products?: Json[]
-          sales?: Json[] | null
-          staff?: Json[]
-          status?: Database["public"]["Enums"]["session_status"]
-          variations?: Json[] | null
+          status: Database["public"]["Enums"]["session_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id: string
+          location: string
+          name: string
+          status?: Database["public"]["Enums"]["session_status"] | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           date?: string
           id?: string
           location?: string
           name?: string
-          products?: Json[]
-          sales?: Json[] | null
-          staff?: Json[]
-          status?: Database["public"]["Enums"]["session_status"]
-          variations?: Json[] | null
+          status?: Database["public"]["Enums"]["session_status"] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
