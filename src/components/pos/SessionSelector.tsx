@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useSession } from "@/contexts/SessionContext";
 import { useSessions } from "@/hooks/useSessions";
-import { SessionStaff, SessionProduct } from "@/types/pos";
-import { Button } from "@/components/ui/button";
+import { SessionStaff } from "@/types/pos";
 import {
   Select,
   SelectContent,
@@ -17,13 +16,6 @@ import { SessionCard } from "./session-selector/SessionCard";
 import { SessionOption } from "./session-selector/SessionOption";
 import { NoActiveSessions } from "./session-selector/NoActiveSessions";
 
-type SessionProductData = {
-  id: number;
-  initial_stock?: number;
-  current_stock?: number;
-  [key: string]: any;
-};
-
 export function SessionSelector() {
   const { sessions, isLoading } = useSessions();
   const { setCurrentSession, setCurrentStaff } = useSession();
@@ -36,33 +28,41 @@ export function SessionSelector() {
 
   const handleSessionSelect = async (sessionId: string) => {
     try {
+      // First, fetch the session data
       const { data: sessionData, error: sessionError } = await supabase
         .from('sessions')
         .select('*')
         .eq('id', sessionId)
-        .eq('status', 'active') // Only allow active sessions
         .single();
 
       if (sessionError) throw sessionError;
 
-      // If no active session found
-      if (!sessionData) {
-        toast({
-          title: "Session unavailable",
-          description: "This session is no longer active",
-          variant: "destructive",
-        });
-        setSelectedSessionId("");
-        return;
-      }
+      // Then, fetch the inventory data for this session
+      const { data: inventoryData, error: inventoryError } = await supabase
+        .from('session_inventory')
+        .select(`
+          *,
+          products (*)
+        `)
+        .eq('session_id', sessionId);
 
-      // Fetch all current products with their latest stock values
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
+      if (inventoryError) throw inventoryError;
+
+      // Transform inventory data into products array
+      const products = inventoryData.map(inv => ({
+        ...inv.products,
+        initial_stock: inv.initial_stock,
+        current_stock: inv.current_stock,
+        session_id: sessionId
+      }));
+
+      // Fetch sales data
+      const { data: salesData, error: salesError } = await supabase
+        .from('session_sales')
         .select('*')
-        .order('name');
+        .eq('session_id', sessionId);
 
-      if (productsError) throw productsError;
+      if (salesError) throw salesError;
 
       if (sessionData && user) {
         const staffEntry: SessionStaff = {
@@ -71,41 +71,14 @@ export function SessionSelector() {
           role: user.role,
         };
 
-        // Create a map of existing session products for quick lookup
-        const sessionProductsMap = new Map(
-          (sessionData.products as SessionProductData[]).map((p) => [p.id, p])
-        );
-
-        // Initialize all products with latest stock values from the products table
-        const mergedProducts = (productsData as SessionProductData[]).map(product => {
-          const sessionProduct = sessionProductsMap.get(product.id);
-          return {
-            ...product,
-            initial_stock: product.initial_stock ?? 0,  // Use the current initial_stock
-            current_stock: product.current_stock ?? 0,  // Use the current current_stock
-          };
-        });
-
-        // Update the session's products in the database with latest stock values
-        const { error: updateError } = await supabase
-          .from('sessions')
-          .update({
-            products: mergedProducts
-          })
-          .eq('id', sessionId);
-
-        if (updateError) throw updateError;
-        
         const session = {
           ...sessionData,
-          staff: sessionData.staff as SessionStaff[],
-          products: mergedProducts as SessionProduct[],
-          sales: sessionData.sales || [],
-          variations: sessionData.variations || [],
+          products: products,
+          sales: salesData || [],
+          staff: [staffEntry]
         };
 
         console.log("Selected session data:", session);
-        console.log("Products loaded:", mergedProducts);
         
         setSelectedSessionId(sessionId);
         setCurrentSession(session);
@@ -113,7 +86,7 @@ export function SessionSelector() {
 
         toast({
           title: "Session loaded",
-          description: `Loaded ${mergedProducts.length} products`,
+          description: `Loaded ${products.length} products`,
         });
       }
     } catch (error: any) {
@@ -159,15 +132,6 @@ export function SessionSelector() {
           ))}
         </SelectContent>
       </Select>
-
-      {selectedSessionId && (
-        <Button
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
-          onClick={() => handleSessionSelect(selectedSessionId)}
-        >
-          Load Session
-        </Button>
-      )}
     </SessionCard>
   );
 }
