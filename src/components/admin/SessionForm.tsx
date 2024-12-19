@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Session, SessionProduct } from "@/types/pos";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { nanoid } from 'nanoid';
 
 interface SessionFormProps {
   session?: Session;
@@ -32,29 +33,38 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
   }, [session]);
 
   const generateUniqueId = async () => {
-    const now = new Date();
-    const timestamp = now.toISOString()
-      .replace(/[-:]/g, '')
-      .replace(/[T.]/g, '')
-      .slice(0, 17); // Include milliseconds for more uniqueness
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const sessionId = `S${timestamp}-${random}`;
+    try {
+      const timestamp = Date.now();
+      const random = nanoid(6).toUpperCase();
+      const sessionId = `S${timestamp}-${random}`;
 
-    // Check if this ID already exists
-    const { data: existingSession } = await supabase
-      .from('sessions')
-      .select('id')
-      .eq('id', sessionId)
-      .single();
+      console.log('Checking session ID:', sessionId);
+      
+      // Check if this ID already exists
+      const { data: existingSession, error: checkError } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('id', sessionId)
+        .maybeSingle();
 
-    if (existingSession) {
-      // If ID exists, try again with a new random component
-      console.log('Session ID collision detected, generating new ID...');
-      return generateUniqueId();
+      if (checkError) {
+        console.error('Error checking session ID:', checkError);
+        throw checkError;
+      }
+
+      if (existingSession) {
+        console.log('Session ID collision detected, generating new ID...');
+        // Recursive call with a small delay to avoid tight loops
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return generateUniqueId();
+      }
+
+      console.log('Generated unique session ID:', sessionId);
+      return sessionId;
+    } catch (error) {
+      console.error('Error generating session ID:', error);
+      throw error;
     }
-
-    console.log('Generated unique session ID:', sessionId);
-    return sessionId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +75,23 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       const [year, month, day] = formData.date.split('-');
       const formattedDate = `${day}-${month}-${year}`;
       
-      const sessionId = session?.id || await generateUniqueId();
+      let sessionId;
+      if (session?.id) {
+        sessionId = session.id;
+      } else {
+        sessionId = await generateUniqueId();
+        // Double-check one more time before proceeding
+        const { data: finalCheck } = await supabase
+          .from('sessions')
+          .select('id')
+          .eq('id', sessionId)
+          .maybeSingle();
+          
+        if (finalCheck) {
+          throw new Error('Session ID collision detected during final check');
+        }
+      }
+      
       console.log('Using session ID:', sessionId);
 
       // First, fetch all products
