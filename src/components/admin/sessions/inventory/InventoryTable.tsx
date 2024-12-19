@@ -2,11 +2,19 @@ import { SessionProduct } from "@/types/pos";
 import { Input } from "@/components/ui/input";
 
 interface InventoryTableProps {
-  products: SessionProduct[];
+  products?: SessionProduct[];
   onInitialStockChange: (productId: number, newInitialStock: number) => void;
 }
 
-export function InventoryTable({ products, onInitialStockChange }: InventoryTableProps) {
+export function InventoryTable({ products = [], onInitialStockChange }: InventoryTableProps) {
+  if (!products || products.length === 0) {
+    return (
+      <div className="text-center py-4 text-muted-foreground">
+        No products available
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4">
       {/* Headers - Hidden on mobile, shown on larger screens */}
@@ -19,10 +27,8 @@ export function InventoryTable({ products, onInitialStockChange }: InventoryTabl
       {/* Product rows */}
       {products.map((product: SessionProduct) => (
         <div key={product.id} className="flex flex-col md:grid md:grid-cols-3 gap-2 md:gap-4 py-4 border-t">
-          {/* Product name */}
           <div className="font-medium md:font-normal">{product.name}</div>
           
-          {/* Stock controls */}
           <div className="flex items-center justify-between md:justify-center gap-4 mt-2 md:mt-0">
             <div className="flex items-center gap-2 md:w-full md:justify-center">
               <span className="text-sm text-gray-500 md:hidden">Initial:</span>
@@ -44,7 +50,6 @@ export function InventoryTable({ products, onInitialStockChange }: InventoryTabl
             </div>
           </div>
 
-          {/* Current stock - Hidden on mobile, shown on desktop */}
           <div className="hidden md:flex md:justify-center">
             {product.current_stock || 0}
           </div>

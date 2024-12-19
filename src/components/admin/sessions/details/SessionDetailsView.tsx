@@ -1,20 +1,47 @@
 import { Session, SessionProduct } from "@/types/pos";
 import { SalesOverview } from "@/components/admin/SalesOverview";
 import { InventoryTable } from "@/components/admin/sessions/inventory/InventoryTable";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface SessionDetailsViewProps {
   session: Session;
-  onUpdateStock: (sessionId: string, updatedProducts: SessionProduct[]) => void;
   onBack?: () => void;
   isMobile?: boolean;
 }
 
 export function SessionDetailsView({ 
   session, 
-  onUpdateStock,
   onBack,
   isMobile 
 }: SessionDetailsViewProps) {
+  const { toast } = useToast();
+
+  const handleUpdateStock = async (sessionId: string, updatedProducts: SessionProduct[]) => {
+    try {
+      const { error } = await supabase
+        .from('sessions')
+        .update({
+          products: updatedProducts
+        })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Stock Updated",
+        description: "Product stock has been updated successfully",
+      });
+    } catch (error: any) {
+      console.error('Error updating stock:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update stock. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {isMobile && onBack && (
@@ -44,7 +71,7 @@ export function SessionDetailsView({
                     }
                   : product
               );
-              onUpdateStock(session.id, updatedProducts);
+              handleUpdateStock(session.id, updatedProducts);
             }}
           />
         </div>
