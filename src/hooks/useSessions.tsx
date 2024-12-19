@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@/types/pos";
 import { useToast } from "@/hooks/use-toast";
+import { nanoid } from 'nanoid';
 
 export function useSessions() {
   const queryClient = useQueryClient();
@@ -14,121 +15,73 @@ export function useSessions() {
   } = useQuery({
     queryKey: ["sessions"],
     queryFn: async () => {
-      console.log("Fetching sessions from database");
       const { data, error } = await supabase
         .from("sessions")
         .select("*")
-        .order("date", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      console.log("Fetched sessions:", data);
       return data;
     },
   });
 
   const createSession = useMutation({
-    mutationFn: async (sessionData: Session) => {
-      const { data, error } = await supabase
-        .from("sessions")
-        .insert([sessionData])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (newSession) => {
-      queryClient.setQueryData(["sessions"], (old: Session[] = []) => [...old, newSession]);
-      toast({
-        title: "Session created",
-        description: "The session has been created successfully.",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating session:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create session",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateSession = useMutation({
-    mutationFn: async (sessionData: Session) => {
-      console.log("Updating session in database:", sessionData);
-      const { data, error } = await supabase
-        .from("sessions")
-        .update(sessionData)
-        .eq("id", sessionData.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (updatedSession) => {
-      // Immediately update the cache with the new data
-      queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
-        old.map(session => session.id === updatedSession.id ? updatedSession : session)
-      );
+    mutationFn: async (sessionData: { location: string; date: string }) => {
+      // Generate a simple, unique session ID
+      const sessionId = `S${Date.now()}-${nanoid(6)}`;
       
-      // Prevent automatic background refetch for a short period
-      queryClient.invalidateQueries({
-        queryKey: ["sessions"],
-        refetchType: "none"
-      });
+      const newSession = {
+        id: sessionId,
+        name: sessionId,
+        location: sessionData.location,
+        date: sessionData.date,
+        status: "active",
+      };
 
-      toast({
-        title: "Session updated",
-        description: "The session has been updated successfully.",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating session:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update session",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteSession = useMutation({
-    mutationFn: async (sessionId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("sessions")
-        .delete()
-        .eq("id", sessionId);
+        .insert(newSession)
+        .select()
+        .single();
 
       if (error) throw error;
-      return sessionId;
-    },
-    onMutate: async (sessionId) => {
-      await queryClient.cancelQueries({ queryKey: ["sessions"] });
-      const previousSessions = queryClient.getQueryData(["sessions"]);
-      queryClient.setQueryData(["sessions"], (old: Session[] = []) => 
-        old.filter(session => session.id !== sessionId)
-      );
-      return { previousSessions };
-    },
-    onError: (err, sessionId, context) => {
-      queryClient.setQueryData(["sessions"], context?.previousSessions);
-      console.error("Error deleting session:", err);
-      toast({
-        title: "Error",
-        description: "Failed to delete session",
-        variant: "destructive",
-      });
+
+      // After creating the session, initialize inventory for all products
+      const { data: products } = await supabase
+        .from("products")
+        .select("id");
+
+      if (products && products.length > 0) {
+        const inventoryData = products.map(product => ({
+          session_id: sessionId,
+          product_id: product.id,
+          initial_stock: 0,
+          current_stock: 0,
+        }));
+
+        const { error: inventoryError } = await supabase
+          .from("session_inventory")
+          .insert(inventoryData);
+
+        if (inventoryError) throw inventoryError;
+      }
+
+      return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
       toast({
-        title: "Session deleted",
-        description: "The session has been deleted successfully.",
+        title: "Success",
+        description: "Session created successfully",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    onError: (error: any) => {
+      console.error("Session creation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create session. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -137,7 +90,5 @@ export function useSessions() {
     isLoading,
     error,
     createSession,
-    updateSession,
-    deleteSession,
   };
 }

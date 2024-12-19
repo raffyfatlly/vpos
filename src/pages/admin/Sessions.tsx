@@ -1,4 +1,3 @@
-import { Session } from "@/types/pos";
 import { SessionFormModal } from "@/components/admin/sessions/form/SessionFormModal";
 import { SessionList } from "@/components/admin/SessionList";
 import { SessionDetailsView } from "@/components/admin/sessions/details/SessionDetailsView";
@@ -9,23 +8,14 @@ import { SessionLayout } from "@/components/admin/sessions/SessionLayout";
 import { SessionGrid } from "@/components/admin/sessions/SessionGrid";
 import { SessionPanel } from "@/components/admin/sessions/SessionPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSessionManagement } from "@/hooks/useSessionManagement";
+import { useState } from "react";
+import { Session } from "@/types/pos";
+import { useSessions } from "@/hooks/useSessions";
 
 const Sessions = () => {
-  const {
-    isCreating,
-    setIsCreating,
-    editingSession,
-    setEditingSession,
-    selectedSession,
-    setSelectedSession,
-    sessions,
-    isLoading,
-    handleCreateSession,
-    handleEditSession,
-    handleDeleteSession,
-    handleUpdateStock,
-  } = useSessionManagement();
+  const [isCreating, setIsCreating] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const { sessions, isLoading } = useSessions();
   
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -60,7 +50,6 @@ const Sessions = () => {
           >
             <SessionList
               sessions={sessions}
-              onSessionUpdate={handleEditSession}
               onSelect={(session) => {
                 setSelectedSession(session);
                 if (isMobile) {
@@ -68,7 +57,6 @@ const Sessions = () => {
                 }
               }}
               selectedSession={selectedSession}
-              onDelete={handleDeleteSession}
             />
           </SessionPanel>
         )}
@@ -82,7 +70,6 @@ const Sessions = () => {
             {selectedSession ? (
               <SessionDetailsView
                 session={selectedSession}
-                onUpdateStock={handleUpdateStock}
                 onBack={() => setSelectedSession(null)}
                 isMobile={isMobile}
               />
@@ -97,16 +84,7 @@ const Sessions = () => {
 
       {isCreating && (
         <SessionFormModal
-          onSubmit={handleCreateSession}
           onCancel={() => setIsCreating(false)}
-        />
-      )}
-
-      {editingSession && (
-        <SessionFormModal
-          session={editingSession}
-          onSubmit={handleEditSession}
-          onCancel={() => setEditingSession(null)}
         />
       )}
     </SessionLayout>
