@@ -31,14 +31,30 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
     }
   }, [session]);
 
-  const generateUniqueId = () => {
+  const generateUniqueId = async () => {
     const now = new Date();
     const timestamp = now.toISOString()
       .replace(/[-:]/g, '')
       .replace(/[T.]/g, '')
-      .slice(0, 14);
+      .slice(0, 17); // Include milliseconds for more uniqueness
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `S${timestamp}-${random}`;
+    const sessionId = `S${timestamp}-${random}`;
+
+    // Check if this ID already exists
+    const { data: existingSession } = await supabase
+      .from('sessions')
+      .select('id')
+      .eq('id', sessionId)
+      .single();
+
+    if (existingSession) {
+      // If ID exists, try again with a new random component
+      console.log('Session ID collision detected, generating new ID...');
+      return generateUniqueId();
+    }
+
+    console.log('Generated unique session ID:', sessionId);
+    return sessionId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,8 +65,8 @@ export function SessionForm({ session, onSubmit, onCancel }: SessionFormProps) {
       const [year, month, day] = formData.date.split('-');
       const formattedDate = `${day}-${month}-${year}`;
       
-      const sessionId = session?.id || generateUniqueId();
-      console.log('Generated session ID:', sessionId);
+      const sessionId = session?.id || await generateUniqueId();
+      console.log('Using session ID:', sessionId);
 
       // First, fetch all products
       const { data: products, error: productsError } = await supabase
